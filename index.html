@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard 3D 4You Dark</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0f172a; 
+            --card-bg: #1e293b; 
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.15);
+            --success: #10b981;
+            --shopee: #f94d30;
+            --meli: #facc15;
+            --sky: #0ea5e9;
+            --purple: #8b5cf6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+
+        header { text-align: center; margin-bottom: 12px; flex-shrink: 0; }
+        header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .dashboard { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding-bottom: 20px; }
+        
+        @media (min-width: 1024px) { 
+            .dashboard { grid-template-columns: 1fr 1fr 340px; overflow-y: hidden; }
+            .col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 5px; height: 100%; }
+        }
+
+        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card-disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+        
+        .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
+        .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
+        .input-group input, .input-group select { 
+            background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; 
+            font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%;
+        }
+
+        .range-area { margin-top: 15px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+        .range-container { display: flex; align-items: center; gap: 15px; }
+        
+        input[type="range"] { 
+            flex: 1; height: 10px; background: #334155; border-radius: 8px; appearance: none; outline: none; 
+        }
+        
+        input[type="range"]::-webkit-slider-thumb { 
+            appearance: none; width: 22px; height: 22px; border-radius: 50%; 
+            background: #fff; border: 3px solid var(--primary); cursor: pointer; 
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        
+        .margem-box {
+            display: flex; align-items: center; background: #0f172a; border: 2px solid var(--primary); 
+            border-radius: 10px; padding: 0 12px; min-width: 120px; height: 45px;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+        }
+        .margem-box input {
+            width: 100%; font-size: 1.3rem; font-weight: 900; color: var(--primary); 
+            text-align: right; background: transparent; border: none; outline: none;
+        }
+        .margem-box span { color: var(--primary); font-weight: 900; font-size: 1.1rem; margin-left: 2px; }
+
+        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 20px; }
+        .slider-switch:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider-switch { background-color: var(--primary); }
+        input:checked + .slider-switch:before { transform: translateX(14px); }
+
+        .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
+        .result-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+        .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+        
+        .price-box { border-radius: 12px; padding: 12px; text-align: center; border-left: 4px solid transparent; background: rgba(0,0,0,0.2); }
+        .price-box .total { font-size: 1.7rem; font-weight: 900; }
+        .price-box.direta { border-color: var(--success); color: #34d399; }
+        .price-box.shopee { border-color: var(--shopee); color: #ff8b73; }
+        .price-box.meli { border-color: var(--meli); color: var(--meli); }
+
+        .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
+        .btn { padding: 14px 5px; border: none; border-radius: 12px; font-size: 0.75rem; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        .btn-direta { background: var(--success); }
+        .btn-shopee { background: var(--shopee); }
+        .btn-meli { background: #ca8a04; }
+        .btn-all { background: var(--sky); }
+        
+        .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
+
+        .endereco-txt { font-size: 0.65rem; color: var(--sky); margin-top: 2px; height: 14px; overflow: hidden; }
+        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 1000; }
+        #toast.show { visibility: visible; animation: fadein 0.5s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+
+        .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
+        .history-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
+        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
+        .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
+        .history-item .hist-vals b { color: var(--text-main); }
+        .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1rem; cursor: pointer; }
+        
+        .btn-pdf { background: #334155; color: white; border: 1px solid var(--border); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+
+<div id="toast">✅ Operação Realizada</div>
+
+<header>
+    <h1>3D 4You</h1>
+    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Calculadora de Precisão Desktop</p>
+</header>
+
+<div class="dashboard">
+    <div class="col">
+        <div class="card">
+            <h2 class="section-title">👤 Identificação</h2>
+            <div class="input-group">
+                <label>Nome do Projeto / Produtor</label>
+                <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">⚙️ Base Operacional</h2>
+            <div class="grid-2">
+                <div class="input-group"><label>Máquina (R$)</label><input type="number" id="maquina" value="1500" data-save="true"></div>
+                <div class="input-group"><label>Vida Útil (h)</label><input type="number" id="vidaUtil" value="5000" data-save="true"></div>
+                <div class="input-group"><label>Consumo (W)</label><input type="number" id="consumoW" value="250" data-save="true"></div>
+                <div class="input-group"><label>kWh (R$)</label><input type="number" id="precoKwh" value="0.90" step="0.01" data-save="true"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">📦 O Projeto</h2>
+            <div class="grid-2">
+                <div class="input-group"><label>Filamento (R$)</label><input type="number" id="precoFilamento" value="120" data-save="true"></div>
+                <div class="input-group"><label>Peso (g)</label><input type="number" id="pesoPeca" value=""></div>
+                <div class="input-group"><label>Tempo (h)</label><input type="number" id="tempoH" value="" step="0.1"></div>
+                <div class="input-group"><label>Sucesso (%)</label><input type="number" id="taxaSucesso" value="95" data-save="true"></div>
+            </div>
+            
+            <div class="range-area">
+                <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
+                <div class="range-container">
+                    <input type="range" id="margemSlider" min="0" max="1000" value="100" data-save="true">
+                    <div class="margem-box">
+                        <input type="number" id="margemInput" value="100" data-save="true">
+                        <span>%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card">
+            <div class="section-title">
+                <span>🚚 Logística</span>
+                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true"><span class="slider-switch"></span></label>
+            </div>
+            <div id="section_logistica">
+                <div class="grid-2">
+                    <div class="input-group"><label>Embalagem</label><input type="number" id="custoEmbalagem" value="4.50" data-save="true"></div>
+                    <div class="input-group"><label>Deslocamento</label><input type="number" id="custoDeslocamento" value="8.00" data-save="true"></div>
+                    <div class="input-group"><label>Origem</label><input type="text" id="cepOrigem" placeholder="00000-000" data-save="true" onkeyup="buscarCEP(this.value, 'origemTexto')"><div id="origemTexto" class="endereco-txt"></div></div>
+                    <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')"><div id="destinoTexto" class="endereco-txt"></div></div>
+                    <div class="input-group">
+                        <label>Envio</label>
+                        <select id="tipoEnvio" data-save="true">
+                            <option value="PAC">PAC</option>
+                            <option value="SEDEX">SEDEX</option>
+                        </select>
+                    </div>
+                    <div class="input-group"><label>Caixa (g)</label><input type="number" id="pesoBruto" value="300" data-save="true"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h2 class="section-title">🛒 Marketplaces</h2>
+            <div class="grid-2">
+                <div class="input-group"><label>Shopee (%)</label><input type="number" id="taxaShopee" value="20" data-save="true"></div>
+                <div class="input-group"><label>Fixo Shopee</label><input type="number" id="fixaShopee" value="4.00" data-save="true"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="number" id="taxaMeli" value="17" data-save="true"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="number" id="fixaMeli" value="6.75" data-save="true"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="results">
+            <h2 class="section-title" style="border:none; margin-bottom: 5px; color: #fff">📊 Resumo de Custos</h2>
+            <div class="extrato">
+                <div class="result-row"><span>Depreciação Máquina</span><span class="value">R$ <span id="r_dep">0.00</span></span></div>
+                <div class="result-row"><span>Energia Elétrica</span><span class="value">R$ <span id="r_ene">0.00</span></span></div>
+                <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0.00</span></span></div>
+                <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)">
+                    <span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span>
+                    <span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0.00</span></span>
+                </div>
+            </div>
+
+            <div class="price-box direta">
+                <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span>
+                <div class="total">R$ <span id="r_vendaD">0.00</span></div>
+            </div>
+
+            <div class="grid-2">
+                <div class="price-box shopee"><span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0.00</span></div></div>
+                <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0.00</span></div></div>
+            </div>
+            
+            <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
+
+            <div class="share-grid">
+                <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
+                <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
+                <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
+                <button class="btn btn-all" onclick="wpp('completo')">Completa</button>
+            </div>
+
+            <button class="btn-reset" onclick="resetarDados()">🗑️ Limpar Projeto</button>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
+            <h2 class="section-title">📂 Histórico de Vendas</h2>
+            <div id="listaHistorico" class="history-list"></div>
+            <button class="btn-pdf" onclick="gerarPDF()">📄 Exportar Relatório PDF</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const dom = {};
+    const ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 
+                'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
+                'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
+
+    let historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
+
+    function updateSliderProgress(slider) {
+        const value = (slider.value - slider.min) / (slider.max - slider.min) * 100;
+        slider.style.background = `linear-gradient(to right, #3b82f6 ${value}%, #334155 ${value}%)`;
+    }
+
+    window.onload = () => {
+        ids.forEach(id => {
+            dom[id] = document.getElementById(id);
+            if (dom[id] && dom[id].dataset.save) {
+                const saved = localStorage.getItem('3d4y_dark_' + id);
+                if (saved !== null) {
+                    if (dom[id].type === 'checkbox') {
+                        dom[id].checked = (saved === 'true');
+                    } else {
+                        dom[id].value = saved;
+                    }
+                }
+            }
+            if(dom[id]) dom[id].addEventListener('input', () => {
+                if (id === 'margemSlider') {
+                    dom.margemInput.value = dom.margemSlider.value;
+                    updateSliderProgress(dom.margemSlider);
+                }
+                if (id === 'margemInput') {
+                    dom.margemSlider.value = dom.margemInput.value;
+                    updateSliderProgress(dom.margemSlider);
+                }
+                calcular();
+            });
+        });
+        updateSliderProgress(dom.margemSlider);
+        renderHistorico();
+        calcular();
+    };
+
+    function calcular() {
+        // Salvamento automático
+        ids.forEach(id => { 
+            if (dom[id] && dom[id].dataset.save) {
+                localStorage.setItem('3d4y_dark_' + id, dom[id].type === 'checkbox' ? dom[id].checked : dom[id].value); 
+            }
+        });
+        
+        const logEnabled = dom.toggle_logistica.checked;
+        document.getElementById('section_logistica').className = logEnabled ? '' : 'card-disabled';
+        const v = (id) => parseFloat(dom[id].value) || 0;
+        
+        const dep = (v('maquina') / (v('vidaUtil') || 1)) * v('tempoH');
+        const ene = (v('consumoW') / 1000) * v('precoKwh') * v('tempoH');
+        const mat = (v('precoFilamento') / 1000) * v('pesoPeca');
+        const custoProducao = (dep + ene + mat) / ((v('taxaSucesso') || 100) / 100);
+        
+        document.getElementById('r_dep').textContent = dep.toFixed(2);
+        document.getElementById('r_ene').textContent = ene.toFixed(2);
+        document.getElementById('r_mat').textContent = mat.toFixed(2);
+        document.getElementById('r_gasto').textContent = custoProducao.toFixed(2);
+
+        const valorComLucro = custoProducao * (1 + (v('margemInput') / 100));
+        let cLog = 0, frete = 0;
+        if (logEnabled) {
+            cLog = v('custoEmbalagem') + v('custoDeslocamento');
+            const pReal = (v('pesoBruto') + v('pesoPeca')) / 1000;
+            const base = dom.tipoEnvio.value === 'PAC' ? 18.50 : 24.50;
+            frete = pReal > 0.3 ? base + (pReal * 4.5) : base;
+        }
+
+        document.getElementById('r_vendaD').textContent = (valorComLucro + cLog + frete).toFixed(2);
+        document.getElementById('r_vendaS').textContent = ((valorComLucro + cLog + v('fixaShopee')) / (1 - (v('taxaShopee')/100))).toFixed(2);
+        document.getElementById('r_vendaM').textContent = ((valorComLucro + cLog + (valorComLucro + cLog > 70 ? 0 : v('fixaMeli'))) / (1 - (v('taxaMeli')/100))).toFixed(2);
+    }
+
+    function salvarHistorico() {
+        const nome = document.getElementById('nomeProjeto').value || "Sem Nome";
+        const novo = {
+            id: Date.now(),
+            nome: nome,
+            custo: document.getElementById('r_gasto').textContent,
+            pix: document.getElementById('r_vendaD').textContent,
+            shopee: document.getElementById('r_vendaS').textContent,
+            meli: document.getElementById('r_vendaM').textContent,
+            data: new Date().toLocaleDateString('pt-BR')
+        };
+        historico.unshift(novo);
+        localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+        renderHistorico();
+        showToast("✅ Venda Salva!");
+    }
+
+    function renderHistorico() {
+        const lista = document.getElementById('listaHistorico');
+        lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
+        historico.forEach(item => {
+            lista.innerHTML += `
+                <div class="history-item">
+                    <button class="btn-del-item" onclick="removerItem(${item.id})">×</button>
+                    <h4>${item.nome}</h4>
+                    <div class="hist-vals">
+                        <span>PIX: <b>R$ ${item.pix}</b></span>
+                        <span>Data: ${item.data}</span>
+                        <span>SHP: <b>R$ ${item.shopee}</b></span>
+                        <span>ML: <b>R$ ${item.meli}</b></span>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function removerItem(id) {
+        historico = historico.filter(h => h.id !== id);
+        localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+        renderHistorico();
+    }
+
+    function gerarPDF() {
+        if(historico.length === 0) return alert("Histórico vazio!");
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("Relatório de Vendas - 3D 4You", 14, 20);
+        doc.autoTable({
+            head: [['Data', 'Projeto', 'Custo Prod.', 'Venda Pix', 'Shopee', 'M. Livre']],
+            body: historico.map(h => [h.data, h.nome, `R$ ${h.custo}`, `R$ ${h.pix}`, `R$ ${h.shopee}`, `R$ ${h.meli}`]),
+            startY: 35,
+            theme: 'striped',
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+        doc.save(`vendas_3d4you_${Date.now()}.pdf`);
+        showToast("📄 PDF Gerado!");
+    }
+
+    function buscarCEP(valor, idTexto) {
+        const cep = valor.replace(/\D/g, '');
+        if (cep.length === 8) {
+            fetch(`https://viacep.com.br/ws/${cep}/json/`).then(res => res.json()).then(data => {
+                document.getElementById(idTexto).textContent = data.erro ? "CEP não encontrado" : `${data.localidade}-${data.uf}`;
+            });
+        }
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById("toast"); t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000);
+    }
+
+    function resetarDados() {
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto'].forEach(id => { if(dom[id]) dom[id].value = ""; });
+        document.getElementById('destinoTexto').textContent = "";
+        calcular();
+        showToast("✅ Resetado");
+    }
+
+    function wpp(tipo) {
+        const vD = document.getElementById('r_vendaD').textContent;
+        const vS = document.getElementById('r_vendaS').textContent;
+        const vM = document.getElementById('r_vendaM').textContent;
+        const nome = document.getElementById('nomeProjeto').value || "Peça 3D";
+        let txt = `*Orçamento 3D 4You*%0A*Projeto:* ${nome}%0A%0A`;
+        if (tipo === 'completo') txt += `Pix: *R$ ${vD}*%0AShopee: *R$ ${vS}*%0AM.Livre: *R$ ${vM}*`;
+        else txt += `Valor: *R$ ${tipo === 'direta' ? vD : tipo === 'shopee' ? vS : vM}*`;
+        window.open(`https://wa.me/?text=${txt}`, '_blank');
+    }
+</script>
+</body>
+</html>
