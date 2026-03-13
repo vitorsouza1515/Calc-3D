@@ -6,6 +6,7 @@
     <title>Dashboard 3D 4You Dark</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     
     <style>
         :root {
@@ -83,8 +84,11 @@
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
-        .result-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); }
-        .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; }
+        
+        /* CORREÇÃO DE RESPONSIVIDADE AQUI (result-row) */
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
+        .result-row span:first-child { flex: 1; line-height: 1.2; }
+        .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap; text-align: right; }
         
         .price-box { border-radius: 12px; padding: 12px; text-align: center; border-left: 4px solid transparent; background: rgba(0,0,0,0.2); }
         .price-box .total { font-size: 1.7rem; font-weight: 900; }
@@ -105,17 +109,24 @@
         .endereco-txt { font-size: 0.65rem; color: var(--sky); margin-top: 2px; height: 14px; overflow: hidden; }
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 1000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
-        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
 
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
-        .history-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
+        .history-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1rem; cursor: pointer; }
         
-        .btn-pdf { background: #334155; color: white; border: 1px solid var(--border); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 10px; text-transform: uppercase; font-size: 0.7rem; }
+        /* CORREÇÃO DE RESPONSIVIDADE AQUI (total-summary) */
+        .total-summary { background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 12px; margin-top: 10px; }
+        .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; margin-bottom: 5px; gap: 10px; }
+        .total-row span:first-child { flex: 1; line-height: 1.2; }
+        .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
+
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
+        .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -226,6 +237,15 @@
                 <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0.00</span></div></div>
             </div>
             
+            <div class="input-group" style="margin-top: 10px;">
+                <label style="color: var(--purple);">Canal de Venda Realizada</label>
+                <select id="canalVendaSelecionado" style="border-color: var(--purple); color: var(--purple);">
+                    <option value="Direta">Venda Direta / Pix</option>
+                    <option value="Shopee">Shopee</option>
+                    <option value="Meli">Mercado Livre</option>
+                </select>
+            </div>
+
             <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
 
             <div class="share-grid">
@@ -241,7 +261,29 @@
         <div class="card" style="margin-top:12px;">
             <h2 class="section-title">📂 Histórico de Vendas</h2>
             <div id="listaHistorico" class="history-list"></div>
-            <button class="btn-pdf" onclick="gerarPDF()">📄 Exportar Relatório PDF</button>
+            
+            <div class="total-summary">
+                <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
+                <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0.00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL:</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0.00</span></b></div>
+                
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                    <span>Total PIX (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0.00</span></b>
+                </div>
+                <div class="total-row">
+                    <span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0.00</span></b>
+                </div>
+                <div class="total-row">
+                    <span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0.00</span></b>
+                </div>
+            </div>
+
+            <div class="report-grid">
+                <button class="btn-report" onclick="gerarPDF()">📄 PDF</button>
+                <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel</button>
+            </div>
+            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
+            <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
         </div>
     </div>
 </div>
@@ -265,22 +307,13 @@
             if (dom[id] && dom[id].dataset.save) {
                 const saved = localStorage.getItem('3d4y_dark_' + id);
                 if (saved !== null) {
-                    if (dom[id].type === 'checkbox') {
-                        dom[id].checked = (saved === 'true');
-                    } else {
-                        dom[id].value = saved;
-                    }
+                    if (dom[id].type === 'checkbox') dom[id].checked = (saved === 'true');
+                    else dom[id].value = saved;
                 }
             }
             if(dom[id]) dom[id].addEventListener('input', () => {
-                if (id === 'margemSlider') {
-                    dom.margemInput.value = dom.margemSlider.value;
-                    updateSliderProgress(dom.margemSlider);
-                }
-                if (id === 'margemInput') {
-                    dom.margemSlider.value = dom.margemInput.value;
-                    updateSliderProgress(dom.margemSlider);
-                }
+                if (id === 'margemSlider') { dom.margemInput.value = dom.margemSlider.value; updateSliderProgress(dom.margemSlider); }
+                if (id === 'margemInput') { dom.margemSlider.value = dom.margemInput.value; updateSliderProgress(dom.margemSlider); }
                 calcular();
             });
         });
@@ -290,11 +323,8 @@
     };
 
     function calcular() {
-        // Salvamento automático
         ids.forEach(id => { 
-            if (dom[id] && dom[id].dataset.save) {
-                localStorage.setItem('3d4y_dark_' + id, dom[id].type === 'checkbox' ? dom[id].checked : dom[id].value); 
-            }
+            if (dom[id] && dom[id].dataset.save) localStorage.setItem('3d4y_dark_' + id, dom[id].type === 'checkbox' ? dom[id].checked : dom[id].value); 
         });
         
         const logEnabled = dom.toggle_logistica.checked;
@@ -327,9 +357,18 @@
 
     function salvarHistorico() {
         const nome = document.getElementById('nomeProjeto').value || "Sem Nome";
+        const canal = document.getElementById('canalVendaSelecionado').value;
+        
+        let valorRegistrado = "0.00";
+        if(canal === "Direta") valorRegistrado = document.getElementById('r_vendaD').textContent;
+        else if(canal === "Shopee") valorRegistrado = document.getElementById('r_vendaS').textContent;
+        else valorRegistrado = document.getElementById('r_vendaM').textContent;
+
         const novo = {
             id: Date.now(),
             nome: nome,
+            canal: canal,
+            valorVenda: valorRegistrado, 
             custo: document.getElementById('r_gasto').textContent,
             pix: document.getElementById('r_vendaD').textContent,
             shopee: document.getElementById('r_vendaS').textContent,
@@ -345,39 +384,184 @@
     function renderHistorico() {
         const lista = document.getElementById('listaHistorico');
         lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
+        
+        let somaCusto = 0;
+        let somaDireta = 0, somaShopee = 0, somaMeli = 0;
+        let qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
+
         historico.forEach(item => {
+            const custoItem = parseFloat(item.custo) || 0;
+            somaCusto += custoItem;
+            
+            const canalStr = item.canal || "Direta";
+            const valVenda = parseFloat(item.valorVenda) || parseFloat(item.pix) || 0;
+
+            if(canalStr === "Shopee") { somaShopee += valVenda; qtdShopee++; }
+            else if(canalStr === "Meli") { somaMeli += valVenda; qtdMeli++; }
+            else { somaDireta += valVenda; qtdDireta++; }
+
+            const tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML";
+            const corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
+
             lista.innerHTML += `
                 <div class="history-item">
                     <button class="btn-del-item" onclick="removerItem(${item.id})">×</button>
-                    <h4>${item.nome}</h4>
+                    <h4>${item.nome} <span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-left:5px;">${tagCanal}</span></h4>
                     <div class="hist-vals">
-                        <span>PIX: <b>R$ ${item.pix}</b></span>
-                        <span>Data: ${item.data}</span>
-                        <span>SHP: <b>R$ ${item.shopee}</b></span>
-                        <span>ML: <b>R$ ${item.meli}</b></span>
+                        <span>Venda: <b style="color:#fff">R$ ${valVenda.toFixed(2)}</b></span>
+                        <span>Custo: R$ ${custoItem.toFixed(2)}</span>
+                        <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
                     </div>
                 </div>`;
         });
+
+        // Preenche os TOTAIS PRINCIPAIS
+        document.getElementById('tot_qtd').textContent = historico.length;
+        document.getElementById('tot_custo').textContent = somaCusto.toFixed(2);
+        
+        const faturamentoTotal = somaDireta + somaShopee + somaMeli;
+        document.getElementById('tot_faturamento').textContent = faturamentoTotal.toFixed(2);
+        
+        // Preenche AS QUANTIDADES E SOMAS POR PLATAFORMA
+        document.getElementById('qtd_direta').textContent = qtdDireta;
+        document.getElementById('tot_direta').textContent = somaDireta.toFixed(2);
+        
+        document.getElementById('qtd_shopee').textContent = qtdShopee;
+        document.getElementById('tot_shopee').textContent = somaShopee.toFixed(2);
+        
+        document.getElementById('qtd_meli').textContent = qtdMeli;
+        document.getElementById('tot_meli').textContent = somaMeli.toFixed(2);
     }
 
     function removerItem(id) {
-        historico = historico.filter(h => h.id !== id);
-        localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
-        renderHistorico();
+        if(confirm("Deseja apagar esta venda?")) {
+            historico = historico.filter(h => h.id !== id);
+            localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+            renderHistorico();
+        }
+    }
+
+    // --- NOVA ESTILIZAÇÃO DO EXCEL E PDF ---
+
+    function exportarExcel() {
+        if(historico.length === 0) return alert("Histórico vazio!");
+        const dados = historico.map(h => {
+            const canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre";
+            return {
+                "Data": h.data,
+                "Projeto": h.nome,
+                "Canal": canalAmigavel,
+                "Custo Prod. (R$)": parseFloat(h.custo || 0),
+                "Venda Realizada (R$)": parseFloat(h.valorVenda || h.pix || 0),
+                "Opção Pix": parseFloat(h.pix || 0),
+                "Opção Shopee": parseFloat(h.shopee || 0),
+                "Opção M. Livre": parseFloat(h.meli || 0)
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(dados);
+        
+        // Ajustando a largura das colunas para não cortar no Excel/Numbers
+        ws['!cols'] = [
+            { wch: 12 }, // Data
+            { wch: 30 }, // Projeto
+            { wch: 15 }, // Canal
+            { wch: 18 }, // Custo Prod
+            { wch: 20 }, // Venda Realizada
+            { wch: 12 }, // Opção Pix
+            { wch: 12 }, // Opção Shopee
+            { wch: 15 }  // Opção M. Livre
+        ];
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Vendas");
+        XLSX.writeFile(wb, `Relatorio_Vendas_${Date.now()}.xlsx`);
+        showToast("📊 Excel Exportado!");
+    }
+
+    function importarExcel(input) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            const firstSheet = workbook.SheetNames[0];
+            const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
+            
+            const novosItens = jsonData.map((item, index) => {
+                // Tenta achar o canal original ou converte os amigáveis de volta
+                let canalEncontrado = item["Canal"] || "Direta";
+                if(canalEncontrado === "PIX") canalEncontrado = "Direta";
+                if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli";
+
+                return {
+                    id: Date.now() + index,
+                    nome: item["Projeto"] || "Sem Nome",
+                    canal: canalEncontrado,
+                    custo: String(item["Custo Prod. (R$)"] || item["Custo Produção (R$)"] || item["Custo Produção"] || "0.00"),
+                    valorVenda: String(item["Venda Realizada (R$)"] || item["Valor Vendido (R$)"] || item["Valor da Venda"] || "0.00"),
+                    pix: String(item["Opção Pix"] || item["Ref. Pix"] || "0.00"),
+                    shopee: String(item["Opção Shopee"] || item["Ref. Shopee"] || "0.00"),
+                    meli: String(item["Opção M. Livre"] || item["Ref. Meli"] || "0.00"),
+                    data: item["Data"] || new Date().toLocaleDateString('pt-BR')
+                };
+            });
+
+            if(confirm(`Deseja importar ${novosItens.length} vendas? Isso substituirá o histórico atual.`)) {
+                historico = novosItens;
+                localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+                renderHistorico();
+                showToast("✅ Importação concluída!");
+            }
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     function gerarPDF() {
         if(historico.length === 0) return alert("Histórico vazio!");
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
+        // Título e Cabeçalho do PDF
         doc.setFontSize(18);
-        doc.text("Relatório de Vendas - 3D 4You", 14, 20);
+        doc.setTextColor(59, 130, 246);
+        doc.text("Relatório Geral - 3D 4You", 14, 20);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(80, 80, 80);
+        doc.text(`Total de Vendas: ${document.getElementById('tot_qtd').textContent} peças`, 14, 30);
+        doc.text(`Faturamento Total: R$ ${document.getElementById('tot_faturamento').textContent}`, 14, 36);
+        doc.text(`Custo Total Produção: R$ ${document.getElementById('tot_custo').textContent}`, 14, 42);
+
+        // Tabela Estilizada
         doc.autoTable({
-            head: [['Data', 'Projeto', 'Custo Prod.', 'Venda Pix', 'Shopee', 'M. Livre']],
-            body: historico.map(h => [h.data, h.nome, `R$ ${h.custo}`, `R$ ${h.pix}`, `R$ ${h.shopee}`, `R$ ${h.meli}`]),
-            startY: 35,
-            theme: 'striped',
-            headStyles: { fillColor: [59, 130, 246] }
+            head: [['Data', 'Projeto', 'Canal', 'Custo Prod.', 'Valor Venda']],
+            body: historico.map(h => {
+                const canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre";
+                return [
+                    h.data, 
+                    h.nome, 
+                    canalAjustado, 
+                    `R$ ${parseFloat(h.custo||0).toFixed(2)}`, 
+                    `R$ ${parseFloat(h.valorVenda||h.pix||0).toFixed(2)}`
+                ];
+            }),
+            startY: 50,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+            styles: { fontSize: 9 },
+            didParseCell: function(data) {
+                // Colorindo as palavras do Canal
+                if (data.section === 'body' && data.column.index === 2) {
+                    if (data.cell.raw === 'PIX') { data.cell.styles.textColor = [16, 185, 129]; data.cell.styles.fontStyle = 'bold'; }
+                    if (data.cell.raw === 'Shopee') { data.cell.styles.textColor = [249, 77, 48]; data.cell.styles.fontStyle = 'bold'; }
+                    if (data.cell.raw === 'M. Livre') { data.cell.styles.textColor = [202, 138, 4]; data.cell.styles.fontStyle = 'bold'; }
+                }
+                // Alinhando números à direita para ficar igual a extrato financeiro
+                if ((data.section === 'body' || data.section === 'head') && (data.column.index === 3 || data.column.index === 4)) {
+                    data.cell.styles.halign = 'right';
+                }
+            }
         });
         doc.save(`vendas_3d4you_${Date.now()}.pdf`);
         showToast("📄 PDF Gerado!");
