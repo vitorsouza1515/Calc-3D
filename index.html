@@ -140,7 +140,7 @@
         <div class="card">
             <h2 class="section-title">⚙️ Base Operacional</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -224,8 +224,15 @@
         <div class="card">
             <h2 class="section-title">🛒 Marketplaces</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Shopee (%)</label><input type="text" inputmode="decimal" id="taxaShopee" value="20" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo Shopee</label><input type="text" inputmode="decimal" id="fixaShopee" value="4,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group">
+                    <label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label>
+                    <input type="text" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);">
+                </div>
+                <div class="input-group">
+                    <label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label>
+                    <input type="text" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);">
+                </div>
+                
                 <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
@@ -317,38 +324,44 @@
     function aplicarMascara(el) {
         if (!el) return;
         var val = el.value;
+        var oldVal = val;
+        var start = el.selectionStart;
 
-        // Limpa tudo que não for número e vírgula, e remove os pontos para recalcular o milhar
+        // Limpa tudo que não for número e vírgula
         val = val.replace(/\./g, '').replace(/[^0-9,]/g, '');
 
-        // Permite apenas UMA vírgula decimal
         var parts = val.split(',');
         if (parts.length > 2) {
             val = parts[0] + ',' + parts.slice(1).join('');
             parts = val.split(',');
         }
 
-        // Aplica o ponto de milhar na parte inteira
         var intPart = parts[0];
         if (intPart) {
-            intPart = intPart.replace(/^0+(?=\d)/, ''); // Remove zeros à esquerda (04 -> 4)
+            intPart = intPart.replace(/^0+(?=\d)/, ''); 
             intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
         var finalVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
         
-        // Evita que o cursor pule para o final sozinho enquanto digita no celular
-        if (el.value !== finalVal) el.value = finalVal;
+        if (el.value !== finalVal) {
+            el.value = finalVal;
+            // Reposiciona o cursor suavemente (útil em celulares)
+            var diff = finalVal.length - oldVal.length;
+            if (start) {
+                var newStart = start + diff;
+                if (newStart < 0) newStart = 0;
+                try { el.setSelectionRange(newStart, newStart); } catch(e) {}
+            }
+        }
     }
 
-    // Função que formata o número bonitinho (ex: 1337.8 => 1.337,80) na tela
     function formatarMoeda(num) {
         var n = parseFloat(num);
         if (isNaN(n)) return "0,00";
         return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Leitor Universal: Transforma o "1.500,90" Brasileiro do Input para o "1500.90" do JavaScript calcular
     function pegaValor(id) {
         var el = document.getElementById(id);
         if (!el || !el.value) return 0;
@@ -362,7 +375,6 @@
         return '';
     }
 
-    // Conversor de dados salvos antigos p/ novo padrão p/ não quebrar a conta de quem tem histórico salvo
     function parseLocal(val) {
         if (val === undefined || val === null || val === '') return 0;
         if (typeof val === 'number') return val;
@@ -374,9 +386,10 @@
 
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
 
+    // taxaShopee e fixaShopee saíram daqui pois agora são calculadas 100% dinamicamente
     var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 
                 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
-                'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
+                'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
 
     var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
 
@@ -402,7 +415,6 @@
             var sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120,00';
             var sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || '';
 
-            // Se for um save bem antigo sem virgula e com ponto, ajusta
             if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ',');
             if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
             
@@ -447,7 +459,6 @@
                 if (saved !== null) {
                     if (el.type === 'checkbox') { el.checked = (saved === 'true'); }
                     else { 
-                        // Fix salvos muito antigos
                         if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); }
                         el.value = saved; 
                     }
@@ -563,7 +574,40 @@
         }
 
         var vd = valorComLucro + cLog + frete;
-        var vs = (valorComLucro + cLog + pegaValor('fixaShopee')) / (1 - (pegaValor('taxaShopee')/100));
+        
+        // --- NOVA LÓGICA INTELIGENTE SHOPEE ---
+        var vShopeeBase = valorComLucro + cLog;
+        var validShopee = [];
+        
+        // Regra 1: Até 79.99 (20% + R$ 7)
+        var p1 = (vShopeeBase + 7) / 0.80;
+        if (p1 <= 79.991) validShopee.push({ p: p1, tx: 20, fix: 7 });
+        
+        // Regra 2: 80 até 99.99 (14% + R$ 19)
+        var p2 = (vShopeeBase + 19) / 0.86;
+        if (p2 >= 79.99 && p2 <= 99.991) validShopee.push({ p: p2, tx: 14, fix: 19 });
+        
+        // Regra 3: 100 até 199.99 (14% + R$ 23)
+        var p3 = (vShopeeBase + 23) / 0.86;
+        if (p3 >= 99.99 && p3 <= 199.991) validShopee.push({ p: p3, tx: 14, fix: 23 });
+        
+        // Regra 4: Acima de 200 (14% + R$ 29)
+        var p4 = (vShopeeBase + 29) / 0.86;
+        if (p4 >= 199.99) validShopee.push({ p: p4, tx: 14, fix: 29 });
+
+        // Pega a menor opção válida para o vendedor não ter prejuízo
+        validShopee.sort(function(a, b) { return a.p - b.p; });
+        var bestShopee = validShopee.length > 0 ? validShopee[0] : { p: p4, tx: 14, fix: 29 };
+
+        var vs = bestShopee.p;
+
+        // Atualiza os visores da Shopee para o usuário ver
+        var elTxS = document.getElementById('taxaShopee');
+        var elFixS = document.getElementById('fixaShopee');
+        if(elTxS) elTxS.value = formatarMoeda(bestShopee.tx);
+        if(elFixS) elFixS.value = formatarMoeda(bestShopee.fix);
+        // -------------------------------------
+
         var fixaMeliAplicada = (valorComLucro + cLog > 70) ? 0 : pegaValor('fixaMeli');
         var vm = (valorComLucro + cLog + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
 
@@ -579,7 +623,6 @@
         
         var valorRegistradoNum = 0;
         
-        // Transforma o número em formato Universal (computador) para salvar no banco histórico
         if (canal === "Personalizado") {
             valorRegistradoNum = pegaValor('valorPersonalizado');
             canal = "Direta"; 
@@ -653,7 +696,6 @@
         var qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
 
         historico.forEach(function(item) {
-            // Leitura de banco de dados c/ proteção anti erros antigos
             var custoItem = parseLocal(item.custo);
             somaCusto += custoItem;
             
@@ -744,7 +786,6 @@
                 if(canalEncontrado === "PIX") canalEncontrado = "Direta";
                 if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli";
 
-                // Excel salva os números limpos, então puxamos bruto e convertemos de volta
                 return {
                     id: Date.now() + index,
                     nome: item["Projeto"] || "Sem Nome",
