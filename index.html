@@ -32,6 +32,7 @@
             --meli: #facc15;
             --sky: #0ea5e9;
             --purple: #8b5cf6;
+            --orange: #f97316;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -62,7 +63,6 @@
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
         .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
 
-        /* Estilo para destaque do Peso */
         .peso-destaque { border: 2px solid var(--sky) !important; background: rgba(14, 165, 233, 0.1) !important; font-size: 1.1rem !important; color: #fff !important; }
 
         .filament-box { background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
@@ -166,6 +166,26 @@
         </div>
 
         <div class="card">
+            <div class="section-title" style="color: var(--orange);">
+                <span>🏷️ Catálogo / Pre-sets</span>
+                <label class="switch"><input type="checkbox" id="toggle_catalogo"><span class="slider-switch" style="background-color: #334155;"></span></label>
+            </div>
+            <div id="secao_catalogo" style="display:none; padding-top: 5px;">
+                <div class="input-group">
+                    <label>Selecione um Produto Salvo</label>
+                    <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
+                        <option value="">-- Escolher produto cadastrado --</option>
+                    </select>
+                </div>
+                <div style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
+                    <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Cadastrar o que está preenchido abaixo como novo produto:</p>
+                    <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
+                </div>
+                <div id="lista_catalogo" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
+            </div>
+        </div>
+
+        <div class="card">
             <div class="section-title" style="color: var(--success);">
                 <span>🧻 Estoque de Filamentos</span>
                 <label class="switch"><input type="checkbox" id="toggle_estoque"><span class="slider-switch" style="background-color: #334155;"></span></label>
@@ -232,7 +252,7 @@
             </div>
 
             <div class="grid-2" style="margin-top: 8px;">
-                <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
+                <div class="input-group"><label>Tempo Total (h)</label><input type="text" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
                 <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
             <div class="range-area">
@@ -371,6 +391,7 @@
 
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
     var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
+    var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
     var editEstoqueId = null;
 
     nuvemRef.onSnapshot(function(doc) {
@@ -378,14 +399,16 @@
             var data = doc.data();
             historico = data.historico || [];
             estoque = data.estoque || [];
+            catalogo = data.catalogo || [];
             renderHistorico();
             renderEstoque();
+            renderCatalogo();
             atualizarDropdownsEstoque(); 
         } else {
-            if (historico.length > 0 || estoque.length > 0) {
+            if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0) {
                 syncNuvem();
             } else {
-                nuvemRef.set({ historico: [], estoque: [] });
+                nuvemRef.set({ historico: [], estoque: [], catalogo: [] });
             }
         }
     });
@@ -393,10 +416,12 @@
     function syncNuvem() {
         nuvemRef.set({
             historico: historico,
-            estoque: estoque
+            estoque: estoque,
+            catalogo: catalogo
         }).then(function() {
             localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
             localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
+            localStorage.setItem('3d4y_catalogo_dark', JSON.stringify(catalogo));
         }).catch(function(error) {
             console.error("Erro na nuvem:", error);
             showToast("❌ Erro ao Sincronizar Nuvem");
@@ -433,6 +458,119 @@
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
+
+    // --- FUNÇÕES DO CATÁLOGO ---
+    function salvarNoCatalogo() {
+        var nome = pegaTexto('nomeProjeto');
+        if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
+        
+        var extras = [];
+        var multiOn = document.getElementById('toggle_multi_mat').checked;
+        if(multiOn) {
+            var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
+            for(var i=2; i<=qtd+1; i++) {
+                extras.push({
+                    tipo: pegaTexto('tipoFilamento'+i),
+                    cor: pegaTexto('corFilamento'+i),
+                    marca: pegaTexto('marcaFilamento'+i),
+                    preco: pegaTexto('precoFilamento'+i),
+                    peso: pegaTexto('pesoPeca'+i)
+                });
+            }
+        }
+
+        var novoProduto = {
+            id: Date.now(),
+            nome: nome,
+            peso1: pegaTexto('pesoPeca'),
+            tipo1: pegaTexto('tipoFilamento1'),
+            cor1: pegaTexto('corFilamento1'),
+            marca1: pegaTexto('marcaFilamento1'),
+            preco1: pegaTexto('precoFilamento'),
+            tempo: pegaTexto('tempoH'),
+            multi: multiOn,
+            qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0",
+            extras: extras
+        };
+
+        catalogo.push(novoProduto);
+        syncNuvem();
+        showToast("🏷️ Produto salvo no catálogo!");
+    }
+
+    function renderCatalogo() {
+        var sel = document.getElementById('sel_catalogo');
+        var lista = document.getElementById('lista_catalogo');
+        if(!sel || !lista) return;
+
+        var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>';
+        var htmlLista = catalogo.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>' : '';
+
+        catalogo.forEach(function(p) {
+            htmlSel += `<option value="${p.id}">${p.nome}</option>`;
+            htmlLista += `<div class="history-item" style="padding: 8px 12px;">
+                <button class="btn-del-item" onclick="removerDoCatalogo(${p.id})">×</button>
+                <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--orange);">${p.nome}</h4>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">
+                    Tempo: ${p.tempo}h | Peso Total: ${p.peso1}g ${p.multi ? '+ extras' : ''}
+                </div>
+            </div>`;
+        });
+
+        sel.innerHTML = htmlSel;
+        lista.innerHTML = htmlLista;
+    }
+
+    function carregarDoCatalogo() {
+        var id = document.getElementById('sel_catalogo').value;
+        if(!id) return;
+        var p = catalogo.find(e => e.id.toString() === id);
+        if(!p) return;
+
+        document.getElementById('nomeProjeto').value = p.nome;
+        document.getElementById('pesoPeca').value = p.peso1;
+        document.getElementById('tipoFilamento1').value = p.tipo1;
+        document.getElementById('corFilamento1').value = p.cor1;
+        document.getElementById('marcaFilamento1').value = p.marca1;
+        document.getElementById('precoFilamento').value = p.preco1;
+        document.getElementById('tempoH').value = p.tempo;
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        tMulti.checked = p.multi;
+        document.getElementById('secao_multi_mat').style.display = p.multi ? 'block' : 'none';
+        
+        if(p.multi) {
+            document.getElementById('qtdCoresExtras').value = p.qtdCores;
+            renderCoresExtras();
+            p.extras.forEach((ex, idx) => {
+                var i = idx + 2;
+                document.getElementById('tipoFilamento'+i).value = ex.tipo;
+                document.getElementById('corFilamento'+i).value = ex.cor;
+                document.getElementById('marcaFilamento'+i).value = ex.marca;
+                document.getElementById('precoFilamento'+i).value = ex.preco;
+                document.getElementById('pesoPeca'+i).value = ex.peso;
+                salvarDinamico('tipoFilamento'+i);
+                salvarDinamico('corFilamento'+i);
+                salvarDinamico('marcaFilamento'+i);
+                salvarDinamico('precoFilamento'+i);
+                salvarDinamico('pesoPeca'+i);
+            });
+        }
+
+        ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','qtdCoresExtras'].forEach(field => salvarDinamico(field));
+        
+        document.getElementById('detalhes_1').style.display = 'block';
+        calcular();
+        showToast("🏷️ Dados carregados!");
+    }
+
+    function removerDoCatalogo(id) {
+        if(confirm("Deseja apagar este produto do catálogo?")) {
+            catalogo = catalogo.filter(e => e.id !== id);
+            syncNuvem();
+        }
+    }
+    // --- FIM FUNÇÕES CATÁLOGO ---
 
     function salvarItemEstoque() {
         var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value; 
@@ -507,11 +645,9 @@
         
         if(det) det.style.display = 'block';
         
-        // ADIÇÃO: Foco automático no campo de Peso correspondente
         var campoPeso = idx === 1 ? document.getElementById('pesoPeca') : document.getElementById('pesoPeca' + idx);
         if(campoPeso) {
             campoPeso.focus();
-            // Se o valor for 0 ou vazio, seleciona para facilitar a digitação
             if(campoPeso.value === "0" || campoPeso.value === "0,00" || campoPeso.value === "") {
                 campoPeso.select();
             }
@@ -545,7 +681,7 @@
                         <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
                         <input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()">
                     </div>
-                    <div id="detalhes_${i}" class="detalhes-material">
+                    <div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}">
                         <div class="grid-3" style="margin-bottom: 8px;">
                             <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" oninput="salvarDinamico('tipoFilamento${i}'); checarManual('${i}')"></div>
                             <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" oninput="salvarDinamico('corFilamento${i}'); checarManual('${i}')"></div>
@@ -608,11 +744,20 @@
 
         var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
         if(tEst && sEst) { tEst.checked = false; tEst.addEventListener('change', function() { sEst.style.display = tEst.checked ? 'block' : 'none'; }); sEst.style.display = 'none'; }
+        
+        // NOVO TOGGLE CATALOGO
+        var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
+        if(tCat && sCat) { tCat.checked = false; tCat.addEventListener('change', function() { sCat.style.display = tCat.checked ? 'block' : 'none'; }); sCat.style.display = 'none'; }
+
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', function() { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
+        
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
         if(tSim && sSim) { tSim.checked = false; tSim.addEventListener('change', function() { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } }); sSim.style.display = 'none'; }
+        
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
+
+        if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
 
         renderCoresExtras(); updateSliderProgress(document.getElementById('margemSlider')); calcular(); mostrarValorPersonalizado();
     };
@@ -708,6 +853,10 @@
             var dadosEstoque = estoque.map(function(e) { return { "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }; });
             var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque); wsEstoque['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
         }
+        if(catalogo.length > 0) {
+            var dadosCat = catalogo.map(function(p) { return { "Produto": p.nome, "Tempo (h)": p.tempo, "Peso Principal (g)": p.peso1, "Material": p.tipo1 + " " + p.cor1 }; });
+            var wsCat = XLSX.utils.json_to_sheet(dadosCat); XLSX.utils.book_append_sheet(wb, wsCat, "Catalogo");
+        }
         if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
     }
 
@@ -716,16 +865,16 @@
         reader.onload = function(e) {
             var data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'});
             var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
-            if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque") {
+            if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo") {
                 var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
                 var novosItens = jsonVendas.map(function(item, index) { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), valorVenda: String(item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
-                if (novosItens.length > 0) { historico = novosItens; syncNuvem(); }
+                if (novosItens.length > 0) { historico = novosItens; }
             }
             if (workbook.Sheets["Estoque"]) {
                 var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
-                var novosEstoque = jsonEstoque.map(function(item, index) { return { id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }; });
-                if (novosEstoque.length > 0) { estoque = novosEstoque; syncNuvem(); }
+                estoque = jsonEstoque.map(function(item, index) { return { id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }; });
             }
+            syncNuvem();
             showToast("✅ Nuvem Atualizada!");
         }; reader.readAsArrayBuffer(file);
     }
@@ -752,6 +901,7 @@
     function resetarDados() {
         ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(function(id) { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
+        document.getElementById('sel_catalogo').value = "";
         calcular(); showToast("✅ Projeto Resetado!");
     }
 
