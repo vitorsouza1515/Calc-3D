@@ -133,17 +133,17 @@
             <h2 class="section-title">👤 Identificação</h2>
             <div class="input-group">
                 <label>Nome do Projeto / Produtor</label>
-                <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2">
+                <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
             </div>
         </div>
 
         <div class="card">
             <h2 class="section-title">⚙️ Base Operacional</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Máquina (R$)</label><input type="number" id="maquina" value="1500" data-save="true"></div>
-                <div class="input-group"><label>Vida Útil (h)</label><input type="number" id="vidaUtil" value="5000" data-save="true"></div>
-                <div class="input-group"><label>Consumo (W)</label><input type="number" id="consumoW" value="250" data-save="true"></div>
-                <div class="input-group"><label>kWh (R$)</label><input type="number" id="precoKwh" value="0.90" step="0.01" data-save="true"></div>
+                <div class="input-group"><label>Máquina (R$)</label><input type="number" id="maquina" value="1500" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Vida Útil (h)</label><input type="number" id="vidaUtil" value="5000" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Consumo (W)</label><input type="number" id="consumoW" value="250" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>kWh (R$)</label><input type="number" id="precoKwh" value="0.90" step="0.01" data-save="true" oninput="calcular()"></div>
             </div>
         </div>
 
@@ -162,13 +162,13 @@
             <div class="filament-box">
                 <span class="filament-box-title">Filamento 1 (Principal)</span>
                 <div class="grid-3">
-                    <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="PLA" data-save="true"></div>
-                    <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Preto" data-save="true"></div>
-                    <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Voolt" data-save="true"></div>
+                    <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1')"></div>
+                    <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Preto" data-save="true" oninput="salvarDinamico('corFilamento1')"></div>
+                    <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1')"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="input-group"><label>Preço (R$/kg)</label><input type="number" id="precoFilamento" value="120" data-save="true"></div>
-                    <div class="input-group"><label>Peso (g)</label><input type="number" id="pesoPeca" value=""></div>
+                    <div class="input-group"><label>Preço (R$/kg)</label><input type="number" id="precoFilamento" value="120" data-save="true" oninput="calcular()"></div>
+                    <div class="input-group"><label>Peso (g)</label><input type="number" id="pesoPeca" value="" oninput="salvarDinamico('pesoPeca'); calcular()"></div>
                 </div>
             </div>
 
@@ -181,8 +181,8 @@
             </div>
 
             <div class="grid-2" style="margin-top: 8px;">
-                <div class="input-group"><label>Tempo Total (h)</label><input type="number" id="tempoH" value="" step="0.1"></div>
-                <div class="input-group"><label>Sucesso (%)</label><input type="number" id="taxaSucesso" value="95" data-save="true"></div>
+                <div class="input-group"><label>Tempo Total (h)</label><input type="number" id="tempoH" value="" step="0.1" oninput="salvarDinamico('tempoH'); calcular()"></div>
+                <div class="input-group"><label>Sucesso (%)</label><input type="number" id="taxaSucesso" value="95" data-save="true" oninput="calcular()"></div>
             </div>
             
             <div class="range-area">
@@ -206,28 +206,28 @@
             </div>
             <div id="section_logistica">
                 <div class="grid-2">
-                    <div class="input-group"><label>Embalagem</label><input type="number" id="custoEmbalagem" value="4.50" data-save="true"></div>
-                    <div class="input-group"><label>Deslocamento</label><input type="number" id="custoDeslocamento" value="8.00" data-save="true"></div>
+                    <div class="input-group"><label>Embalagem</label><input type="number" id="custoEmbalagem" value="4.50" data-save="true" oninput="calcular()"></div>
+                    <div class="input-group"><label>Deslocamento</label><input type="number" id="custoDeslocamento" value="8.00" data-save="true" oninput="calcular()"></div>
                     <div class="input-group"><label>Origem</label><input type="text" id="cepOrigem" placeholder="00000-000" data-save="true" onkeyup="buscarCEP(this.value, 'origemTexto')"><div id="origemTexto" class="endereco-txt"></div></div>
-                    <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')"><div id="destinoTexto" class="endereco-txt"></div></div>
+                    <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')" oninput="salvarDinamico('cepDestino')"><div id="destinoTexto" class="endereco-txt"></div></div>
                     <div class="input-group">
                         <label>Envio</label>
-                        <select id="tipoEnvio" data-save="true">
+                        <select id="tipoEnvio" data-save="true" onchange="calcular()">
                             <option value="PAC">PAC</option>
                             <option value="SEDEX">SEDEX</option>
                         </select>
                     </div>
-                    <div class="input-group"><label>Caixa (g)</label><input type="number" id="pesoBruto" value="300" data-save="true"></div>
+                    <div class="input-group"><label>Caixa (g)</label><input type="number" id="pesoBruto" value="300" data-save="true" oninput="calcular()"></div>
                 </div>
             </div>
         </div>
         <div class="card">
             <h2 class="section-title">🛒 Marketplaces</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Shopee (%)</label><input type="number" id="taxaShopee" value="20" data-save="true"></div>
-                <div class="input-group"><label>Fixo Shopee</label><input type="number" id="fixaShopee" value="4.00" data-save="true"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="number" id="taxaMeli" value="17" data-save="true"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="number" id="fixaMeli" value="6.75" data-save="true"></div>
+                <div class="input-group"><label>Shopee (%)</label><input type="number" id="taxaShopee" value="20" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Fixo Shopee</label><input type="number" id="fixaShopee" value="4.00" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="number" id="taxaMeli" value="17" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="number" id="fixaMeli" value="6.75" data-save="true" oninput="calcular()"></div>
             </div>
         </div>
     </div>
@@ -267,7 +267,7 @@
             
             <div class="input-group" id="divValorPersonalizado" style="display: none; margin-top: 5px;">
                 <label style="color: var(--sky);">Digite o valor da venda (R$)</label>
-                <input type="number" id="valorPersonalizado" placeholder="Ex: 150.00" style="border-color: var(--sky);">
+                <input type="number" id="valorPersonalizado" placeholder="Ex: 150.00" style="border-color: var(--sky);" oninput="salvarDinamico('valorPersonalizado')">
             </div>
 
             <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
@@ -331,6 +331,9 @@
                 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
                 'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino',
                 'toggle_multi_mat', 'qtdCoresExtras', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
+
+    // Carrega os campos que não têm dataset-save mas que salvamos via salvarDinamico()
+    var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino'];
 
     function updateSliderProgress(slider) {
         if (!slider) return;
@@ -407,6 +410,15 @@
                     }
                     calcular();
                 });
+            }
+        });
+
+        // Carrega os dados dinâmicos salvos
+        dynIds.forEach(function(id) {
+            var el = document.getElementById(id);
+            if(el) {
+                var saved = localStorage.getItem('3d4y_dark_' + id);
+                if (saved !== null) { el.value = saved; }
             }
         });
 
@@ -555,6 +567,7 @@
         
         var elPerso = document.getElementById('valorPersonalizado');
         if(elPerso) elPerso.value = '';
+        localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
         showToast("✅ Venda Salva!");
     }
@@ -764,7 +777,7 @@
             var el = document.getElementById(id);
             if(el) {
                 el.value = ""; 
-                localStorage.removeItem('3d4y_dark_' + id); // Apaga do cache para não voltar no F5
+                localStorage.removeItem('3d4y_dark_' + id); 
             }
         });
 
@@ -772,21 +785,18 @@
         var pFil1 = document.getElementById('precoFilamento');
         if(pFil1) { pFil1.value = "120"; localStorage.setItem('3d4y_dark_precoFilamento', "120"); }
 
-        // Apaga todos os filamentos extras que foram gerados da memória (até o limite máximo 20)
         for(var i = 2; i <= 21; i++) {
             ['tipoFilamento', 'corFilamento', 'marcaFilamento', 'precoFilamento', 'pesoPeca'].forEach(function(prefix) {
                 localStorage.removeItem('3d4y_dark_' + prefix + i);
             });
         }
 
-        // Reseta o contador de cores extras para 1
         var qCores = document.getElementById('qtdCoresExtras');
         if(qCores) {
             qCores.value = "1";
             localStorage.setItem('3d4y_dark_qtdCoresExtras', "1");
         }
 
-        // Desliga a chave Multi-Cor visualmente e no sistema
         var tMulti = document.getElementById('toggle_multi_mat');
         var sMulti = document.getElementById('secao_multi_mat');
         if(tMulti) {
@@ -795,10 +805,8 @@
             if(sMulti) sMulti.style.display = 'none';
         }
 
-        // Redesenha a tela de extras zerada
         renderCoresExtras();
 
-        // Limpa o texto do CEP
         var dtTexto = document.getElementById('destinoTexto');
         if(dtTexto) dtTexto.textContent = "";
 
