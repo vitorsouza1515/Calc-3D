@@ -174,7 +174,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--orange);">
                 <span>🏷️ Catálogo / Pre-sets</span>
                 <label class="switch"><input type="checkbox" id="toggle_catalogo"><span class="slider-switch" style="background-color: #334155;"></span></label>
@@ -196,7 +196,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--success);">
                 <span>🧻 Estoque de Filamentos</span>
                 <label class="switch"><input type="checkbox" id="toggle_estoque"><span class="slider-switch" style="background-color: #334155;"></span></label>
@@ -215,7 +215,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-top: 12px;">
             <h2 class="section-title">⚙️ Base Operacional</h2>
             <div class="grid-2">
                 <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -225,7 +225,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-top: 12px;">
             <div class="section-title">
                 <span>📦 O Projeto</span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
@@ -294,7 +294,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-top: 12px;">
             <div class="section-title">
                 <span>🛒 Marketplaces</span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
@@ -622,7 +622,6 @@
         var lista = document.getElementById('lista_catalogo');
         if(!sel || !lista) return;
         
-        // ORDENANDO CATÁLOGO ALFABETICAMENTE
         var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
 
         var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>';
@@ -709,7 +708,6 @@
     function renderEstoque() {
         var lista = document.getElementById('lista_estoque'); if(!lista) return;
         
-        // ORDENANDO ESTOQUE ALFABETICAMENTE NA VISUALIZAÇÃO
         var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         
         lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
@@ -943,7 +941,7 @@
             
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
-                cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); // Assumindo custo único de envio pro carrinho todo
+                cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
             }
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
