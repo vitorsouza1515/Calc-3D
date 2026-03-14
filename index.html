@@ -90,7 +90,7 @@
         input:checked + .slider-switch { background-color: var(--primary); }
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
-        /* NOVO: Cores específicas para cada toggle */
+        /* Cores específicas para cada toggle */
         #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
         #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
 
@@ -1097,10 +1097,12 @@
             telefone: cliTel, 
             canal: canal, 
             materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, 
-            valorBruto: valorBruto, 
-            valorLiquido: valorVendaFinal, 
+            valorVenda: valorVendaFinal, // Mantido por compatibilidade
+            valorBruto: valorBruto, // NOVO CAMPO: Valor cheio
+            valorLiquido: valorVendaFinal, // NOVO CAMPO: Valor descontado
             custo: custoProducaoFinal, 
+            frete: freteCalculado, // NOVO: Guarda o valor do frete
+            logistica: cLog, // NOVO: Guarda o custo da embalagem e deslocamento
             peso: pesoFinal, 
             tempo: tempoFinal, 
             status: "Orçamento", 
@@ -1148,6 +1150,7 @@
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
+        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
@@ -1170,6 +1173,7 @@
             somaCusto += custoItem; 
             var canalStr = item.canal || "Direta";
             
+            // Lida com itens antigos e novos
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
 
@@ -1185,6 +1189,7 @@
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             
+            // Se tiver taxa, mostra o Bruto e o Liquido, se for Direta (ou seja, iguais), mostra só um
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
             lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
@@ -1208,9 +1213,10 @@
                 var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre"; 
                 var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
                 var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
-                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido }; 
+                var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
+                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido }; 
             });
-            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
+            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
         }
         if(estoque.length > 0) {
             var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
@@ -1230,7 +1236,7 @@
             var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
             if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo") {
                 var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
-                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), valorVenda: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
+                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), frete: parseLocal(item["Logística (R$)"] || "0"), logistica: 0, valorVenda: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
                 if (novosItens.length > 0) { historico = novosItens; }
             }
             if (workbook.Sheets["Estoque"]) {
@@ -1255,6 +1261,7 @@
             var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
+            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
             if (h.valorBruto === undefined) {
                 if(h.canal === "Shopee") {
                     bruto = (liquido + 4) / 0.80; 
@@ -1267,18 +1274,21 @@
                 }
             }
 
+            var custoLog = (h.frete || 0) + (h.logistica || 0);
+
             return [ 
                 h.data, 
                 h.nome, 
                 canalAjustado, 
                 'R$ '+formatarMoeda(h.custo), 
+                'R$ '+formatarMoeda(custoLog),
                 'R$ '+formatarMoeda(bruto), 
                 'R$ '+formatarMoeda(liquido) 
             ]; 
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Venda Bruta', 'Venda Líquida']], 
+            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Frete/Log.', 'Venda Bruta', 'Líquido']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid' 
@@ -1293,6 +1303,7 @@
         let countMeli = historico.filter(h => h.canal === "Meli").length;
         let totalVendas = countDireta + countShopee + countMeli;
 
+        // Porcentagens calculadas direto para as labels
         let pctDireta = totalVendas > 0 ? Math.round((countDireta / totalVendas) * 100) : 0;
         let pctShopee = totalVendas > 0 ? Math.round((countShopee / totalVendas) * 100) : 0;
         let pctMeli = totalVendas > 0 ? Math.round((countMeli / totalVendas) * 100) : 0;
@@ -1320,7 +1331,17 @@
                 responsive: false,
                 animation: false,
                 plugins: {
-                    legend: { labels: { font: { size: 14 } } }
+                    legend: { labels: { font: { size: 14 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let percentage = totalVendas > 0 ? Math.round((value / totalVendas) * 100) : 0;
+                                return label + ': ' + percentage + '% (' + value + ' vendas)';
+                            }
+                        }
+                    }
                 }
             }
         });
