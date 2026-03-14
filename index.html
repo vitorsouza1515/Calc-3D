@@ -85,14 +85,17 @@
 
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 20px; }
+        .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
         .slider-switch:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider-switch { background-color: var(--primary); }
-        input:checked + .slider-switch:before { transform: translateX(14px); }
-
-        /* Cores específicas para cada toggle */
+        
+        /* CORES ESPECÍFICAS PARA CADA TOGGLE */
+        #toggle_logistica:checked + .slider-switch { background-color: var(--primary); }
         #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
         #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
+        #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
+        #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
+        
+        input:checked + .slider-switch:before { transform: translateX(14px); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
@@ -347,7 +350,7 @@
                 <h3 style="font-size: 0.75rem; color: var(--orange); margin-bottom: 8px; text-transform: uppercase;">🛒 Pedido Atual</h3>
                 <div id="lista_itens_carrinho" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
                 <div style="border-top: 1px solid var(--border); padding-top: 8px; font-size: 0.7rem;">
-                    <div class="result-row"><span>Custo Base:</span><span class="value" style="color: #fbbf24;">R$ <span id="cart_tot_custo">0,00</span></span></div>
+                    <div class="result-row"><span>Custo Peças:</span><span class="value" style="color: #fbbf24;">R$ <span id="cart_tot_custo">0,00</span></span></div>
                     <div class="result-row"><span>Soma Direta:</span><span class="value" style="color: var(--success);">R$ <span id="cart_tot_vd">0,00</span></span></div>
                     <div class="result-row"><span>Soma Shopee:</span><span class="value" style="color: var(--shopee);">R$ <span id="cart_tot_vs">0,00</span></span></div>
                     <div class="result-row" style="border:none;"><span>Soma ML:</span><span class="value" style="color: var(--meli);">R$ <span id="cart_tot_vm">0,00</span></span></div>
@@ -524,19 +527,28 @@
         if(qtdPecas < 1) qtdPecas = 1;
         var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
 
-        var custoItem = parseLocal(document.getElementById('r_gasto').textContent);
-        var vD = parseLocal(document.getElementById('r_vendaD').textContent);
-        var vS = parseLocal(document.getElementById('r_vendaS').textContent);
-        var vM = parseLocal(document.getElementById('r_vendaM').textContent);
-        
         var tempoItem = pegaValor('tempoH') * qtdPecas;
-        
         var pesoItem = pegaValor('pesoPeca') * qtdPecas;
+        
+        var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem;
+        var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem;
+        var matTotal = (pegaValor('precoFilamento') / 1000) * pesoItem;
+
         var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) {
             var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1;
-            for(var i=2; i<=qtdEx+1; i++) { pesoItem += (pegaValor('pesoPeca'+i) * qtdPecas); }
+            for(var i=2; i<=qtdEx+1; i++) { 
+                var pPreco = pegaValor('precoFilamento' + i);
+                var pPesoTotal = pegaValor('pesoPeca' + i) * qtdPecas; 
+                matTotal += (pPreco / 1000) * pPesoTotal;
+                pesoItem += pPesoTotal; 
+            }
         }
+
+        var suc = pegaValor('taxaSucesso'); if (suc <= 0) suc = 100; 
+        var custoProducao = (dep + ene + matTotal) / (suc / 100);
+        var mInput = pegaValor('margemInput');
+        var valorComLucro = custoProducao + (custoProducao * (mInput / 100));
 
         var materiaisArray = [];
         var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
@@ -554,10 +566,8 @@
         carrinho.push({
             id: Date.now() + Math.floor(Math.random() * 1000),
             nome: nomeItem,
-            custo: custoItem,
-            vD: vD,
-            vS: vS,
-            vM: vM,
+            custo: custoProducao,
+            valorComLucro: valorComLucro,
             tempo: tempoItem,
             peso: pesoItem,
             materiais: stringMateriais
@@ -587,24 +597,52 @@
 
         container.style.display = 'block';
         lista.innerHTML = '';
-        var totC = 0, totD = 0, totS = 0, totM = 0;
+        
+        var totCusto = 0, totValorComLucro = 0, totPeso = 0;
 
         carrinho.forEach(item => {
-            totC += item.custo;
-            totD += item.vD;
-            totS += item.vS;
-            totM += item.vM;
+            totCusto += item.custo;
+            totValorComLucro += item.valorComLucro;
+            totPeso += item.peso;
 
             lista.innerHTML += `
                 <div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border);">
                     <button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer;">X</button>
                     <div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 15px;">${item.nome}</div>
-                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo: R$ ${formatarMoeda(item.custo)} | Dir: R$ ${formatarMoeda(item.vD)}</div>
+                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div>
                 </div>
             `;
         });
 
-        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totC);
+        var tLog = document.getElementById('toggle_logistica');
+        var cLog = 0, frete = 0;
+        if (tLog && tLog.checked) {
+            cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+            var tipoE = document.getElementById('tipoEnvio').value;
+            if (tipoE === 'Manual') {
+                frete = pegaValor('valorFreteManual');
+            } else {
+                var pReal = (pegaValor('pesoBruto') + totPeso) / 1000;
+                var base = (tipoE === 'PAC') ? 18.50 : 24.50; 
+                frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
+            }
+        }
+
+        var totD = totValorComLucro + cLog + frete;
+        var vShopeeBase = totValorComLucro + cLog;
+        
+        var validShopee = [];
+        var p1 = (vShopeeBase + 4) / 0.80; if (p1 <= 79.991) validShopee.push(p1);
+        var p2 = (vShopeeBase + 16) / 0.86; if (p2 >= 79.99 && p2 <= 99.991) validShopee.push(p2);
+        var p3 = (vShopeeBase + 20) / 0.86; if (p3 >= 99.99 && p3 <= 199.991) validShopee.push(p3);
+        var p4 = (vShopeeBase + 26) / 0.86; if (p4 >= 199.99) validShopee.push(p4);
+        validShopee.sort((a, b) => a - b); 
+        var totS = validShopee.length > 0 ? validShopee[0] : p4;
+
+        var fixaMeliAplicada = (vShopeeBase >= 79.99) ? 0 : pegaValor('fixaMeli');
+        var totM = (vShopeeBase + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
+
+        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto);
         document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD);
         document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS);
         document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
@@ -698,8 +736,11 @@
         if(sel1) { sel1.value = match1 ? match1.id : ""; }
 
         var tMulti = document.getElementById('toggle_multi_mat');
-        tMulti.checked = p.multi;
-        document.getElementById('secao_multi_mat').style.display = p.multi ? 'block' : 'none';
+        if(tMulti) {
+            tMulti.checked = p.multi;
+            tMulti.dispatchEvent(new Event('change'));
+        }
+        
         if(p.multi) {
             document.getElementById('qtdCoresExtras').value = p.qtdCores;
             renderCoresExtras();
@@ -761,7 +802,12 @@
         if(item) {
             document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco;
             editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição";
-            document.getElementById('toggle_estoque').checked = true; document.getElementById('secao_estoque').style.display = 'block';
+            
+            var tEst = document.getElementById('toggle_estoque');
+            if(tEst && !tEst.checked) {
+                tEst.checked = true;
+                tEst.dispatchEvent(new Event('change'));
+            }
         }
     }
 
@@ -856,7 +902,7 @@
                 el.addEventListener('input', function() {
                     if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); }
                     if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } }
-                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto' || id === 'valorFreteManual') calcular();
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto' || id === 'valorFreteManual' || id === 'qtdCoresExtras') calcular();
                 });
             }
         });
@@ -885,6 +931,9 @@
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
+        var tLog = document.getElementById('toggle_logistica'), sLog = document.getElementById('section_logistica');
+        if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.className = tLog.checked ? '' : 'card-disabled'; calcular(); }); sLog.className = tLog.checked ? '' : 'card-disabled'; }
+
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
         if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
         
@@ -904,7 +953,7 @@
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
 
-        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false, sLog = document.getElementById('section_logistica'); if(sLog) sLog.className = logEnabled ? '' : 'card-disabled';
+        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false;
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         
         var tempoUnitario = pegaValor('tempoH');
@@ -979,6 +1028,8 @@
         var tLucroD = document.getElementById('tag_lucroD'), tLucroS = document.getElementById('tag_lucroS'), tLucroM = document.getElementById('tag_lucroM');
         var lD = vd - custoProducao - cLog - frete, taxaRealShopee = (vs * (bestShopee.tx / 100)) + bestShopee.fix, lS = vs - taxaRealShopee - custoProducao - cLog, taxaRealMeli = (vm * (pegaValor('taxaMeli')/100)) + fixaMeliAplicada, lM = vm - taxaRealMeli - custoProducao - cLog;
         if(tLucroD) tLucroD.textContent = "Lucro: R$ " + formatarMoeda(lD > 0 ? lD : 0); if(tLucroS) tLucroS.textContent = "Lucro: R$ " + formatarMoeda(lS > 0 ? lS : 0); if(tLucroM) tLucroM.textContent = "Lucro: R$ " + formatarMoeda(lM > 0 ? lM : 0);
+
+        if(carrinho && carrinho.length > 0) renderCarrinho();
     }
 
     function salvarHistorico() {
@@ -1002,17 +1053,8 @@
             tempoFinal = carrinho.reduce((a,b) => a + b.tempo, 0);
             carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
 
-            if (canal === "Personalizado") { 
-                valorBruto = pegaValor('valorPersonalizado'); 
-                canal = document.getElementById('canalPersonalizadoDestino').value; 
-            } else if(canal === "Direta") { 
-                valorBruto = carrinho.reduce((a,b) => a + b.vD, 0); 
-            } else if(canal === "Shopee") { 
-                valorBruto = carrinho.reduce((a,b) => a + b.vS, 0); 
-            } else { 
-                valorBruto = carrinho.reduce((a,b) => a + b.vM, 0); 
-            }
-            
+            var totValorComLucro = carrinho.reduce((a,b) => a + b.valorComLucro, 0);
+
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
                 cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
@@ -1026,6 +1068,18 @@
                     freteCalculado = pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio;
                 }
             }
+
+            if (canal === "Personalizado") { 
+                valorBruto = pegaValor('valorPersonalizado'); 
+                canal = document.getElementById('canalPersonalizadoDestino').value; 
+            } else if(canal === "Direta") { 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); 
+            } else if(canal === "Shopee") { 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); 
+            } else { 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); 
+            }
+            
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
             var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
@@ -1107,12 +1161,12 @@
             telefone: cliTel, 
             canal: canal, 
             materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, // Mantido por compatibilidade
-            valorBruto: valorBruto, // NOVO CAMPO: Valor cheio
-            valorLiquido: valorVendaFinal, // NOVO CAMPO: Valor descontado
+            valorVenda: valorVendaFinal, 
+            valorBruto: valorBruto, 
+            valorLiquido: valorVendaFinal, 
             custo: custoProducaoFinal, 
-            frete: freteCalculado, // NOVO: Guarda o valor do frete
-            logistica: cLog, // NOVO: Guarda o custo da embalagem e deslocamento
+            frete: freteCalculado, 
+            logistica: cLog, 
             peso: pesoFinal, 
             tempo: tempoFinal, 
             status: "Orçamento", 
@@ -1160,7 +1214,6 @@
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
-        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
@@ -1183,7 +1236,6 @@
             somaCusto += custoItem; 
             var canalStr = item.canal || "Direta";
             
-            // Lida com itens antigos e novos
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
 
@@ -1199,7 +1251,6 @@
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             
-            // Se tiver taxa, mostra o Bruto e o Liquido, se for Direta (ou seja, iguais), mostra só um
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
             lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
@@ -1271,7 +1322,6 @@
             var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
-            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
             if (h.valorBruto === undefined) {
                 if(h.canal === "Shopee") {
                     bruto = (liquido + 4) / 0.80; 
@@ -1367,7 +1417,7 @@
         carrinho = [];
         renderCarrinho();
         
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'simuladorVenda'].forEach(id => { 
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'simuladorVenda', 'valorFreteManual'].forEach(id => { 
             var el = document.getElementById(id); 
             if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
         });
@@ -1396,7 +1446,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
-        // Desativar todas as chaves (toggles) para "zerar" a visualização
+        // NOVO: Desliga os botões e zera a visualização da tela
         ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_simulador'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
