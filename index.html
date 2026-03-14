@@ -345,7 +345,7 @@
             </div>
 
             <div id="divValorPersonalizado" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; border: 1px solid var(--purple);">
-                <div class="input-group"><label style="color: var(--sky);">Meu Preço (R$)</label><input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 99,98" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')"></div>
+                <div class="input-group"><label style="color: var(--sky);">Meu Preço Bruto (R$)</label><input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 99,98" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')"></div>
                 <div class="input-group"><label style="color: var(--purple);">Qual Canal?</label>
                     <select id="canalPersonalizadoDestino">
                         <option value="Direta">Venda Direta / Pix</option>
@@ -371,7 +371,7 @@
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL:</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÍQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
                 <div class="total-row"><span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b></div>
@@ -407,6 +407,7 @@
     var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
     var editEstoqueId = null;
     var editCatalogoId = null; 
+    var editHistoricoId = null; // ID para controlar a edição de vendas já salvas
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -798,8 +799,8 @@
         var nome = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
 
         var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
-        var valorVendaBruto = 0;
-        
+        var valorVendaFinal = 0; // Valor LÍQUIDO
+
         var custoProducao = parseLocal(document.getElementById('r_gasto').textContent);
         var tLog = document.getElementById('toggle_logistica');
         var logEnabled = tLog ? tLog.checked : false;
@@ -816,15 +817,43 @@
         var frete = logEnabled ? (pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio) : 0;
 
         if (canal === "Personalizado") { 
-            valorVendaBruto = pegaValor('valorPersonalizado'); 
+            var valorBruto = pegaValor('valorPersonalizado'); 
             canal = document.getElementById('canalPersonalizadoDestino').value; 
+            
+            if(canal === "Shopee") {
+                var feeShp = 0;
+                if (valorBruto <= 79.99) feeShp = (valorBruto * 0.20) + 4; 
+                else if (valorBruto <= 99.99) feeShp = (valorBruto * 0.14) + 16; 
+                else if (valorBruto <= 199.99) feeShp = (valorBruto * 0.14) + 20; 
+                else feeShp = (valorBruto * 0.14) + 26;
+                valorVendaFinal = valorBruto - feeShp;
+            } else if(canal === "Meli") {
+                var txMl = pegaValor('taxaMeli') / 100;
+                var fixMl = (valorBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
+                var feeMl = (valorBruto * txMl) + fixMl;
+                valorVendaFinal = valorBruto - feeMl;
+            } else { 
+                valorVendaFinal = valorBruto;
+            }
         } else if(canal === "Direta") { 
-            valorVendaBruto = parseLocal(document.getElementById('r_vendaD').textContent); 
+            valorVendaFinal = parseLocal(document.getElementById('r_vendaD').textContent); 
         } else if(canal === "Shopee") { 
-            valorVendaBruto = parseLocal(document.getElementById('r_vendaS').textContent); 
+            var valorBruto = parseLocal(document.getElementById('r_vendaS').textContent); 
+            var feeShp = 0;
+            if (valorBruto <= 79.99) feeShp = (valorBruto * 0.20) + 4; 
+            else if (valorBruto <= 99.99) feeShp = (valorBruto * 0.14) + 16; 
+            else if (valorBruto <= 199.99) feeShp = (valorBruto * 0.14) + 20; 
+            else feeShp = (valorBruto * 0.14) + 26;
+            valorVendaFinal = valorBruto - feeShp;
         } else { 
-            valorVendaBruto = parseLocal(document.getElementById('r_vendaM').textContent); 
+            var valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); 
+            var txMl = pegaValor('taxaMeli') / 100;
+            var fixMl = (valorBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
+            var feeMl = (valorBruto * txMl) + fixMl;
+            valorVendaFinal = valorBruto - feeMl;
         }
+
+        if(valorVendaFinal < 0) valorVendaFinal = 0;
         
         var materiaisArray = [], pesoSalvar = 0, t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
         if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); pesoSalvar += p1; }
@@ -840,15 +869,62 @@
         
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', rGasto = document.getElementById('r_gasto');
         
-        var novo = { id: Date.now(), nome: nome, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaBruto, custo: rGasto ? parseLocal(rGasto.textContent) : 0, peso: pesoSalvar, tempo: pegaValor('tempoH') * qtdPecas, status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
+        var novo = { id: Date.now(), nome: nome, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaFinal, custo: rGasto ? parseLocal(rGasto.textContent) : 0, peso: pesoSalvar, tempo: pegaValor('tempoH') * qtdPecas, status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
         
-        historico.unshift(novo); syncNuvem();
+        if (editHistoricoId) {
+            var idx = historico.findIndex(h => h.id === editHistoricoId);
+            if (idx > -1) {
+                novo.id = editHistoricoId;
+                historico[idx] = novo;
+            }
+            editHistoricoId = null;
+            document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda";
+            document.querySelector('.btn-save-hist').style.background = "var(--purple)";
+        } else {
+            historico.unshift(novo);
+        }
+
+        syncNuvem();
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
         resetarDados(); showToast("✅ Venda Registrada!");
     }
 
     function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); } }
+
+    function editarItemHistorico(id) {
+        var item = historico.find(h => h.id === id);
+        if (!item) return;
+
+        // Tenta remover o "Nx " do início do nome caso exista para recuperar o nome base
+        var match = item.nome.match(/^(\d+)x\s(.*)/);
+        if (match) {
+            document.getElementById('qtdPecasProjeto').value = match[1];
+            document.getElementById('nomeProjeto').value = match[2];
+        } else {
+            document.getElementById('qtdPecasProjeto').value = "1";
+            document.getElementById('nomeProjeto').value = item.nome;
+        }
+
+        document.getElementById('nomeCliente').value = item.cliente || "";
+        document.getElementById('telefoneCliente').value = item.telefone || "";
+        
+        // Carrega o canal
+        var seletorCanal = document.getElementById('canalVendaSelecionado');
+        seletorCanal.value = "Personalizado";
+        mostrarValorPersonalizado();
+        
+        document.getElementById('valorPersonalizado').value = formatarMoeda(item.valorVenda);
+        document.getElementById('canalPersonalizadoDestino').value = item.canal;
+
+        editHistoricoId = id;
+        document.querySelector('.btn-save-hist').textContent = "💾 Confirmar Edição de Venda";
+        document.querySelector('.btn-save-hist').style.background = "var(--sky)";
+        
+        showToast("✏️ Editando Venda...");
+        
+        window.scrollTo(0, 0);
+    }
 
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico'); if(!lista) return; lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
@@ -860,7 +936,7 @@
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
-            lista.innerHTML += '<div class="history-item"><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 25px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">R$ '+formatarMoeda(valVenda)+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
+            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">R$ '+formatarMoeda(valVenda)+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
         document.getElementById('tot_qtd').textContent = historico.length; document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); document.getElementById('tot_faturamento').textContent = formatarMoeda(somaDireta + somaShopee + somaMeli); 
         document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
@@ -1008,7 +1084,7 @@
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'qtdPecasProjeto'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
@@ -1016,7 +1092,15 @@
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
-        editCatalogoId = null; document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo"; document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+        
+        editCatalogoId = null; 
+        document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo"; 
+        document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+
+        editHistoricoId = null;
+        document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda";
+        document.querySelector('.btn-save-hist').style.background = "var(--purple)";
+
         var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
         for(var i = 2; i <= qtdExtras + 1; i++) {
             var selExtra = document.getElementById('sel_est_' + i); if(selExtra) selExtra.value = "";
