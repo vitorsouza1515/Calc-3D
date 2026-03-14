@@ -1,3 +1,5 @@
+top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk so oq eu pedir, gostei mas quero algumas mudanças após selecionar o filamento queria q a aba peso da peça ficasse em baixo das pre definições e baixo do preço pago no filamento e tmbm que desabilite a mudança manual do tipo, cor, marca e preço deixe travado Asim nao mexo por engano sabe:
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -62,9 +64,6 @@
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
         .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
-
-        /* Campos travados ficam levemente mais escuros para indicar que não são editáveis */
-        .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
 
         .peso-destaque { border: 2px solid var(--sky) !important; background: rgba(14, 165, 233, 0.1) !important; font-size: 1.1rem !important; color: #fff !important; }
 
@@ -234,18 +233,18 @@
                     </select>
                 </div>
                 
-                <div id="detalhes_1" class="detalhes-material">
-                    <div class="grid-3">
-                        <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" readonly></div>
-                        <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" readonly></div>
-                        <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" readonly></div>
-                    </div>
-                    <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" readonly></div>
-                </div>
-
-                <div class="input-group" style="margin-top: 10px;">
+                <div class="input-group">
                     <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
                     <input type="text" inputmode="decimal" id="pesoPeca" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()">
+                </div>
+
+                <div id="detalhes_1" class="detalhes-material">
+                    <div class="grid-3">
+                        <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1'); checarManual('1')"></div>
+                        <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" oninput="salvarDinamico('corFilamento1'); checarManual('1')"></div>
+                        <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1'); checarManual('1')"></div>
+                    </div>
+                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" oninput="aplicarMascara(this); calcular(); checarManual('1')"></div>
                 </div>
             </div>
 
@@ -680,20 +679,20 @@
                             <option value="">-- Puxar material do Estoque --</option>
                         </select>
                     </div>
-                    <div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}">
-                        <div class="grid-3" style="margin-bottom: 8px;">
-                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" readonly></div>
-                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" readonly></div>
-                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" readonly></div>
-                        </div>
-                        <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" readonly></div>
-                    </div>
-                    <div class="input-group" style="margin-top: 10px;">
+                    <div class="input-group">
                         <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
                         <input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()">
                     </div>
+                    <div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}">
+                        <div class="grid-3" style="margin-bottom: 8px;">
+                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" oninput="salvarDinamico('tipoFilamento${i}'); checarManual('${i}')"></div>
+                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" oninput="salvarDinamico('corFilamento${i}'); checarManual('${i}')"></div>
+                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" oninput="salvarDinamico('marcaFilamento${i}'); checarManual('${i}')"></div>
+                        </div>
+                        <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" oninput="aplicarMascara(this); salvarDinamico('precoFilamento${i}'); calcular(); checarManual('${i}')"></div>
+                    </div>
                 </div>`;
-            aplicarMascara(document.getElementById('pesoPeca'+i));
+            aplicarMascara(document.getElementById('precoFilamento'+i)); aplicarMascara(document.getElementById('pesoPeca'+i));
         }
         atualizarDropdownsEstoque(); calcular();
     }
@@ -748,6 +747,7 @@
         var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
         if(tEst && sEst) { tEst.checked = false; tEst.addEventListener('change', function() { sEst.style.display = tEst.checked ? 'block' : 'none'; }); sEst.style.display = 'none'; }
         
+        // NOVO TOGGLE CATALOGO
         var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
         if(tCat && sCat) { tCat.checked = false; tCat.addEventListener('change', function() { sCat.style.display = tCat.checked ? 'block' : 'none'; }); sCat.style.display = 'none'; }
 
