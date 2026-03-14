@@ -665,6 +665,11 @@
         document.getElementById('marcaFilamento1').value = p.marca1;
         document.getElementById('precoFilamento').value = p.preco1;
         document.getElementById('tempoH').value = p.tempo;
+        
+        var match1 = estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1 && e.marca === p.marca1);
+        var sel1 = document.getElementById('sel_est_1');
+        if(sel1) { sel1.value = match1 ? match1.id : ""; }
+
         var tMulti = document.getElementById('toggle_multi_mat');
         tMulti.checked = p.multi;
         document.getElementById('secao_multi_mat').style.display = p.multi ? 'block' : 'none';
@@ -680,6 +685,11 @@
                         document.getElementById('marcaFilamento'+i).value = ex.marca;
                         document.getElementById('precoFilamento'+i).value = ex.preco;
                         document.getElementById('pesoPeca'+i).value = ex.peso;
+                        
+                        var matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca);
+                        var selI = document.getElementById('sel_est_'+i);
+                        if(selI) { selI.value = matchI ? matchI.id : ""; }
+
                         salvarDinamico('tipoFilamento'+i); salvarDinamico('corFilamento'+i); salvarDinamico('marcaFilamento'+i); salvarDinamico('precoFilamento'+i); salvarDinamico('pesoPeca'+i);
                     }
                 }, 50);
