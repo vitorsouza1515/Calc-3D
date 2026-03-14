@@ -395,7 +395,7 @@
     var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
     var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
     var editEstoqueId = null;
-    var editCatalogoId = null; // ID para controlar edição do catálogo
+    var editCatalogoId = null; 
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -462,11 +462,9 @@
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
-    // --- FUNÇÕES DO CATÁLOGO COM EDIÇÃO ---
     function salvarNoCatalogo() {
         var nome = pegaTexto('nomeProjeto');
         if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
-        
         var extras = [];
         var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) {
@@ -481,48 +479,20 @@
                 });
             }
         }
-
         if(editCatalogoId) {
-            // Atualizando item existente
             var idx = catalogo.findIndex(p => p.id === editCatalogoId);
             if(idx > -1) {
-                catalogo[idx] = {
-                    id: editCatalogoId,
-                    nome: nome,
-                    peso1: pegaTexto('pesoPeca'),
-                    tipo1: pegaTexto('tipoFilamento1'),
-                    cor1: pegaTexto('corFilamento1'),
-                    marca1: pegaTexto('marcaFilamento1'),
-                    preco1: pegaTexto('precoFilamento'),
-                    tempo: pegaTexto('tempoH'),
-                    multi: multiOn,
-                    qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0",
-                    extras: extras
-                };
+                catalogo[idx] = { id: editCatalogoId, nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             }
             editCatalogoId = null;
             document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo";
             document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
             showToast("🏷️ Produto atualizado no catálogo!");
         } else {
-            // Criando novo
-            var novoProduto = {
-                id: Date.now(),
-                nome: nome,
-                peso1: pegaTexto('pesoPeca'),
-                tipo1: pegaTexto('tipoFilamento1'),
-                cor1: pegaTexto('corFilamento1'),
-                marca1: pegaTexto('marcaFilamento1'),
-                preco1: pegaTexto('precoFilamento'),
-                tempo: pegaTexto('tempoH'),
-                multi: multiOn,
-                qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0",
-                extras: extras
-            };
+            var novoProduto = { id: Date.now(), nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto);
             showToast("🏷️ Produto salvo no catálogo!");
         }
-
         syncNuvem();
     }
 
@@ -530,22 +500,17 @@
         var sel = document.getElementById('sel_catalogo');
         var lista = document.getElementById('lista_catalogo');
         if(!sel || !lista) return;
-
         var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>';
         var htmlLista = catalogo.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>' : '';
-
         catalogo.forEach(function(p) {
             htmlSel += `<option value="${p.id}">${p.nome}</option>`;
             htmlLista += `<div class="history-item" style="padding: 8px 12px;">
                 <button class="btn-edit-item" onclick="editarDoCatalogo(${p.id})">✎</button>
                 <button class="btn-del-item" onclick="removerDoCatalogo(${p.id})">×</button>
                 <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--orange);">${p.nome}</h4>
-                <div style="font-size: 0.65rem; color: var(--text-muted);">
-                    Tempo: ${p.tempo}h | Peso Total: ${p.peso1}g ${p.multi ? '+ extras' : ''}
-                </div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">Tempo: ${p.tempo}h | Peso Total: ${p.peso1}g ${p.multi ? '+ extras' : ''}</div>
             </div>`;
         });
-
         sel.innerHTML = htmlSel;
         lista.innerHTML = htmlLista;
     }
@@ -568,7 +533,6 @@
     function aplicarDadosNoForm(id) {
         var p = catalogo.find(e => e.id.toString() === id.toString());
         if(!p) return;
-
         document.getElementById('nomeProjeto').value = p.nome;
         document.getElementById('pesoPeca').value = p.peso1;
         document.getElementById('tipoFilamento1').value = p.tipo1;
@@ -576,46 +540,32 @@
         document.getElementById('marcaFilamento1').value = p.marca1;
         document.getElementById('precoFilamento').value = p.preco1;
         document.getElementById('tempoH').value = p.tempo;
-        
         var tMulti = document.getElementById('toggle_multi_mat');
         tMulti.checked = p.multi;
         document.getElementById('secao_multi_mat').style.display = p.multi ? 'block' : 'none';
-        
         if(p.multi) {
             document.getElementById('qtdCoresExtras').value = p.qtdCores;
             renderCoresExtras();
             p.extras.forEach((ex, idx) => {
                 var i = idx + 2;
-                setTimeout(() => { // Timeout pequeno para garantir que o renderCoresExtras terminou
+                setTimeout(() => { 
                     if(document.getElementById('tipoFilamento'+i)) {
                         document.getElementById('tipoFilamento'+i).value = ex.tipo;
                         document.getElementById('corFilamento'+i).value = ex.cor;
                         document.getElementById('marcaFilamento'+i).value = ex.marca;
                         document.getElementById('precoFilamento'+i).value = ex.preco;
                         document.getElementById('pesoPeca'+i).value = ex.peso;
-                        salvarDinamico('tipoFilamento'+i);
-                        salvarDinamico('corFilamento'+i);
-                        salvarDinamico('marcaFilamento'+i);
-                        salvarDinamico('precoFilamento'+i);
-                        salvarDinamico('pesoPeca'+i);
+                        salvarDinamico('tipoFilamento'+i); salvarDinamico('corFilamento'+i); salvarDinamico('marcaFilamento'+i); salvarDinamico('precoFilamento'+i); salvarDinamico('pesoPeca'+i);
                     }
                 }, 50);
             });
         }
-
         ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','qtdCoresExtras'].forEach(field => salvarDinamico(field));
-        
         document.getElementById('detalhes_1').style.display = 'block';
         calcular();
     }
 
-    function removerDoCatalogo(id) {
-        if(confirm("Deseja apagar este produto do catálogo?")) {
-            catalogo = catalogo.filter(e => e.id !== id);
-            syncNuvem();
-        }
-    }
-    // --- FIM FUNÇÕES CATÁLOGO ---
+    function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
 
     function salvarItemEstoque() {
         var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value; 
@@ -651,55 +601,28 @@
     }
 
     function atualizarDropdownsEstoque() {
-        var estoqueOrdenado = [...estoque].sort(function(a, b) {
-            return (a.tipo || "").localeCompare(b.tipo || "");
-        });
-
+        var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         var optionsHTML = '<option value="">-- Puxar material do Estoque --</option>';
-        estoqueOrdenado.forEach(function(item) { 
-            optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; 
-        });
-        
+        estoqueOrdenado.forEach(function(item) { optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; });
         var s1 = document.getElementById('sel_est_1'); if (s1) { var val1 = s1.value; s1.innerHTML = optionsHTML; s1.value = val1; }
         var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
         for(var i=2; i<=qtd+1; i++) { var si = document.getElementById('sel_est_'+i); if (si) { var vali = si.value; si.innerHTML = optionsHTML; si.value = vali; } }
     }
 
     function puxarDoEstoque(indexStr) {
-        var sel = document.getElementById('sel_est_' + indexStr); 
-        var det = document.getElementById('detalhes_' + indexStr);
-        
-        if (!sel || !sel.value) {
-            if(det) det.style.display = 'none';
-            return;
-        } 
-        
-        var item = estoque.find(function(e) { return e.id.toString() === sel.value; }); 
-        if (!item) return;
-        
+        var sel = document.getElementById('sel_est_' + indexStr), det = document.getElementById('detalhes_' + indexStr);
+        if (!sel || !sel.value) { if(det) det.style.display = 'none'; return; } 
+        var item = estoque.find(e => e.id.toString() === sel.value); if (!item) return;
         var idx = parseInt(indexStr);
-        var sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx, 
-            sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx, 
-            sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx, 
-            sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx;
-        
+        var sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx, sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx, sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx, sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx;
         var elT = document.getElementById(sTipo); if(elT) { elT.value = item.tipo; salvarDinamico(sTipo); }
         var elC = document.getElementById(sCor); if(elC) { elC.value = item.cor; salvarDinamico(sCor); }
         var elM = document.getElementById(sMarca); if(elM) { elM.value = item.marca; salvarDinamico(sMarca); }
         var elP = document.getElementById(sPreco); if(elP) { elP.value = item.preco; aplicarMascara(elP); salvarDinamico(sPreco); }
-        
         if(det) det.style.display = 'block';
-        
         var campoPeso = idx === 1 ? document.getElementById('pesoPeca') : document.getElementById('pesoPeca' + idx);
-        if(campoPeso) {
-            campoPeso.focus();
-            if(campoPeso.value === "0" || campoPeso.value === "0,00" || campoPeso.value === "") {
-                campoPeso.select();
-            }
-        }
-
-        calcular(); 
-        showToast("📦 " + item.tipo + " Carregado!");
+        if(campoPeso) { campoPeso.focus(); if(campoPeso.value === "0" || campoPeso.value === "0,00" || campoPeso.value === "") { campoPeso.select(); } }
+        calcular(); showToast("📦 " + item.tipo + " Carregado!");
     }
 
     function renderCoresExtras() {
@@ -708,15 +631,10 @@
         for(var i = 2; i <= qtd + 1; i++) {
             var sTipo = localStorage.getItem('3d4y_dark_tipoFilamento' + i) || '', sCor = localStorage.getItem('3d4y_dark_corFilamento' + i) || '', sMarca = localStorage.getItem('3d4y_dark_marcaFilamento' + i) || '', sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120,00', sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || '';
             if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ','); if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
-            
             container.innerHTML += `
                 <div class="filament-box" style="margin-top:10px;">
                     <span class="filament-box-title">Filamento ${i}</span>
-                    <div class="input-group" style="margin-bottom: 8px;">
-                        <select id="sel_est_${i}" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque('${i}')">
-                            <option value="">-- Puxar material do Estoque --</option>
-                        </select>
-                    </div>
+                    <div class="input-group" style="margin-bottom: 8px;"><select id="sel_est_${i}" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque('${i}')"><option value="">-- Puxar material do Estoque --</option></select></div>
                     <div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}">
                         <div class="grid-3" style="margin-bottom: 8px;">
                             <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" readonly></div>
@@ -725,10 +643,7 @@
                         </div>
                         <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" readonly></div>
                     </div>
-                    <div class="input-group" style="margin-top: 10px;">
-                        <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
-                        <input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()">
-                    </div>
+                    <div class="input-group" style="margin-top: 10px;"><label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label><input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()"></div>
                 </div>`;
             aplicarMascara(document.getElementById('pesoPeca'+i));
         }
@@ -745,8 +660,14 @@
     function calcularSimulador() {
         var vVenda = pegaValor('simuladorVenda'), elS = document.getElementById('sim_shopee'), elM = document.getElementById('sim_meli');
         if (vVenda <= 0) { if(elS) elS.textContent = "0,00"; if(elM) elM.textContent = "0,00"; return; }
+        
+        // TABELA SHOPEE ATUALIZADA (SEM TAXA EXTRA R$ 3,00)
         var feeShopee = 0;
-        if (vVenda <= 79.99) feeShopee = (vVenda * 0.20) + 7; else if (vVenda <= 99.99) feeShopee = (vVenda * 0.14) + 19; else if (vVenda <= 199.99) feeShopee = (vVenda * 0.14) + 23; else feeShopee = (vVenda * 0.14) + 29;
+        if (vVenda <= 79.99) feeShopee = (vVenda * 0.20) + 4; 
+        else if (vVenda <= 99.99) feeShopee = (vVenda * 0.14) + 16; 
+        else if (vVenda <= 199.99) feeShopee = (vVenda * 0.14) + 20; 
+        else feeShopee = (vVenda * 0.14) + 26;
+        
         var netShopee = vVenda - feeShopee; if (netShopee < 0) netShopee = 0;
         var tMeli = pegaValor('taxaMeli') / 100, fMeli = pegaValor('fixaMeli'), feeMeli = (vVenda * tMeli) + (vVenda >= 79.99 ? 0 : fMeli), netMeli = vVenda - feeMeli; if (netMeli < 0) netMeli = 0;
         if(elS) elS.textContent = formatarMoeda(netShopee); if(elM) elM.textContent = formatarMoeda(netMeli);
@@ -768,7 +689,6 @@
                 });
             }
         });
-
         dynIds.forEach(function(id) {
             var el = document.getElementById(id);
             if(el) {
@@ -781,23 +701,16 @@
                 }
             }
         });
-
         var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
-        if(tEst && sEst) { tEst.checked = false; tEst.addEventListener('change', function() { sEst.style.display = tEst.checked ? 'block' : 'none'; }); sEst.style.display = 'none'; }
-        
+        if(tEst && sEst) { tEst.checked = false; tEst.addEventListener('change', () => sEst.style.display = tEst.checked ? 'block' : 'none'); sEst.style.display = 'none'; }
         var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
-        if(tCat && sCat) { tCat.checked = false; tCat.addEventListener('change', function() { sCat.style.display = tCat.checked ? 'block' : 'none'; }); sCat.style.display = 'none'; }
-
+        if(tCat && sCat) { tCat.checked = false; tCat.addEventListener('change', () => sCat.style.display = tCat.checked ? 'block' : 'none'); sCat.style.display = 'none'; }
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
-        if(tMulti && sMulti) { tMulti.addEventListener('change', function() { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
-        
+        if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
-        if(tSim && sSim) { tSim.checked = false; tSim.addEventListener('change', function() { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } }); sSim.style.display = 'none'; }
-        
+        if(tSim && sSim) { tSim.checked = false; tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } }); sSim.style.display = 'none'; }
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
-
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
-
         renderCoresExtras(); updateSliderProgress(document.getElementById('margemSlider')); calcular(); mostrarValorPersonalizado();
     };
 
@@ -813,11 +726,14 @@
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
         if (logEnabled) { cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000, tEnvio = document.getElementById('tipoEnvio'), base = (tEnvio && tEnvio.value === 'PAC') ? 18.50 : 24.50; frete = pReal > 0.3 ? base + (pReal * 4.5) : base; }
         var vd = valorComLucro + cLog + frete, vShopeeBase = valorComLucro + cLog, validShopee = [];
-        var p1 = (vShopeeBase + 7) / 0.80; if (p1 <= 79.991) validShopee.push({ p: p1, tx: 20, fix: 7 });
-        var p2 = (vShopeeBase + 19) / 0.86; if (p2 >= 79.99 && p2 <= 99.991) validShopee.push({ p: p2, tx: 14, fix: 19 });
-        var p3 = (vShopeeBase + 23) / 0.86; if (p3 >= 99.99 && p3 <= 199.991) validShopee.push({ p: p3, tx: 14, fix: 23 });
-        var p4 = (vShopeeBase + 29) / 0.86; if (p4 >= 199.99) validShopee.push({ p: p4, tx: 14, fix: 29 });
-        validShopee.sort(function(a, b) { return a.p - b.p; }); var bestShopee = validShopee.length > 0 ? validShopee[0] : { p: p4, tx: 14, fix: 29 }; var vs = bestShopee.p;
+        
+        // CÁLCULO SHOPEE BASEADO NA IMAGEM (SEM OS R$ 3,00 EXTRAS)
+        var p1 = (vShopeeBase + 4) / 0.80; if (p1 <= 79.991) validShopee.push({ p: p1, tx: 20, fix: 4 });
+        var p2 = (vShopeeBase + 16) / 0.86; if (p2 >= 79.99 && p2 <= 99.991) validShopee.push({ p: p2, tx: 14, fix: 16 });
+        var p3 = (vShopeeBase + 20) / 0.86; if (p3 >= 99.99 && p3 <= 199.991) validShopee.push({ p: p3, tx: 14, fix: 20 });
+        var p4 = (vShopeeBase + 26) / 0.86; if (p4 >= 199.99) validShopee.push({ p: p4, tx: 14, fix: 26 });
+        
+        validShopee.sort((a, b) => a.p - b.p); var bestShopee = validShopee.length > 0 ? validShopee[0] : { p: p4, tx: 14, fix: 26 }; var vs = bestShopee.p;
         var elTxS = document.getElementById('taxaShopee'), elFixS = document.getElementById('fixaShopee'); if(elTxS) elTxS.value = formatarMoeda(bestShopee.tx); if(elFixS) elFixS.value = formatarMoeda(bestShopee.fix);
         var fixaMeliAplicada = (valorComLucro + cLog >= 79.99) ? 0 : pegaValor('fixaMeli'), vm = (valorComLucro + cLog + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
         var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = formatarMoeda(vd); var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = formatarMoeda(vs); var elVm = document.getElementById('r_vendaM'); if(elVm) elVm.textContent = formatarMoeda(vm);
@@ -828,36 +744,19 @@
 
     function salvarHistorico() {
         var nome = pegaTexto('nomeProjeto') || "Sem Nome", cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta", valorRegistradoNum = 0;
-        
-        if (canal === "Personalizado") { 
-            valorRegistradoNum = pegaValor('valorPersonalizado'); 
-            canal = document.getElementById('canalPersonalizadoDestino').value; 
-        } else if(canal === "Direta") { 
-            valorRegistradoNum = parseLocal(document.getElementById('r_vendaD').textContent); 
-        } else if(canal === "Shopee") { 
-            valorRegistradoNum = parseLocal(document.getElementById('r_vendaS').textContent); 
-        } else { 
-            valorRegistradoNum = parseLocal(document.getElementById('r_vendaM').textContent); 
-        }
-        
+        if (canal === "Personalizado") { valorRegistradoNum = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } else if(canal === "Direta") { valorRegistradoNum = parseLocal(document.getElementById('r_vendaD').textContent); } else if(canal === "Shopee") { valorRegistradoNum = parseLocal(document.getElementById('r_vendaS').textContent); } else { valorRegistradoNum = parseLocal(document.getElementById('r_vendaM').textContent); }
         var materiaisArray = [], pesoSalvar = 0, t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca'), nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
         if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); pesoSalvar += p1; }
         var tMulti = document.getElementById('toggle_multi_mat');
         if (tMulti && tMulti.checked) { var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; for(var i = 2; i <= qtdExtras + 1; i++) { var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); pesoSalvar += pi; } } }
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', rGasto = document.getElementById('r_gasto');
-        
         var novo = { id: Date.now(), nome: nome, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorRegistradoNum, custo: rGasto ? parseLocal(rGasto.textContent) : 0, peso: pesoSalvar, tempo: pegaValor('tempoH'), status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
-        
-        historico.unshift(novo);
-        syncNuvem();
-        
+        historico.unshift(novo); syncNuvem();
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
-        
-        resetarDados();
-        showToast("✅ Venda Registrada!");
+        resetarDados(); showToast("✅ Venda Registrada!");
     }
 
-    function mudarStatus(id, novoStatus) { var index = historico.findIndex(function(h) { return h.id === id; }); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); } }
+    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); } }
 
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico'); if(!lista) return; lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
@@ -868,34 +767,29 @@
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
-            var crmHtml = ''; if (item.cliente) { crmHtml = '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>'; }
+            var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             lista.innerHTML += '<div class="history-item"><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 25px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">R$ '+formatarMoeda(valVenda)+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
-        document.getElementById('tot_qtd').textContent = historico.length; 
-        document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); 
-        document.getElementById('tot_faturamento').textContent = formatarMoeda(somaDireta + somaShopee + somaMeli); 
-        document.getElementById('qtd_direta').textContent = qtdDireta; 
-        document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
-        document.getElementById('qtd_shopee').textContent = qtdShopee; 
-        document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
-        document.getElementById('qtd_meli').textContent = qtdMeli; 
-        document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
+        document.getElementById('tot_qtd').textContent = historico.length; document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); document.getElementById('tot_faturamento').textContent = formatarMoeda(somaDireta + somaShopee + somaMeli); 
+        document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
+        document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
+        document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
     }
 
-    function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(function(h) { return h.id !== id; }); syncNuvem(); } }
+    function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
 
     function exportarExcel() {
         var wb = XLSX.utils.book_new();
         if(historico.length > 0) {
-            var dados = historico.map(function(h) { var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre"; return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Venda Realizada (R$)": h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix) }; });
+            var dados = historico.map(h => { var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre"; return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Venda Realizada (R$)": h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix) }; });
             var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
         }
         if(estoque.length > 0) {
-            var dadosEstoque = estoque.map(function(e) { return { "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }; });
+            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
             var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque); wsEstoque['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
         }
         if(catalogo.length > 0) {
-            var dadosCat = catalogo.map(function(p) { return { "Produto": p.nome, "Tempo (h)": p.tempo, "Peso Principal (g)": p.peso1, "Material": p.tipo1 + " " + p.cor1 }; });
+            var dadosCat = catalogo.map(p => ({ "Produto": p.nome, "Tempo (h)": p.tempo, "Peso Principal (g)": p.peso1, "Material": p.tipo1 + " " + p.cor1 }));
             var wsCat = XLSX.utils.json_to_sheet(dadosCat); XLSX.utils.book_append_sheet(wb, wsCat, "Catalogo");
         }
         if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
@@ -908,22 +802,21 @@
             var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
             if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo") {
                 var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
-                var novosItens = jsonVendas.map(function(item, index) { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), valorVenda: String(item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
+                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), valorVenda: String(item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
                 if (novosItens.length > 0) { historico = novosItens; }
             }
             if (workbook.Sheets["Estoque"]) {
                 var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
-                estoque = jsonEstoque.map(function(item, index) { return { id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }; });
+                estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }));
             }
-            syncNuvem();
-            showToast("✅ Nuvem Atualizada!");
+            syncNuvem(); showToast("✅ Nuvem Atualizada!");
         }; reader.readAsArrayBuffer(file);
     }
 
     function gerarPDF() {
         if(historico.length === 0) return alert("Histórico vazio!");
         var doc = new window.jspdf.jsPDF(); doc.setFontSize(18); doc.setTextColor(59, 130, 246); doc.text("Relatório Geral - 3D 4You", 14, 20);
-        var tableBody = historico.map(function(h) { var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre"; return [ h.data, h.nome, canalAjustado, h.status || "Finalizado", h.materiais || "-", h.tempo + 'h', 'R$ '+formatarMoeda(h.custo), 'R$ '+formatarMoeda(h.valorVenda || 0) ]; });
+        var tableBody = historico.map(h => { var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre"; return [ h.data, h.nome, canalAjustado, h.status || "Finalizado", h.materiais || "-", h.tempo + 'h', 'R$ '+formatarMoeda(h.custo), 'R$ '+formatarMoeda(h.valorVenda || 0) ]; });
         doc.autoTable({ head: [['Data', 'Projeto', 'Canal', 'Status', 'Material', 'Tempo', 'Custo', 'Venda']], body: tableBody, startY: 30, theme: 'grid' });
         doc.save("vendas_3d4you.pdf");
     }
@@ -931,39 +824,25 @@
     function gerarOrcamentoCliente() {
         var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D", vD = document.getElementById('r_vendaD').textContent, vS = document.getElementById('r_vendaS').textContent, vM = document.getElementById('r_vendaM').textContent;
         var doc = new window.jspdf.jsPDF(); doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("Orçamento - 3D 4You", 14, 20);
-        doc.setFontSize(14); doc.setTextColor(40, 40, 40); doc.text("Projeto: " + nomeProj, 14, 35);
-        doc.text("Pagamento Pix: R$ " + vD, 14, 50); doc.text("Shopee: R$ " + vS, 14, 60); doc.text("Mercado Livre: R$ " + vM, 14, 70);
+        doc.setFontSize(14); doc.setTextColor(40, 40, 40); doc.text("Projeto: " + nomeProj, 14, 35); doc.text("Pagamento Pix: R$ " + vD, 14, 50); doc.text("Shopee: R$ " + vS, 14, 60); doc.text("Mercado Livre: R$ " + vM, 14, 70);
         doc.save("Orcamento_Cliente.pdf");
     }
 
-    function buscarCEP(valor, idTexto) { var cep = valor.replace(/\D/g, ''); if (cep.length === 8) { fetch('https://viacep.com.br/ws/' + cep + '/json/').then(function(res){return res.json()}).then(function(data) { var el = document.getElementById(idTexto); if(el) el.textContent = data.erro ? "CEP não encontrado" : (data.localidade + "-" + data.uf); }); } }
-    function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(function(){ t.className = ""; }, 2000); } }
+    function buscarCEP(valor, idTexto) { var cep = valor.replace(/\D/g, ''); if (cep.length === 8) { fetch('https://viacep.com.br/ws/' + cep + '/json/').then(res => res.json()).then(data => { var el = document.getElementById(idTexto); if(el) el.textContent = data.erro ? "CEP não encontrado" : (data.localidade + "-" + data.uf); }); } }
+    function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(function(id) { 
-            var el = document.getElementById(id); 
-            if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
-        });
-
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
-        
-        editCatalogoId = null;
-        document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo";
-        document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
-
+        editCatalogoId = null; document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo"; document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
         var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
         for(var i = 2; i <= qtdExtras + 1; i++) {
-            var selExtra = document.getElementById('sel_est_' + i);
-            if(selExtra) selExtra.value = "";
-            ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => {
-                var fieldId = pref + i;
-                localStorage.removeItem('3d4y_dark_' + fieldId);
-            });
+            var selExtra = document.getElementById('sel_est_' + i); if(selExtra) selExtra.value = "";
+            ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
-        calcular(); 
-        showToast("✅ Projeto Resetado!");
+        calcular(); showToast("✅ Projeto Resetado!");
     }
 
     function wpp(tipo) {
