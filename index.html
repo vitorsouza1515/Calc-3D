@@ -162,6 +162,12 @@
                 <label>Nome do Projeto / Peça</label>
                 <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
             </div>
+            
+            <div class="input-group">
+                <label style="color: var(--sky);">Qtd. de Peças</label>
+                <input type="text" inputmode="numeric" id="qtdPecasProjeto" value="1" placeholder="Ex: 5" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('qtdPecasProjeto'); calcular()">
+            </div>
+
             <div class="grid-2">
                 <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente')"></div>
                 <div class="input-group"><label>WhatsApp (Opcional)</label><input type="text" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
@@ -462,8 +468,8 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
-    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino', 'qtdPecasProjeto'];
+    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
@@ -689,7 +695,7 @@
                 el.addEventListener('input', function() {
                     if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); }
                     if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } }
-                    if (id === 'pesoPeca' || id === 'tempoH') calcular();
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular();
                 });
             }
         });
@@ -698,13 +704,18 @@
             if(el) {
                 var saved = localStorage.getItem('3d4y_dark_' + id);
                 if (saved !== null) { 
-                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'cepDestino') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
+                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'cepDestino' && id !== 'qtdPecasProjeto') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
                     el.value = saved; 
                     if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado') { aplicarMascara(el); }
                     if (id === 'telefoneCliente') { mascaraTelefone(el); }
                 }
             }
         });
+        
+        // Garante que qtdPecas tenha 1 se vazio
+        var elQtd = document.getElementById('qtdPecasProjeto');
+        if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+
         var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
         if(tEst && sEst) { tEst.checked = false; tEst.addEventListener('change', () => sEst.style.display = tEst.checked ? 'block' : 'none'); sEst.style.display = 'none'; }
         var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
@@ -720,15 +731,56 @@
 
     function calcular() {
         ids.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { localStorage.setItem('3d4y_dark_' + id, el.type === 'checkbox' ? el.checked : el.value); } });
+        
+        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
+        if(qtdPecas < 1) qtdPecas = 1;
+
         var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false, sLog = document.getElementById('section_logistica'); if(sLog) sLog.className = logEnabled ? '' : 'card-disabled';
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
-        var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * pegaValor('tempoH'), ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * pegaValor('tempoH'), matTotal = (pegaValor('precoFilamento') / 1000) * pegaValor('pesoPeca'), pesoTotalPeca = pegaValor('pesoPeca');
-        if (multiMatEnabled) { var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; for(var i = 2; i <= qtdExtras + 1; i++) { var pPreco = pegaValor('precoFilamento' + i), pPeso = pegaValor('pesoPeca' + i); matTotal += (pPreco / 1000) * pPeso; pesoTotalPeca += pPeso; } }
+        
+        var tempoUnitario = pegaValor('tempoH');
+        var pesoUnitarioMatPrincipal = pegaValor('pesoPeca');
+        
+        // Multiplica o tempo e o peso principal pela quantidade de peças
+        var tempoTotal = tempoUnitario * qtdPecas;
+        var pesoTotalPrincipal = pesoUnitarioMatPrincipal * qtdPecas;
+
+        var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoTotal;
+        var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoTotal;
+        var matTotal = (pegaValor('precoFilamento') / 1000) * pesoTotalPrincipal;
+        var pesoTotalPeca = pesoTotalPrincipal;
+
+        if (multiMatEnabled) { 
+            var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
+            for(var i = 2; i <= qtdExtras + 1; i++) { 
+                var pPreco = pegaValor('precoFilamento' + i);
+                var pPesoUnitario = pegaValor('pesoPeca' + i);
+                var pPesoTotal = pPesoUnitario * qtdPecas; // Multiplica peso extra pela qtd
+                matTotal += (pPreco / 1000) * pPesoTotal; 
+                pesoTotalPeca += pPesoTotal; 
+            } 
+        }
+
         var suc = pegaValor('taxaSucesso'); if (suc <= 0) suc = 100; 
         var custoProducao = (dep + ene + matTotal) / (suc / 100);
-        var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = formatarMoeda(dep); var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene); var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal); var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
+        
+        var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = formatarMoeda(dep); 
+        var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene); 
+        var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal); 
+        var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
+        
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
-        if (logEnabled) { cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000, tEnvio = document.getElementById('tipoEnvio'), base = (tEnvio && tEnvio.value === 'PAC') ? 18.50 : 24.50; frete = pReal > 0.3 ? base + (pReal * 4.5) : base; }
+        
+        if (logEnabled) { 
+            // Embalagem multiplicada pela qtd de peças (se cada peça for numa caixa, ou se for embalagem por item)
+            // Assumindo que a embalagem e deslocamento são para o pedido todo. 
+            // Se embalagem for por peça: cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento');
+            cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+            
+            var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000, tEnvio = document.getElementById('tipoEnvio'), base = (tEnvio && tEnvio.value === 'PAC') ? 18.50 : 24.50; 
+            frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
+        }
+        
         var vd = valorComLucro + cLog + frete, vShopeeBase = valorComLucro + cLog, validShopee = [];
         
         var p1 = (vShopeeBase + 4) / 0.80; if (p1 <= 79.991) validShopee.push({ p: p1, tx: 20, fix: 4 });
@@ -746,16 +798,80 @@
     }
 
     function salvarHistorico() {
-        var nome = pegaTexto('nomeProjeto') || "Sem Nome", cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta", valorRegistradoNum = 0;
-        if (canal === "Personalizado") { valorRegistradoNum = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } else if(canal === "Direta") { valorRegistradoNum = parseLocal(document.getElementById('r_vendaD').textContent); } else if(canal === "Shopee") { valorRegistradoNum = parseLocal(document.getElementById('r_vendaS').textContent); } else { valorRegistradoNum = parseLocal(document.getElementById('r_vendaM').textContent); }
-        var materiaisArray = [], pesoSalvar = 0, t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca'), nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
+        var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome", cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "";
+        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
+        if(qtdPecas < 1) qtdPecas = 1;
+        var nome = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
+
+        var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
+        var valorVendaBruto = 0;
+        var lucroFinalCustom = 0;
+
+        // Recupera valores calculados para a base de custo
+        var custoProducao = parseLocal(document.getElementById('r_gasto').textContent);
+        var tLog = document.getElementById('toggle_logistica');
+        var logEnabled = tLog ? tLog.checked : false;
+        var cLog = logEnabled ? (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento') : 0;
+        
+        var pesoTotalPeca = pegaValor('pesoPeca') * qtdPecas;
+        var multiOn = document.getElementById('toggle_multi_mat').checked;
+        if(multiOn) {
+            var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1;
+            for(var i=2; i<=qtdEx+1; i++) { pesoTotalPeca += (pegaValor('pesoPeca'+i) * qtdPecas); }
+        }
+        var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000;
+        var baseEnvio = (document.getElementById('tipoEnvio') && document.getElementById('tipoEnvio').value === 'PAC') ? 18.50 : 24.50;
+        var frete = logEnabled ? (pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio) : 0;
+
+        if (canal === "Personalizado") { 
+            valorVendaBruto = pegaValor('valorPersonalizado'); 
+            canal = document.getElementById('canalPersonalizadoDestino').value; 
+            
+            // Calcula o Lucro Real do Valor Personalizado baseado no canal
+            if(canal === "Shopee") {
+                var feeShp = 0;
+                if (valorVendaBruto <= 79.99) feeShp = (valorVendaBruto * 0.20) + 4; 
+                else if (valorVendaBruto <= 99.99) feeShp = (valorVendaBruto * 0.14) + 16; 
+                else if (valorVendaBruto <= 199.99) feeShp = (valorVendaBruto * 0.14) + 20; 
+                else feeShp = (valorVendaBruto * 0.14) + 26;
+                lucroFinalCustom = valorVendaBruto - feeShp - custoProducao - cLog;
+            } else if(canal === "Meli") {
+                var txMl = pegaValor('taxaMeli') / 100;
+                var fixMl = (valorVendaBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
+                var feeMl = (valorVendaBruto * txMl) + fixMl;
+                lucroFinalCustom = valorVendaBruto - feeMl - custoProducao - cLog;
+            } else { // Direta
+                lucroFinalCustom = valorVendaBruto - custoProducao - cLog - frete;
+            }
+        } else if(canal === "Direta") { 
+            valorVendaBruto = parseLocal(document.getElementById('r_vendaD').textContent); 
+        } else if(canal === "Shopee") { 
+            valorVendaBruto = parseLocal(document.getElementById('r_vendaS').textContent); 
+        } else { 
+            valorVendaBruto = parseLocal(document.getElementById('r_vendaM').textContent); 
+        }
+        
+        var materiaisArray = [], pesoSalvar = 0, t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
         if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); pesoSalvar += p1; }
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if (tMulti && tMulti.checked) { var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; for(var i = 2; i <= qtdExtras + 1; i++) { var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); pesoSalvar += pi; } } }
+        
+        if (multiOn) { 
+            var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
+            for(var i = 2; i <= qtdExtras + 1; i++) { 
+                var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); 
+                if (nomeMatI === '') nomeMatI = 'Filamento ' + i; 
+                if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); pesoSalvar += pi; } 
+            } 
+        }
+        
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', rGasto = document.getElementById('r_gasto');
-        var novo = { id: Date.now(), nome: nome, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorRegistradoNum, custo: rGasto ? parseLocal(rGasto.textContent) : 0, peso: pesoSalvar, tempo: pegaValor('tempoH'), status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
+        
+        // Se for personalizado, o lucro que aparece no HTML vai estar errado para a view do histórico (pois ele mostra o sugerido). 
+        // Idealmente deveríamos guardar o Lucro também no histórico, mas por ora vamos focar em registrar a Venda correta.
+        var novo = { id: Date.now(), nome: nome, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaBruto, custo: rGasto ? parseLocal(rGasto.textContent) : 0, peso: pesoSalvar, tempo: pegaValor('tempoH') * qtdPecas, status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
+        
         historico.unshift(novo); syncNuvem();
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
+        
         resetarDados(); showToast("✅ Venda Registrada!");
     }
 
@@ -887,7 +1003,12 @@
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'qtdPecasProjeto'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        
+        // Volta Qtd. Peças para 1 visualmente e no local storage
+        var elQtd = document.getElementById('qtdPecasProjeto');
+        if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
@@ -903,8 +1024,9 @@
     function wpp(tipo) {
         var vD = document.getElementById('r_vendaD').textContent, vS = document.getElementById('r_vendaS').textContent, vM = document.getElementById('r_vendaM').textContent;
         var nProj = document.getElementById('nomeProjeto'), nome = nProj && nProj.value ? nProj.value : "Peça 3D";
+        var qtd = document.getElementById('qtdPecasProjeto') && document.getElementById('qtdPecasProjeto').value !== "1" ? document.getElementById('qtdPecasProjeto').value + "x " : "";
         var valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
-        var txt = "*Orçamento 3D 4You*\n\n*Projeto:* " + nome + "\n*Valor:* R$ " + valF;
+        var txt = "*Orçamento 3D 4You*\n\n*Projeto:* " + qtd + nome + "\n*Valor:* R$ " + valF;
         var tCli = document.getElementById('telefoneCliente'), tel = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : "";
         window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
     }
