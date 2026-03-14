@@ -455,8 +455,16 @@
     }
 
     function atualizarDropdownsEstoque() {
+        // --- ORDENAÇÃO ALFABÉTICA (A-Z) PELO TIPO ---
+        var estoqueOrdenado = [...estoque].sort(function(a, b) {
+            return (a.tipo || "").localeCompare(b.tipo || "");
+        });
+
         var optionsHTML = '<option value="">-- Puxar material do Estoque --</option>';
-        estoque.forEach(function(item) { optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; });
+        estoqueOrdenado.forEach(function(item) { 
+            optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; 
+        });
+        
         var s1 = document.getElementById('sel_est_1'); if (s1) { var val1 = s1.value; s1.innerHTML = optionsHTML; s1.value = val1; }
         var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
         for(var i=2; i<=qtd+1; i++) { var si = document.getElementById('sel_est_'+i); if (si) { var vali = si.value; si.innerHTML = optionsHTML; si.value = vali; } }
