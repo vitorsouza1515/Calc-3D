@@ -140,10 +140,10 @@
         <div class="card">
             <h2 class="section-title">⚙️ Base Operacional</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1500" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0.90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
 
@@ -206,8 +206,8 @@
             </div>
             <div id="section_logistica">
                 <div class="grid-2">
-                    <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4.50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8.00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Origem</label><input type="text" id="cepOrigem" placeholder="00000-000" data-save="true" onkeyup="buscarCEP(this.value, 'origemTexto')"><div id="origemTexto" class="endereco-txt"></div></div>
                     <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')" oninput="salvarDinamico('cepDestino')"><div id="destinoTexto" class="endereco-txt"></div></div>
                     <div class="input-group">
@@ -225,9 +225,9 @@
             <h2 class="section-title">🛒 Marketplaces</h2>
             <div class="grid-2">
                 <div class="input-group"><label>Shopee (%)</label><input type="text" inputmode="decimal" id="taxaShopee" value="20" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo Shopee</label><input type="text" inputmode="decimal" id="fixaShopee" value="4.00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo Shopee</label><input type="text" inputmode="decimal" id="fixaShopee" value="4,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6.75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
     </div>
@@ -267,7 +267,7 @@
             
             <div class="input-group" id="divValorPersonalizado" style="display: none; margin-top: 5px;">
                 <label style="color: var(--sky);">Digite o valor da venda (R$)</label>
-                <input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 150.00" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')">
+                <input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 150,00" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')">
             </div>
 
             <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
@@ -316,21 +316,54 @@
     // --- MAGIA UX: FORMATAÇÃO AUTOMÁTICA E SEGURA ---
     function aplicarMascara(el) {
         if (!el) return;
-        // Transforma vírgula em ponto instantaneamente
-        var val = el.value.replace(/,/g, '.');
-        // Impede letras ou múltiplos pontos de quebrarem a matemática
-        val = val.replace(/[^0-9.]/g, ''); 
-        var parts = val.split('.');
-        if (parts.length > 2) {
-            val = parts[0] + '.' + parts.slice(1).join('');
+        
+        var start = el.selectionStart;
+        var oldVal = el.value;
+        
+        // Pulo do Gato: Suporte ao ponto do teclado numérico (Numpad)
+        // Se ele digitar um ponto e não tiver vírgula, e for um decimal curto, converte pra vírgula
+        var partsDot = oldVal.split('.');
+        if (partsDot.length === 2 && oldVal.indexOf(',') === -1 && partsDot[1].length <= 3) {
+            oldVal = oldVal.replace('.', ',');
         }
-        el.value = val;
+
+        // Removemos a formatação de milhar atual para recalcular
+        var v = oldVal.replace(/\./g, '');
+        
+        // Blindagem: Apaga qualquer coisa que não seja número ou vírgula (impede letras e barras)
+        v = v.replace(/[^0-9,]/g, '');
+        
+        // Trava: Impede duas vírgulas
+        var parts = v.split(',');
+        if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('');
+        
+        // Aplica o milhar de volta na parte inteira (ex: 4275 -> 4.275)
+        var intPart = parts[0];
+        if (intPart) {
+            if (intPart.length > 1 && intPart.charAt(0) === '0') {
+                intPart = parseInt(intPart, 10).toString(); // Tira zeros esquecidos à esquerda
+            }
+            intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        
+        var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
+        
+        // Só atualiza se mudou, para o cursor não pular e irritar o usuário
+        if (el.value !== newVal) {
+            el.value = newVal;
+            // Tenta devolver o cursor pro mesmo lugar
+            var newStart = start + (newVal.length - oldVal.length);
+            if (newStart < 0) newStart = 0;
+            try { el.setSelectionRange(newStart, newStart); } catch(e) {}
+        }
     }
 
+    // Leitor universal que converte "1.500,90" Brasileiro para o "1500.90" do computador calcular
     function pegaValor(id) {
         var el = document.getElementById(id);
-        if (el && el.value) { return parseFloat(el.value) || 0; }
-        return 0;
+        if (!el || !el.value) return 0;
+        var val = el.value.replace(/\./g, '').replace(',', '.');
+        return parseFloat(val) || 0;
     }
 
     function pegaTexto(id) {
@@ -345,7 +378,7 @@
                 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
                 'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
 
-    // Campos preenchidos manualmente pelo usuário que guardam texto e valores
+    // Campos preenchidos manualmente que guardam texto e valores extras
     var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
 
     function updateSliderProgress(slider) {
@@ -357,7 +390,7 @@
     function renderCoresExtras() {
         var qtdInput = document.getElementById('qtdCoresExtras');
         if (!qtdInput) return;
-        var qtd = parseInt(qtdInput.value) || 1;
+        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
         var container = document.getElementById('container_cores_extras');
         if (!container) return;
         
@@ -369,6 +402,10 @@
             var sMarca = localStorage.getItem('3d4y_dark_marcaFilamento' + i) || '';
             var sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120';
             var sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || '';
+
+            // Upgrade de Segurança p/ Dados Salvos Antigos: Se tiver ponto e não vírgula, conserta.
+            if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ',');
+            if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
             
             container.innerHTML += 
             '<div class="filament-box">' +
@@ -383,6 +420,10 @@
                     '<div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca'+i+'" value="'+sPeso+'" oninput="aplicarMascara(this); salvarDinamico(\'pesoPeca'+i+'\'); calcular()"></div>' +
                 '</div>' +
             '</div>';
+
+            // Aplica a máscara logo que a caixa extra é criada
+            aplicarMascara(document.getElementById('precoFilamento'+i));
+            aplicarMascara(document.getElementById('pesoPeca'+i));
         }
         calcular();
     }
@@ -407,31 +448,45 @@
                 var saved = localStorage.getItem('3d4y_dark_' + id);
                 if (saved !== null) {
                     if (el.type === 'checkbox') { el.checked = (saved === 'true'); }
-                    else { el.value = saved; }
+                    else { 
+                        // Fix salvos antigos
+                        if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); }
+                        el.value = saved; 
+                    }
                 }
             }
             if (el) {
+                // Se for input livre, aplica máscara na hora que entra no site
+                if (el.tagName === 'INPUT' && el.type === 'text' && id !== 'cepOrigem' && id !== 'cepDestino') {
+                    aplicarMascara(el);
+                }
+
                 el.addEventListener('input', function() {
                     if (id === 'margemSlider') { 
                         var mInp = document.getElementById('margemInput');
-                        if(mInp) mInp.value = el.value; 
+                        if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } 
                         updateSliderProgress(el); 
                     }
                     if (id === 'margemInput') { 
                         var mSli = document.getElementById('margemSlider');
-                        if(mSli) { mSli.value = el.value; updateSliderProgress(mSli); }
+                        if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); }
                     }
                     calcular();
                 });
             }
         });
 
-        // Carrega os dados dinâmicos salvos
         dynIds.forEach(function(id) {
             var el = document.getElementById(id);
             if(el) {
                 var saved = localStorage.getItem('3d4y_dark_' + id);
-                if (saved !== null) { el.value = saved; }
+                if (saved !== null) { 
+                    if (id !== 'nomeProjeto' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'cepDestino') {
+                        if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); }
+                    }
+                    el.value = saved; 
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado') { aplicarMascara(el); }
+                }
             }
         });
 
@@ -479,7 +534,7 @@
 
         if (multiMatEnabled) {
             var qCores = document.getElementById('qtdCoresExtras');
-            var qtdExtras = qCores ? (parseInt(qCores.value) || 1) : 1;
+            var qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1;
             for(var i = 2; i <= qtdExtras + 1; i++) {
                 var pPreco = pegaValor('precoFilamento' + i);
                 var pPeso = pegaValor('pesoPeca' + i);
@@ -488,7 +543,7 @@
             }
         }
 
-        // Correção de Segurança: Protege contra erro de "divisão por zero" se o usuário apagar a Taxa de Sucesso
+        // Blindagem: Protege contra erro de divisão por zero na Taxa de Sucesso
         var suc = pegaValor('taxaSucesso');
         if (suc <= 0) suc = 100; 
         
@@ -543,7 +598,6 @@
         var materiaisArray = [];
         var pesoSalvar = 0;
 
-        // Correção de Estética: Se o usuário esquecer de colocar o Tipo/Cor, preenche genérico para não ficar vazio no PDF
         var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca');
         var nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
         if (nomeMat1 === '') nomeMat1 = 'Filamento 1';
@@ -552,7 +606,7 @@
         var tMulti = document.getElementById('toggle_multi_mat');
         if (tMulti && tMulti.checked) {
             var qCores = document.getElementById('qtdCoresExtras');
-            var qtdExtras = qCores ? (parseInt(qCores.value) || 1) : 1;
+            var qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1;
             for(var i = 2; i <= qtdExtras + 1; i++) {
                 var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i);
                 var nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
@@ -587,7 +641,7 @@
         renderHistorico();
         
         var elPerso = document.getElementById('valorPersonalizado');
-        if(elPerso) elPerso.value = '';
+        if(elPerso) { elPerso.value = ''; }
         localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
         showToast("✅ Venda Salva!");
@@ -793,7 +847,6 @@
     }
 
     function resetarDados() {
-        // Limpa campos principais do formulário
         ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(function(id) { 
             var el = document.getElementById(id);
             if(el) {
@@ -802,9 +855,8 @@
             }
         });
 
-        // Restaura o preço do filamento principal para o padrão
         var pFil1 = document.getElementById('precoFilamento');
-        if(pFil1) { pFil1.value = "120"; localStorage.setItem('3d4y_dark_precoFilamento', "120"); }
+        if(pFil1) { pFil1.value = "120"; localStorage.setItem('3d4y_dark_precoFilamento', "120"); aplicarMascara(pFil1); }
 
         for(var i = 2; i <= 21; i++) {
             ['tipoFilamento', 'corFilamento', 'marcaFilamento', 'precoFilamento', 'pesoPeca'].forEach(function(prefix) {
@@ -835,7 +887,7 @@
         showToast("✅ Projeto Resetado!");
     }
 
-    // Correção de Segurança: Codifica o texto do WPP para não quebrar links com "+" ou "&"
+    // Blindagem de Segurança para WhatsApp
     function wpp(tipo) {
         var vD = document.getElementById('r_vendaD') ? document.getElementById('r_vendaD').textContent : '0';
         var vS = document.getElementById('r_vendaS') ? document.getElementById('r_vendaS').textContent : '0';
@@ -849,6 +901,7 @@
             var valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
             txt += "Valor: *R$ " + valF + "*"; 
         }
+        
         window.open("https://wa.me/?text=" + encodeURIComponent(txt), '_blank');
     }
 </script>
