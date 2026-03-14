@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard 3D 4You Dark</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/3b82f6/FFFFFF?text=3D+4You">
+    
+    <title>3D 4You ERP</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -80,11 +88,12 @@
         .result-row span:first-child { flex: 1; line-height: 1.2; }
         .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap; text-align: right; }
         
-        .price-box { border-radius: 12px; padding: 12px; text-align: center; border-left: 4px solid transparent; background: rgba(0,0,0,0.2); }
+        .price-box { border-radius: 12px; padding: 12px; text-align: center; border-left: 4px solid transparent; background: rgba(0,0,0,0.2); position: relative; }
         .price-box .total { font-size: 1.7rem; font-weight: 900; }
         .price-box.direta { border-color: var(--success); color: #34d399; }
         .price-box.shopee { border-color: var(--shopee); color: #ff8b73; }
         .price-box.meli { border-color: var(--meli); color: var(--meli); }
+        .lucro-tag { font-size: 0.65rem; color: #10b981; font-weight: 700; margin-top: 4px; background: rgba(16, 185, 129, 0.1); display: inline-block; padding: 2px 8px; border-radius: 10px; }
 
         .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
         .btn { padding: 14px 5px; border: none; border-radius: 12px; font-size: 0.75rem; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
@@ -93,6 +102,7 @@
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
         .btn-all { background: var(--sky); }
+        .btn-orcamento { background: #4f46e5; }
         
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
@@ -101,13 +111,22 @@
         #toast.show { visibility: visible; animation: fadein 0.5s; }
 
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
-        .history-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; }
+        .history-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
-        .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1rem; cursor: pointer; }
+        .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1.2rem; cursor: pointer; line-height: 1; }
+        .btn-edit-item { position: absolute; top: 10px; right: 35px; color: var(--sky); background: none; border: none; font-size: 0.9rem; cursor: pointer; }
         
+        /* ESTILOS DO STATUS (MINI-TRELLO) */
+        .status-select { font-size: 0.6rem; font-weight: 800; border-radius: 6px; padding: 3px 6px; border: none; outline: none; cursor: pointer; appearance: none; text-align: center; text-transform: uppercase; }
+        .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
+        .status-fila { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .status-imprimindo { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4); }
+        .status-finalizado { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .status-enviado { background: rgba(14, 165, 233, 0.15); color: var(--sky); border: 1px solid rgba(14, 165, 233, 0.4); }
+
         .total-summary { background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 12px; margin-top: 10px; }
         .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; margin-bottom: 5px; gap: 10px; }
         .total-row span:first-child { flex: 1; line-height: 1.2; }
@@ -124,16 +143,48 @@
 
 <header>
     <h1>3D 4You</h1>
-    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Calculadora de Precisão Desktop</p>
+    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de Precisão Desktop</p>
 </header>
 
 <div class="dashboard">
     <div class="col">
         <div class="card">
-            <h2 class="section-title">👤 Identificação</h2>
+            <h2 class="section-title">👤 Identificação / CRM</h2>
             <div class="input-group">
-                <label>Nome do Projeto / Produtor</label>
+                <label>Nome do Projeto / Peça</label>
                 <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
+            </div>
+            <div class="grid-2">
+                <div class="input-group">
+                    <label>Cliente (Opcional)</label>
+                    <input type="text" id="nomeCliente" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente')">
+                </div>
+                <div class="input-group">
+                    <label>WhatsApp (Opcional)</label>
+                    <input type="text" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title" style="color: var(--success);">
+                <span>🧻 Estoque de Filamentos</span>
+                <label class="switch">
+                    <input type="checkbox" id="toggle_estoque">
+                    <span class="slider-switch" style="background-color: #334155;"></span>
+                </label>
+            </div>
+            <div id="secao_estoque" style="display:none; padding-top: 5px;">
+                <div class="grid-3">
+                    <div class="input-group"><label>Tipo</label><input type="text" id="est_tipo" placeholder="Ex: PLA"></div>
+                    <div class="input-group"><label>Cor</label><input type="text" id="est_cor" placeholder="Ex: Preto"></div>
+                    <div class="input-group"><label>Marca</label><input type="text" id="est_marca" placeholder="Ex: Sunlu"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="input-group"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
+                    <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="margin-top: 14px; background: var(--success);">➕ Salvar / Atualizar</button>
+                </div>
+                <div id="lista_estoque" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
             </div>
         </div>
 
@@ -161,13 +212,18 @@
             
             <div class="filament-box">
                 <span class="filament-box-title">Filamento 1 (Principal)</span>
+                <div class="input-group" style="margin-bottom: 8px;">
+                    <select id="sel_est_1" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque('1')">
+                        <option value="">-- Puxar material do Estoque --</option>
+                    </select>
+                </div>
                 <div class="grid-3">
-                    <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1')"></div>
-                    <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Preto" data-save="true" oninput="salvarDinamico('corFilamento1')"></div>
-                    <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1')"></div>
+                    <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1'); checarManual('1')"></div>
+                    <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" oninput="salvarDinamico('corFilamento1'); checarManual('1')"></div>
+                    <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1'); checarManual('1')"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" oninput="aplicarMascara(this); calcular(); checarManual('1')"></div>
                     <div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca" value="" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()"></div>
                 </div>
             </div>
@@ -221,8 +277,19 @@
                 </div>
             </div>
         </div>
+
         <div class="card">
-            <h2 class="section-title">🛒 Marketplaces</h2>
+            <div class="section-title">
+                <span>🛒 Marketplaces</span>
+                <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
+                    <span style="color:var(--text-muted)">SIMULADOR</span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggle_simulador">
+                        <span class="slider-switch"></span>
+                    </label>
+                </div>
+            </div>
+            
             <div class="grid-2">
                 <div class="input-group">
                     <label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label>
@@ -232,9 +299,26 @@
                     <label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label>
                     <input type="text" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);">
                 </div>
-                
                 <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            </div>
+
+            <div id="secao_simulador" style="display:none; padding-top: 15px; margin-top: 10px; border-top: 1px dashed var(--border);">
+                <h3 style="font-size: 0.75rem; color: var(--sky); margin-bottom: 8px; text-transform: uppercase;">🧮 Simular Lucro Líquido</h3>
+                <div class="input-group">
+                    <label>Se eu vender a peça por (R$):</label>
+                    <input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()">
+                </div>
+                <div class="grid-2" style="margin-top: 8px;">
+                    <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;">
+                        <span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span>
+                        <span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span>
+                    </div>
+                    <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;">
+                        <span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span>
+                        <span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -255,11 +339,20 @@
             <div class="price-box direta">
                 <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span>
                 <div class="total">R$ <span id="r_vendaD">0,00</span></div>
+                <div class="lucro-tag" id="tag_lucroD">Lucro: R$ 0,00</div>
             </div>
 
             <div class="grid-2">
-                <div class="price-box shopee"><span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0,00</span></div></div>
-                <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0,00</span></div></div>
+                <div class="price-box shopee">
+                    <span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span>
+                    <div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0,00</span></div>
+                    <div class="lucro-tag" id="tag_lucroS">Lucro: R$ 0,00</div>
+                </div>
+                <div class="price-box meli">
+                    <span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span>
+                    <div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0,00</span></div>
+                    <div class="lucro-tag" id="tag_lucroM">Lucro: R$ 0,00</div>
+                </div>
             </div>
             
             <div class="input-group" style="margin-top: 10px;">
@@ -283,7 +376,7 @@
                 <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
                 <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
                 <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
-                <button class="btn btn-all" onclick="wpp('completo')">Completa</button>
+                <button class="btn btn-orcamento" onclick="gerarOrcamentoCliente()">📄 Orçamento PDF</button>
             </div>
 
             <button class="btn-reset" onclick="resetarDados()">🗑️ Limpar Projeto</button>
@@ -310,7 +403,7 @@
             </div>
 
             <div class="report-grid">
-                <button class="btn-report" onclick="gerarPDF()">📄 PDF</button>
+                <button class="btn-report" onclick="gerarPDF()">📄 PDF Geral</button>
                 <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel</button>
             </div>
             <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
@@ -320,40 +413,42 @@
 </div>
 
 <script>
-    // --- MAGIA UX: FORMATAÇÃO BRASILEIRA (1.500,00) ---
+    // --- MAGIA UX: FORMATAÇÃO BRASILEIRA, TELEFONE E LEITORES ---
     function aplicarMascara(el) {
         if (!el) return;
-        var val = el.value;
-        var oldVal = val;
         var start = el.selectionStart;
-
-        // Limpa tudo que não for número e vírgula
-        val = val.replace(/\./g, '').replace(/[^0-9,]/g, '');
-
-        var parts = val.split(',');
-        if (parts.length > 2) {
-            val = parts[0] + ',' + parts.slice(1).join('');
-            parts = val.split(',');
+        var oldVal = el.value;
+        var partsDot = oldVal.split('.');
+        if (partsDot.length === 2 && oldVal.indexOf(',') === -1 && partsDot[1].length <= 3) {
+            oldVal = oldVal.replace('.', ',');
         }
-
+        var v = oldVal.replace(/\./g, '');
+        v = v.replace(/[^0-9,]/g, '');
+        var parts = v.split(',');
+        if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('');
         var intPart = parts[0];
         if (intPart) {
-            intPart = intPart.replace(/^0+(?=\d)/, ''); 
+            if (intPart.length > 1 && intPart.charAt(0) === '0') {
+                intPart = parseInt(intPart, 10).toString();
+            }
             intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
-
-        var finalVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
-        
-        if (el.value !== finalVal) {
-            el.value = finalVal;
-            // Reposiciona o cursor suavemente (útil em celulares)
-            var diff = finalVal.length - oldVal.length;
-            if (start) {
-                var newStart = start + diff;
-                if (newStart < 0) newStart = 0;
-                try { el.setSelectionRange(newStart, newStart); } catch(e) {}
-            }
+        var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
+        if (el.value !== newVal) {
+            el.value = newVal;
+            var newStart = start + (newVal.length - oldVal.length);
+            if (newStart < 0) newStart = 0;
+            try { el.setSelectionRange(newStart, newStart); } catch(e) {}
         }
+    }
+
+    function mascaraTelefone(el) {
+        if (!el) return;
+        var val = el.value.replace(/\D/g, '');
+        if (val.length > 11) val = val.slice(0, 11);
+        if (val.length > 2) val = '(' + val.slice(0,2) + ') ' + val.slice(2);
+        if (val.length > 10) val = val.slice(0, 10) + '-' + val.slice(10);
+        el.value = val;
     }
 
     function formatarMoeda(num) {
@@ -384,14 +479,17 @@
         return parseFloat(str) || 0;
     }
 
+    // --- BANCOS DE DADOS ---
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
+    var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
+    var editEstoqueId = null;
 
-    // taxaShopee e fixaShopee saíram daqui pois agora são calculadas 100% dinamicamente
     var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 
                 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
                 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
 
-    var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
+    // Adicionado nomeCliente e telefoneCliente para auto-save
+    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
 
     function updateSliderProgress(slider) {
         if (!slider) return;
@@ -399,6 +497,130 @@
         slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)';
     }
 
+    // --- MÓDULO DE ESTOQUE ---
+    function salvarItemEstoque() {
+        var t = pegaTexto('est_tipo');
+        var c = pegaTexto('est_cor');
+        var m = pegaTexto('est_marca');
+        var p = document.getElementById('est_preco').value; 
+
+        if(!t || !p) { alert("Preencha pelo menos o Tipo e o Preço para salvar no estoque."); return; }
+
+        if (editEstoqueId) {
+            var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
+            if (itemIndex > -1) {
+                estoque[itemIndex].tipo = t;
+                estoque[itemIndex].cor = c;
+                estoque[itemIndex].marca = m;
+                estoque[itemIndex].preco = p;
+            }
+            editEstoqueId = null;
+            document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
+        } else {
+            estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p });
+        }
+
+        localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
+        
+        document.getElementById('est_tipo').value = "";
+        document.getElementById('est_cor').value = "";
+        document.getElementById('est_marca').value = "";
+        document.getElementById('est_preco').value = "";
+        
+        renderEstoque();
+        showToast("📦 Estoque Atualizado!");
+    }
+
+    function renderEstoque() {
+        var lista = document.getElementById('lista_estoque');
+        if(!lista) return;
+        lista.innerHTML = estoque.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
+
+        estoque.forEach(function(item) {
+            lista.innerHTML += 
+                '<div class="history-item" style="padding: 8px 12px;">' +
+                    '<button class="btn-edit-item" onclick="editarItemEstoque('+item.id+')">✎</button>' +
+                    '<button class="btn-del-item" onclick="removerItemEstoque('+item.id+')">×</button>' +
+                    '<h4 style="margin-bottom:0; font-size:0.75rem; color:var(--success);">' + item.tipo + ' ' + item.cor + ' <span style="color:#fff">(' + item.marca + ')</span></h4>' +
+                    '<div style="font-size: 0.7rem; color: var(--text-muted);">Preço: R$ ' + item.preco + '</div>' +
+                '</div>';
+        });
+
+        atualizarDropdownsEstoque();
+    }
+
+    function removerItemEstoque(id) {
+        if(confirm("Deseja apagar este material do estoque?")) {
+            estoque = estoque.filter(function(e) { return e.id !== id; });
+            localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
+            renderEstoque();
+        }
+    }
+
+    function editarItemEstoque(id) {
+        var item = estoque.find(function(e) { return e.id === id; });
+        if(item) {
+            document.getElementById('est_tipo').value = item.tipo;
+            document.getElementById('est_cor').value = item.cor;
+            document.getElementById('est_marca').value = item.marca;
+            document.getElementById('est_preco').value = item.preco;
+            editEstoqueId = id;
+            document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição";
+            document.getElementById('toggle_estoque').checked = true;
+            document.getElementById('secao_estoque').style.display = 'block';
+        }
+    }
+
+    function atualizarDropdownsEstoque() {
+        var optionsHTML = '<option value="">-- Puxar material do Estoque --</option>';
+        estoque.forEach(function(item) {
+            var label = (item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim();
+            optionsHTML += '<option value="'+item.id+'">'+label+'</option>';
+        });
+
+        var s1 = document.getElementById('sel_est_1');
+        if (s1) { var val1 = s1.value; s1.innerHTML = optionsHTML; s1.value = val1; }
+
+        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
+        for(var i=2; i<=qtd+1; i++) {
+            var si = document.getElementById('sel_est_'+i);
+            if (si) { var vali = si.value; si.innerHTML = optionsHTML; si.value = vali; }
+        }
+    }
+
+    function puxarDoEstoque(indexStr) {
+        var sel = document.getElementById('sel_est_' + indexStr);
+        if (!sel || !sel.value) return; 
+
+        var item = estoque.find(function(e) { return e.id.toString() === sel.value; });
+        if (!item) return;
+
+        var idx = parseInt(indexStr);
+        var sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx;
+        var sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx;
+        var sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx;
+        var sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx;
+
+        var elT = document.getElementById(sTipo); if(elT) { elT.value = item.tipo; salvarDinamico(sTipo); }
+        var elC = document.getElementById(sCor); if(elC) { elC.value = item.cor; salvarDinamico(sCor); }
+        var elM = document.getElementById(sMarca); if(elM) { elM.value = item.marca; salvarDinamico(sMarca); }
+        var elP = document.getElementById(sPreco); 
+        if(elP) { 
+            elP.value = item.preco; 
+            aplicarMascara(elP); 
+            salvarDinamico(sPreco);
+        }
+
+        calcular();
+        showToast("📦 Filamento Carregado!");
+    }
+
+    function checarManual(indexStr) {
+        var sel = document.getElementById('sel_est_' + indexStr);
+        if(sel) sel.value = ""; 
+    }
+
+    // --- RENDERIZAÇÃO MULTI-COR ---
     function renderCoresExtras() {
         var qtdInput = document.getElementById('qtdCoresExtras');
         if (!qtdInput) return;
@@ -419,15 +641,20 @@
             if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
             
             container.innerHTML += 
-            '<div class="filament-box">' +
+            '<div class="filament-box" style="margin-top:10px;">' +
                 '<span class="filament-box-title">Filamento ' + i + '</span>' +
+                '<div class="input-group" style="margin-bottom: 8px;">' +
+                    '<select id="sel_est_'+i+'" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque(\''+i+'\')">' +
+                        '<option value="">-- Puxar material do Estoque --</option>' +
+                    '</select>' +
+                '</div>' +
                 '<div class="grid-3" style="margin-bottom: 8px;">' +
-                    '<div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento'+i+'" value="'+sTipo+'" placeholder="PETG" oninput="salvarDinamico(\'tipoFilamento'+i+'\')"></div>' +
-                    '<div class="input-group"><label>Cor</label><input type="text" id="corFilamento'+i+'" value="'+sCor+'" placeholder="Branco" oninput="salvarDinamico(\'corFilamento'+i+'\')"></div>' +
-                    '<div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento'+i+'" value="'+sMarca+'" placeholder="3DLab" oninput="salvarDinamico(\'marcaFilamento'+i+'\')"></div>' +
+                    '<div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento'+i+'" value="'+sTipo+'" placeholder="Ex: PETG" oninput="salvarDinamico(\'tipoFilamento'+i+'\'); checarManual(\''+i+'\')"></div>' +
+                    '<div class="input-group"><label>Cor</label><input type="text" id="corFilamento'+i+'" value="'+sCor+'" placeholder="Ex: Branco" oninput="salvarDinamico(\'corFilamento'+i+'\'); checarManual(\''+i+'\')"></div>' +
+                    '<div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento'+i+'" value="'+sMarca+'" placeholder="Ex: 3DLab" oninput="salvarDinamico(\'marcaFilamento'+i+'\'); checarManual(\''+i+'\')"></div>' +
                 '</div>' +
                 '<div class="grid-2">' +
-                    '<div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento'+i+'" value="'+sPreco+'" oninput="aplicarMascara(this); salvarDinamico(\'precoFilamento'+i+'\'); calcular()"></div>' +
+                    '<div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento'+i+'" value="'+sPreco+'" oninput="aplicarMascara(this); salvarDinamico(\'precoFilamento'+i+'\'); calcular(); checarManual(\''+i+'\')"></div>' +
                     '<div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca'+i+'" value="'+sPeso+'" oninput="aplicarMascara(this); salvarDinamico(\'pesoPeca'+i+'\'); calcular()"></div>' +
                 '</div>' +
             '</div>';
@@ -435,6 +662,7 @@
             aplicarMascara(document.getElementById('precoFilamento'+i));
             aplicarMascara(document.getElementById('pesoPeca'+i));
         }
+        atualizarDropdownsEstoque(); 
         calcular();
     }
 
@@ -449,6 +677,36 @@
         if (seletor && divPersonalizado) {
             divPersonalizado.style.display = seletor.value === 'Personalizado' ? 'flex' : 'none';
         }
+    }
+
+    function calcularSimulador() {
+        var vVenda = pegaValor('simuladorVenda');
+        var elS = document.getElementById('sim_shopee');
+        var elM = document.getElementById('sim_meli');
+        
+        if (vVenda <= 0) {
+            if(elS) elS.textContent = "0,00";
+            if(elM) elM.textContent = "0,00";
+            return;
+        }
+
+        var feeShopee = 0;
+        if (vVenda <= 79.99) feeShopee = (vVenda * 0.20) + 7;
+        else if (vVenda <= 99.99) feeShopee = (vVenda * 0.14) + 19;
+        else if (vVenda <= 199.99) feeShopee = (vVenda * 0.14) + 23;
+        else feeShopee = (vVenda * 0.14) + 29;
+        
+        var netShopee = vVenda - feeShopee;
+        if (netShopee < 0) netShopee = 0;
+
+        var tMeli = pegaValor('taxaMeli') / 100;
+        var fMeli = pegaValor('fixaMeli');
+        var feeMeli = (vVenda * tMeli) + (vVenda >= 79.99 ? 0 : fMeli); 
+        var netMeli = vVenda - feeMeli;
+        if (netMeli < 0) netMeli = 0;
+
+        if(elS) elS.textContent = formatarMoeda(netShopee);
+        if(elM) elM.textContent = formatarMoeda(netMeli);
     }
 
     window.onload = function() {
@@ -468,7 +726,8 @@
                 if (el.tagName === 'INPUT' && el.type === 'text' && id !== 'cepOrigem' && id !== 'cepDestino') {
                     aplicarMascara(el);
                 }
-
+                if (id === 'telefoneCliente') mascaraTelefone(el);
+                
                 el.addEventListener('input', function() {
                     if (id === 'margemSlider') { 
                         var mInp = document.getElementById('margemInput');
@@ -489,14 +748,23 @@
             if(el) {
                 var saved = localStorage.getItem('3d4y_dark_' + id);
                 if (saved !== null) { 
-                    if (id !== 'nomeProjeto' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'cepDestino') {
+                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'cepDestino') {
                         if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); }
                     }
                     el.value = saved; 
                     if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado') { aplicarMascara(el); }
+                    if (id === 'telefoneCliente') mascaraTelefone(el);
                 }
             }
         });
+
+        var tEst = document.getElementById('toggle_estoque');
+        var sEst = document.getElementById('secao_estoque');
+        if(tEst && sEst) {
+            tEst.checked = false;
+            tEst.addEventListener('change', function() { sEst.style.display = tEst.checked ? 'block' : 'none'; });
+            sEst.style.display = 'none';
+        }
 
         var tMulti = document.getElementById('toggle_multi_mat');
         var sMulti = document.getElementById('secao_multi_mat');
@@ -508,9 +776,22 @@
             sMulti.style.display = tMulti.checked ? 'block' : 'none';
         }
 
+        var tSim = document.getElementById('toggle_simulador');
+        var sSim = document.getElementById('secao_simulador');
+        if(tSim && sSim) {
+            tSim.checked = false; 
+            tSim.addEventListener('change', function() {
+                sSim.style.display = tSim.checked ? 'block' : 'none';
+                var simInput = document.getElementById('simuladorVenda');
+                if(simInput) { simInput.value = ''; calcularSimulador(); }
+            });
+            sSim.style.display = 'none'; 
+        }
+
         var qCores = document.getElementById('qtdCoresExtras');
         if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
 
+        renderEstoque();
         renderCoresExtras(); 
         updateSliderProgress(document.getElementById('margemSlider'));
         renderHistorico();
@@ -562,7 +843,8 @@
         var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
 
         var mInput = pegaValor('margemInput');
-        var valorComLucro = custoProducao * (1 + (mInput / 100));
+        var lucroBrutoDesejado = custoProducao * (mInput / 100);
+        var valorComLucro = custoProducao + lucroBrutoDesejado;
         
         var cLog = 0, frete = 0;
         if (logEnabled) {
@@ -574,55 +856,62 @@
         }
 
         var vd = valorComLucro + cLog + frete;
-        
-        // --- NOVA LÓGICA INTELIGENTE SHOPEE ---
         var vShopeeBase = valorComLucro + cLog;
         var validShopee = [];
         
-        // Regra 1: Até 79.99 (20% + R$ 7)
         var p1 = (vShopeeBase + 7) / 0.80;
         if (p1 <= 79.991) validShopee.push({ p: p1, tx: 20, fix: 7 });
-        
-        // Regra 2: 80 até 99.99 (14% + R$ 19)
         var p2 = (vShopeeBase + 19) / 0.86;
         if (p2 >= 79.99 && p2 <= 99.991) validShopee.push({ p: p2, tx: 14, fix: 19 });
-        
-        // Regra 3: 100 até 199.99 (14% + R$ 23)
         var p3 = (vShopeeBase + 23) / 0.86;
         if (p3 >= 99.99 && p3 <= 199.991) validShopee.push({ p: p3, tx: 14, fix: 23 });
-        
-        // Regra 4: Acima de 200 (14% + R$ 29)
         var p4 = (vShopeeBase + 29) / 0.86;
         if (p4 >= 199.99) validShopee.push({ p: p4, tx: 14, fix: 29 });
 
-        // Pega a menor opção válida para o vendedor não ter prejuízo
         validShopee.sort(function(a, b) { return a.p - b.p; });
         var bestShopee = validShopee.length > 0 ? validShopee[0] : { p: p4, tx: 14, fix: 29 };
-
         var vs = bestShopee.p;
 
-        // Atualiza os visores da Shopee para o usuário ver
         var elTxS = document.getElementById('taxaShopee');
         var elFixS = document.getElementById('fixaShopee');
         if(elTxS) elTxS.value = formatarMoeda(bestShopee.tx);
         if(elFixS) elFixS.value = formatarMoeda(bestShopee.fix);
-        // -------------------------------------
 
-        var fixaMeliAplicada = (valorComLucro + cLog > 70) ? 0 : pegaValor('fixaMeli');
+        var fixaMeliAplicada = (valorComLucro + cLog >= 79.99) ? 0 : pegaValor('fixaMeli');
         var vm = (valorComLucro + cLog + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
 
         var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = formatarMoeda(vd);
         var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = formatarMoeda(vs);
         var elVm = document.getElementById('r_vendaM'); if(elVm) elVm.textContent = formatarMoeda(vm);
+
+        var tLucroD = document.getElementById('tag_lucroD');
+        var tLucroS = document.getElementById('tag_lucroS');
+        var tLucroM = document.getElementById('tag_lucroM');
+
+        var lD = vd - custoProducao - cLog - frete;
+        var taxaRealShopee = (vs * (bestShopee.tx / 100)) + bestShopee.fix;
+        var lS = vs - taxaRealShopee - custoProducao - cLog;
+        var taxaRealMeli = (vm * (pegaValor('taxaMeli')/100)) + fixaMeliAplicada;
+        var lM = vm - taxaRealMeli - custoProducao - cLog;
+
+        if(tLucroD) tLucroD.textContent = "Lucro: R$ " + formatarMoeda(lD > 0 ? lD : 0);
+        if(tLucroS) tLucroS.textContent = "Lucro: R$ " + formatarMoeda(lS > 0 ? lS : 0);
+        if(tLucroM) tLucroM.textContent = "Lucro: R$ " + formatarMoeda(lM > 0 ? lM : 0);
+
+        var sSim = document.getElementById('secao_simulador');
+        if (sSim && sSim.style.display !== 'none') { calcularSimulador(); }
     }
 
+    // --- SALVAR COM STATUS E CRM ---
     function salvarHistorico() {
         var nome = pegaTexto('nomeProjeto') || "Sem Nome";
+        var cliNome = pegaTexto('nomeCliente') || "";
+        var cliTel = pegaTexto('telefoneCliente') || "";
+        
         var elCanal = document.getElementById('canalVendaSelecionado');
         var canal = elCanal ? elCanal.value : "Direta";
         
         var valorRegistradoNum = 0;
-        
         if (canal === "Personalizado") {
             valorRegistradoNum = pegaValor('valorPersonalizado');
             canal = "Direta"; 
@@ -655,24 +944,20 @@
         }
         
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
-        
         var rGasto = document.getElementById('r_gasto');
-        var rVd = document.getElementById('r_vendaD');
-        var rVs = document.getElementById('r_vendaS');
-        var rVm = document.getElementById('r_vendaM');
 
         var novo = {
             id: Date.now(),
             nome: nome,
+            cliente: cliNome,
+            telefone: cliTel,
             canal: canal,
             materiais: stringMateriais, 
             valorVenda: valorRegistradoNum, 
             custo: rGasto ? parseLocal(rGasto.textContent) : 0,
-            pix: rVd ? parseLocal(rVd.textContent) : 0,
-            shopee: rVs ? parseLocal(rVs.textContent) : 0,
-            meli: rVm ? parseLocal(rVm.textContent) : 0,
             peso: pesoSalvar,
             tempo: pegaValor('tempoH'),
+            status: "Orçamento",
             data: new Date().toLocaleDateString('pt-BR')
         };
         
@@ -684,7 +969,16 @@
         if(elPerso) elPerso.value = '';
         localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
-        showToast("✅ Venda Salva!");
+        showToast("✅ Salvo no Histórico!");
+    }
+
+    function mudarStatus(id, novoStatus) {
+        var index = historico.findIndex(function(h) { return h.id === id; });
+        if (index > -1) {
+            historico[index].status = novoStatus;
+            localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+            renderHistorico();
+        }
     }
 
     function renderHistorico() {
@@ -709,10 +1003,33 @@
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML";
             var corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
 
+            var st = item.status || "Finalizado"; 
+            if (st === 'Enviado') st = 'Enviado / Entregue';
+
+            var colorClass = st === 'Orçamento' ? 'status-orcamento' : 
+                             st === 'Na Fila' ? 'status-fila' : 
+                             st === 'Imprimindo' ? 'status-imprimindo' : 
+                             st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
+
+            var crmHtml = '';
+            if (item.cliente) {
+                crmHtml = '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>';
+            }
+
             lista.innerHTML += 
                 '<div class="history-item">' +
                     '<button class="btn-del-item" onclick="removerItem('+item.id+')">×</button>' +
-                    '<h4>'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4>' +
+                    '<div style="display: flex; justify-content: space-between; padding-right: 25px; align-items: center; margin-bottom: 4px;">' +
+                        '<h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4>' +
+                        '<select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)">' +
+                            '<option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option>' +
+                            '<option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option>' +
+                            '<option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option>' +
+                            '<option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option>' +
+                            '<option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option>' +
+                        '</select>' +
+                    '</div>' +
+                    crmHtml +
                     '<div class="hist-vals">' +
                         '<span>Venda: <b style="color:#fff">R$ '+formatarMoeda(valVenda)+'</b></span>' +
                         '<span>Custo: R$ '+formatarMoeda(custoItem)+'</span>' +
@@ -723,21 +1040,17 @@
 
         var fTotQtd = document.getElementById('tot_qtd'); if(fTotQtd) fTotQtd.textContent = historico.length;
         var fTotCusto = document.getElementById('tot_custo'); if(fTotCusto) fTotCusto.textContent = formatarMoeda(somaCusto);
-        
         var fTotFatu = document.getElementById('tot_faturamento'); if(fTotFatu) fTotFatu.textContent = formatarMoeda(somaDireta + somaShopee + somaMeli);
-        
         var fQtdD = document.getElementById('qtd_direta'); if(fQtdD) fQtdD.textContent = qtdDireta;
         var fTotD = document.getElementById('tot_direta'); if(fTotD) fTotD.textContent = formatarMoeda(somaDireta);
-        
         var fQtdS = document.getElementById('qtd_shopee'); if(fQtdS) fQtdS.textContent = qtdShopee;
         var fTotS = document.getElementById('tot_shopee'); if(fTotS) fTotS.textContent = formatarMoeda(somaShopee);
-        
         var fQtdM = document.getElementById('qtd_meli'); if(fQtdM) fQtdM.textContent = qtdMeli;
         var fTotM = document.getElementById('tot_meli'); if(fTotM) fTotM.textContent = formatarMoeda(somaMeli);
     }
 
     function removerItem(id) {
-        if(confirm("Deseja apagar esta venda?")) {
+        if(confirm("Deseja apagar este projeto do histórico?")) {
             historico = historico.filter(function(h) { return h.id !== id; });
             localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
             renderHistorico();
@@ -745,30 +1058,44 @@
     }
 
     function exportarExcel() {
-        if(historico.length === 0) return alert("Histórico vazio!");
-        var dados = historico.map(function(h) {
-            var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre";
-            return {
-                "Data": h.data,
-                "Projeto": h.nome,
-                "Canal": canalAmigavel,
-                "Materiais Usados": h.materiais || "-",
-                "Peso (g)": parseLocal(h.peso),
-                "Tempo (h)": parseLocal(h.tempo),
-                "Custo Prod. (R$)": parseLocal(h.custo),
-                "Venda Realizada (R$)": h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix),
-                "Opção Pix": parseLocal(h.pix),
-                "Opção Shopee": parseLocal(h.shopee),
-                "Opção M. Livre": parseLocal(h.meli)
-            };
-        });
-
-        var ws = XLSX.utils.json_to_sheet(dados);
-        ws['!cols'] = [{ wch: 12 }, { wch: 25 }, { wch: 15 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 12 }, { wch: 12 }, { wch: 15 }];
-
         var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Vendas");
-        XLSX.writeFile(wb, "Relatorio_Vendas_" + Date.now() + ".xlsx");
+
+        if(historico.length > 0) {
+            var dados = historico.map(function(h) {
+                var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre";
+                var statusPlanilha = h.status || "Finalizado";
+                if (statusPlanilha === 'Enviado') statusPlanilha = 'Enviado / Entregue';
+
+                return {
+                    "Data": h.data,
+                    "Cliente": h.cliente || "-",
+                    "WhatsApp": h.telefone || "-",
+                    "Projeto": h.nome,
+                    "Canal": canalAmigavel,
+                    "Status": statusPlanilha,
+                    "Materiais Usados": h.materiais || "-",
+                    "Peso (g)": parseLocal(h.peso),
+                    "Tempo (h)": parseLocal(h.tempo),
+                    "Custo Prod. (R$)": parseLocal(h.custo),
+                    "Venda Realizada (R$)": h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix)
+                };
+            });
+            var wsVendas = XLSX.utils.json_to_sheet(dados);
+            wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }];
+            XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
+        }
+
+        if(estoque.length > 0) {
+            var dadosEstoque = estoque.map(function(e) {
+                return { "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) };
+            });
+            var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque);
+            wsEstoque['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }];
+            XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
+        }
+
+        if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!");
+        XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
         showToast("📊 Excel Exportado!");
     }
 
@@ -778,36 +1105,59 @@
         reader.onload = function(e) {
             var data = new Uint8Array(e.target.result);
             var workbook = XLSX.read(data, {type: 'array'});
-            var firstSheet = workbook.SheetNames[0];
-            var jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet]);
             
-            var novosItens = jsonData.map(function(item, index) {
-                var canalEncontrado = item["Canal"] || "Direta";
-                if(canalEncontrado === "PIX") canalEncontrado = "Direta";
-                if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli";
+            var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
+            if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque") {
+                var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
+                var novosItens = jsonVendas.map(function(item, index) {
+                    var canalEncontrado = item["Canal"] || "Direta";
+                    if(canalEncontrado === "PIX") canalEncontrado = "Direta";
+                    if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli";
 
-                return {
-                    id: Date.now() + index,
-                    nome: item["Projeto"] || "Sem Nome",
-                    canal: canalEncontrado,
-                    materiais: item["Materiais Usados"] || "-",
-                    peso: item["Peso (g)"] || 0,
-                    tempo: item["Tempo (h)"] || 0,
-                    custo: item["Custo Prod. (R$)"] || item["Custo Produção (R$)"] || item["Custo Produção"] || 0,
-                    valorVenda: item["Venda Realizada (R$)"] || item["Valor Vendido (R$)"] || item["Valor da Venda"] || 0,
-                    pix: item["Opção Pix"] || item["Ref. Pix"] || 0,
-                    shopee: item["Opção Shopee"] || item["Ref. Shopee"] || 0,
-                    meli: item["Opção M. Livre"] || item["Ref. Meli"] || 0,
-                    data: item["Data"] || new Date().toLocaleDateString('pt-BR')
-                };
-            });
+                    var stPlanilha = item["Status"] || "Finalizado";
+                    if (stPlanilha === 'Enviado') stPlanilha = 'Enviado / Entregue';
 
-            if(confirm("Deseja importar " + novosItens.length + " vendas? Isso substituirá o histórico atual.")) {
-                historico = novosItens;
-                localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
-                renderHistorico();
-                showToast("✅ Importação concluída!");
+                    return {
+                        id: Date.now() + index,
+                        nome: item["Projeto"] || "Sem Nome",
+                        cliente: item["Cliente"] || "",
+                        telefone: item["WhatsApp"] || "",
+                        canal: canalEncontrado,
+                        status: stPlanilha,
+                        materiais: item["Materiais Usados"] || "-",
+                        peso: String(item["Peso (g)"] || "0"),
+                        tempo: String(item["Tempo (h)"] || "0"),
+                        custo: String(item["Custo Prod. (R$)"] || item["Custo Produção"] || "0.00"),
+                        valorVenda: String(item["Venda Realizada (R$)"] || item["Valor Vendido (R$)"] || "0.00"),
+                        data: item["Data"] || new Date().toLocaleDateString('pt-BR')
+                    };
+                });
+                if (novosItens.length > 0) {
+                    historico = novosItens;
+                    localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+                }
             }
+
+            if (workbook.Sheets["Estoque"]) {
+                var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
+                var novosEstoque = jsonEstoque.map(function(item, index) {
+                    return {
+                        id: Date.now() + index + 10000,
+                        tipo: item["Tipo"] || "-",
+                        cor: item["Cor"] || "-",
+                        marca: item["Marca"] || "-",
+                        preco: formatarMoeda(item["Preço (R$)"] || item["Preço"] || 0)
+                    };
+                });
+                if (novosEstoque.length > 0) {
+                    estoque = novosEstoque;
+                    localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
+                }
+            }
+
+            renderHistorico();
+            renderEstoque();
+            showToast("✅ Importação concluída!");
         };
         reader.readAsArrayBuffer(file);
     }
@@ -838,35 +1188,98 @@
             var t = parseLocal(h.tempo);
             var c = parseLocal(h.custo);
             var v = h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix);
+            var statusStr = h.status || "Finalizado";
+            var cliOrProj = h.cliente ? h.nome + "\n(Cli: " + h.cliente + ")" : h.nome;
 
             sumPeso += p; sumTempo += t; sumCusto += c; sumVenda += v;
 
-            return [ h.data, h.nome, canalAjustado, h.materiais || (p.toLocaleString('pt-BR')+'g'), t.toLocaleString('pt-BR')+'h', 'R$ '+formatarMoeda(c), 'R$ '+formatarMoeda(v) ];
+            return [ h.data, cliOrProj, canalAjustado, statusStr, h.materiais || (p.toLocaleString('pt-BR')+'g'), t.toLocaleString('pt-BR')+'h', 'R$ '+formatarMoeda(c), 'R$ '+formatarMoeda(v) ];
         });
 
         doc.autoTable({
-            head: [['Data', 'Projeto', 'Canal', 'Material', 'Tempo', 'Custo', 'Venda']],
+            head: [['Data', 'Projeto/Cliente', 'Canal', 'Status', 'Material', 'Tempo', 'Custo', 'Venda']],
             body: tableBody,
-            foot: [['', '', 'TOTAIS:', sumPeso.toLocaleString('pt-BR')+'g', sumTempo.toLocaleString('pt-BR')+'h', 'R$ '+formatarMoeda(sumCusto), 'R$ '+formatarMoeda(sumVenda)]],
+            foot: [['', '', '', 'TOTAIS:', sumPeso.toLocaleString('pt-BR')+'g', sumTempo.toLocaleString('pt-BR')+'h', 'R$ '+formatarMoeda(sumCusto), 'R$ '+formatarMoeda(sumVenda)]],
             startY: 50,
             theme: 'grid',
             headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
             footStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
             styles: { fontSize: 8 },
-            columnStyles: { 3: { cellWidth: 40 } }, 
+            columnStyles: { 1: { cellWidth: 35 }, 4: { cellWidth: 25 } }, 
             didParseCell: function(data) {
                 if (data.section === 'body' && data.column.index === 2) {
                     if (data.cell.raw === 'PIX') { data.cell.styles.textColor = [16, 185, 129]; data.cell.styles.fontStyle = 'bold'; }
                     if (data.cell.raw === 'Shopee') { data.cell.styles.textColor = [249, 77, 48]; data.cell.styles.fontStyle = 'bold'; }
                     if (data.cell.raw === 'M. Livre') { data.cell.styles.textColor = [202, 138, 4]; data.cell.styles.fontStyle = 'bold'; }
                 }
-                if ((data.section === 'body' || data.section === 'head' || data.section === 'foot') && data.column.index >= 4) {
+                if ((data.section === 'body' || data.section === 'head' || data.section === 'foot') && data.column.index >= 5) {
                     data.cell.styles.halign = 'right';
                 }
             }
         });
         doc.save("vendas_3d4you_" + Date.now() + ".pdf");
         showToast("📄 PDF Gerado!");
+    }
+
+    function gerarOrcamentoCliente() {
+        var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D";
+        var cliNome = pegaTexto('nomeCliente') || "";
+        
+        var vD = document.getElementById('r_vendaD') ? document.getElementById('r_vendaD').textContent : '0,00';
+        var vS = document.getElementById('r_vendaS') ? document.getElementById('r_vendaS').textContent : '0,00';
+        var vM = document.getElementById('r_vendaM') ? document.getElementById('r_vendaM').textContent : '0,00';
+        
+        var doc = new window.jspdf.jsPDF();
+        
+        doc.setFontSize(22);
+        doc.setTextColor(59, 130, 246); 
+        doc.text("Orçamento - Impressão 3D 4You", 14, 20);
+        
+        doc.setLineWidth(0.5);
+        doc.setDrawColor(200, 200, 200);
+        doc.line(14, 25, 196, 25);
+
+        doc.setFontSize(14);
+        doc.setTextColor(40, 40, 40);
+        doc.text("Projeto: " + nomeProj, 14, 35);
+        if (cliNome) {
+            doc.setFontSize(11);
+            doc.text("Cliente: " + cliNome, 14, 42);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 14, 48);
+        } else {
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 14, 42);
+        }
+
+        var boxY = cliNome ? 55 : 50;
+
+        doc.setFillColor(245, 247, 250);
+        doc.roundedRect(14, boxY, 182, 40, 3, 3, 'F');
+        
+        doc.setFontSize(12);
+        doc.setTextColor(40, 40, 40);
+        doc.text("Opções de Pagamento:", 20, boxY + 10);
+
+        doc.setFontSize(11);
+        doc.setTextColor(16, 185, 129); 
+        doc.text("Pix / Transferência Direta: R$ " + vD, 20, boxY + 20);
+        
+        doc.setTextColor(249, 77, 48); 
+        doc.text("Plataforma Shopee: R$ " + vS, 20, boxY + 28);
+        
+        doc.setTextColor(202, 138, 4); 
+        doc.text("Plataforma Mercado Livre: R$ " + vM, 20, boxY + 36);
+
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text("* Orçamento válido por 7 dias.", 14, boxY + 55);
+        doc.text("* Custos de frete (se aplicável via plataforma) podem sofrer alterações.", 14, boxY + 60);
+
+        doc.save("Orcamento_Cliente_" + Date.now() + ".pdf");
+        showToast("📄 Orçamento Salvo!");
     }
 
     function buscarCEP(valor, idTexto) {
@@ -888,13 +1301,16 @@
     }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(function(id) { 
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(function(id) { 
             var el = document.getElementById(id);
             if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); }
         });
 
         var pFil1 = document.getElementById('precoFilamento');
         if(pFil1) { pFil1.value = "120,00"; localStorage.setItem('3d4y_dark_precoFilamento', "120,00"); }
+        
+        var selEst1 = document.getElementById('sel_est_1');
+        if(selEst1) selEst1.value = "";
 
         for(var i = 2; i <= 21; i++) {
             ['tipoFilamento', 'corFilamento', 'marcaFilamento', 'precoFilamento', 'pesoPeca'].forEach(function(prefix) {
@@ -913,28 +1329,56 @@
             if(sMulti) sMulti.style.display = 'none';
         }
 
+        var tSim = document.getElementById('toggle_simulador');
+        var sSim = document.getElementById('secao_simulador');
+        if(tSim) {
+            tSim.checked = false;
+            if(sSim) sSim.style.display = 'none';
+            var simInput = document.getElementById('simuladorVenda');
+            if(simInput) simInput.value = '';
+        }
+
         renderCoresExtras();
         var dtTexto = document.getElementById('destinoTexto');
         if(dtTexto) dtTexto.textContent = "";
 
         calcular();
+        calcularSimulador();
         showToast("✅ Projeto Resetado!");
     }
 
+    // --- WPP CRM DINÂMICO ---
     function wpp(tipo) {
         var vD = document.getElementById('r_vendaD') ? document.getElementById('r_vendaD').textContent : '0,00';
         var vS = document.getElementById('r_vendaS') ? document.getElementById('r_vendaS').textContent : '0,00';
         var vM = document.getElementById('r_vendaM') ? document.getElementById('r_vendaM').textContent : '0,00';
+        
         var nProj = document.getElementById('nomeProjeto');
         var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
         
-        var txt = "*Orçamento 3D 4You*\n*Projeto:* " + nome + "\n\n";
+        var nCli = document.getElementById('nomeCliente');
+        var nomeCliente = nCli && nCli.value ? nCli.value.trim() : "";
+        
+        var tCli = document.getElementById('telefoneCliente');
+        var telFormatado = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : "";
+
+        var saudacao = nomeCliente ? "*Olá " + nomeCliente + ", tudo bem?*\nSegue o orçamento da Impressão 3D 4You:\n\n" : "*Orçamento 3D 4You*\n\n";
+        
+        var txt = saudacao + "*Projeto:* " + nome + "\n\n";
+        
         if (tipo === 'completo') { txt += "Pix: *R$ " + vD + "*\nShopee: *R$ " + vS + "*\nM.Livre: *R$ " + vM + "*"; }
         else { 
             var valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
             txt += "Valor: *R$ " + valF + "*"; 
         }
-        window.open("https://wa.me/?text=" + encodeURIComponent(txt), '_blank');
+        
+        var linkWpp = "https://wa.me/";
+        if (telFormatado.length >= 10) {
+            linkWpp += "55" + telFormatado;
+        }
+        linkWpp += "?text=" + encodeURIComponent(txt);
+
+        window.open(linkWpp, '_blank');
     }
 </script>
 </body>
