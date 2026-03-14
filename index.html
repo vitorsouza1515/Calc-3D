@@ -85,16 +85,10 @@
 
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
+        .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .4s; border-radius: 20px; }
         .slider-switch:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider-switch { background-color: var(--primary); }
         input:checked + .slider-switch:before { transform: translateX(14px); }
-
-        /* Cores específicas para cada toggle */
-        #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
-        #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
-        #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
-        #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
@@ -292,8 +286,12 @@
                 <div class="grid-2">
                     <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
-                    <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Origem</label><input type="text" id="cepOrigem" placeholder="00000-000" data-save="true" onkeyup="buscarCEP(this.value, 'origemTexto')"><div id="origemTexto" class="endereco-txt"></div></div>
+                    <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')" oninput="salvarDinamico('cepDestino')"><div id="destinoTexto" class="endereco-txt"></div></div>
+                    <div class="input-group"><label>Envio</label><select id="tipoEnvio" data-save="true" onchange="toggleFreteManual(); calcular()"><option value="PAC">PAC</option><option value="SEDEX">SEDEX</option><option value="Manual">Manual</option></select></div>
+                    
+                    <div class="input-group" id="divCaixaG"><label>Caixa (g)</label><input type="text" inputmode="decimal" id="pesoBruto" value="300" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group" id="divFreteManual" style="display:none;"><label style="color:var(--orange)">Frete Manual (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
             </div>
         </div>
@@ -498,9 +496,24 @@
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
     var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto'];
-    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
+    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
+
+    function toggleFreteManual() {
+        var tEnvio = document.getElementById('tipoEnvio');
+        var dFrete = document.getElementById('divFreteManual');
+        var dCaixa = document.getElementById('divCaixaG');
+        if (tEnvio && dFrete && dCaixa) {
+            if (tEnvio.value === 'Manual') {
+                dFrete.style.display = 'flex';
+                dCaixa.style.display = 'none';
+            } else {
+                dFrete.style.display = 'none';
+                dCaixa.style.display = 'flex';
+            }
+        }
+    }
 
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
@@ -539,7 +552,7 @@
             id: Date.now() + Math.floor(Math.random() * 1000),
             nome: nomeItem,
             custo: custoItem,
-            valorComLucro: vD, // Usando VD como base de valor com lucro por item
+            valorComLucro: vD, 
             tempo: tempoItem,
             peso: pesoItem,
             materiais: stringMateriais
@@ -570,11 +583,12 @@
         container.style.display = 'block';
         lista.innerHTML = '';
         
-        var totCusto = 0, totValorComLucro = 0;
+        var totCusto = 0, totValorComLucro = 0, totPeso = 0;
 
         carrinho.forEach(item => {
             totCusto += item.custo;
-            totValorComLucro += item.valorComLucro; // Aqui o vD já tem o lucro aplicado, mas sem frete do carrinho
+            totValorComLucro += item.valorComLucro; 
+            totPeso += item.peso;
 
             lista.innerHTML += `
                 <div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border);">
@@ -589,7 +603,14 @@
         var cLog = 0, frete = 0;
         if (tLog && tLog.checked) {
             cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
-            frete = pegaValor('valorFreteManual');
+            var tipoE = document.getElementById('tipoEnvio').value;
+            if (tipoE === 'Manual') {
+                frete = pegaValor('valorFreteManual');
+            } else {
+                var pReal = (pegaValor('pesoBruto') + totPeso) / 1000;
+                var base = (tipoE === 'PAC') ? 18.50 : 24.50; 
+                frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
+            }
         }
 
         var totD = totValorComLucro + cLog + frete;
@@ -862,7 +883,7 @@
                 }
             }
             if (el) {
-                if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); }
+                if (el.tagName === 'INPUT' && el.type === 'text' && id !== 'cepOrigem' && id !== 'cepDestino') { aplicarMascara(el); }
                 el.addEventListener('input', function() {
                     if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); }
                     if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } }
@@ -906,6 +927,7 @@
         
         renderCoresExtras(); 
         updateSliderProgress(document.getElementById('margemSlider')); 
+        toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
     };
@@ -953,7 +975,16 @@
         
         if (logEnabled) { 
             cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
-            frete = pegaValor('valorFreteManual');
+            var tEnvio = document.getElementById('tipoEnvio');
+            var tipoE = tEnvio ? tEnvio.value : 'PAC';
+            
+            if (tipoE === 'Manual') {
+                frete = pegaValor('valorFreteManual');
+            } else {
+                var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000;
+                var base = (tipoE === 'PAC') ? 18.50 : 24.50; 
+                frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
+            }
         }
         
         var divResumoLog = document.getElementById('resumo_logistica');
@@ -1018,10 +1049,16 @@
             
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
-                // Aqui podemos considerar que no carrinho as embalagens foram cobradas por item antes ou agora na soma
-                // Usando a soma base global para todos os itens
                 cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
-                freteCalculado = pegaValor('valorFreteManual');
+                var tEnvio = document.getElementById('tipoEnvio');
+                var tipoE = tEnvio ? tEnvio.value : 'PAC';
+                if(tipoE === 'Manual') {
+                    freteCalculado = pegaValor('valorFreteManual');
+                } else {
+                    var pReal = (pegaValor('pesoBruto') + pesoFinal) / 1000;
+                    var baseEnvio = (tipoE === 'PAC') ? 18.50 : 24.50;
+                    freteCalculado = pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio;
+                }
             }
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
@@ -1042,7 +1079,15 @@
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
                 cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
-                freteCalculado = pegaValor('valorFreteManual');
+                var tEnvio = document.getElementById('tipoEnvio');
+                var tipoE = tEnvio ? tEnvio.value : 'PAC';
+                if(tipoE === 'Manual') {
+                    freteCalculado = pegaValor('valorFreteManual');
+                } else {
+                    var pReal = (pegaValor('pesoBruto') + pesoFinal) / 1000;
+                    var baseEnvio = (tipoE === 'PAC') ? 18.50 : 24.50;
+                    freteCalculado = pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio;
+                }
             }
 
             var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
@@ -1133,9 +1178,14 @@
         var item = historico.find(h => h.id === id);
         if (!item) return;
 
+        carrinho = [];
+        renderCarrinho();
+
         var match = item.nome.match(/^(\d+)x\s(.*)/);
+        var qtd = 1;
         if (match) {
-            document.getElementById('qtdPecasProjeto').value = match[1];
+            qtd = parseInt(match[1]) || 1;
+            document.getElementById('qtdPecasProjeto').value = qtd;
             document.getElementById('nomeProjeto').value = match[2];
         } else {
             document.getElementById('qtdPecasProjeto').value = "1";
@@ -1145,21 +1195,50 @@
         document.getElementById('nomeCliente').value = item.cliente || "";
         document.getElementById('telefoneCliente').value = item.telefone || "";
         
+        if(item.tempo !== undefined) document.getElementById('tempoH').value = formatarMoeda(item.tempo / qtd);
+        if(item.peso !== undefined) document.getElementById('pesoPeca').value = formatarMoeda(item.peso / qtd);
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti && tMulti.checked) {
+            tMulti.checked = false;
+            tMulti.dispatchEvent(new Event('change'));
+        }
+
+        var tLog = document.getElementById('toggle_logistica');
+        if (item.logistica > 0 || item.frete > 0) {
+            if(tLog && !tLog.checked) { tLog.checked = true; tLog.dispatchEvent(new Event('change')); }
+            document.getElementById('custoEmbalagem').value = "0,00";
+            document.getElementById('custoDeslocamento').value = formatarMoeda((item.logistica || 0) / qtd);
+            
+            var tEnvio = document.getElementById('tipoEnvio');
+            if(tEnvio) { tEnvio.value = 'Manual'; }
+            
+            var dFrete = document.getElementById('divFreteManual');
+            var dCaixa = document.getElementById('divCaixaG');
+            if(dFrete) dFrete.style.display = 'flex';
+            if(dCaixa) dCaixa.style.display = 'none';
+            
+            var vFrete = document.getElementById('valorFreteManual');
+            if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
+        } else {
+            if(tLog && tLog.checked) { tLog.checked = false; tLog.dispatchEvent(new Event('change')); }
+        }
+
         var seletorCanal = document.getElementById('canalVendaSelecionado');
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
-        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
+
+        calcular();
 
         editHistoricoId = id;
         document.querySelector('.btn-save-hist').textContent = "💾 Confirmar Edição de Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--sky)";
         
         showToast("✏️ Editando Venda...");
-        
         window.scrollTo(0, 0);
     }
 
@@ -1263,7 +1342,6 @@
             var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
-            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
             if (h.valorBruto === undefined) {
                 if(h.canal === "Shopee") {
                     bruto = (liquido + 4) / 0.80; 
@@ -1346,54 +1424,9 @@
     }
 
     function gerarOrcamentoCliente() {
-        var doc = new window.jspdf.jsPDF(); 
-        doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("Orçamento - 3D 4You", 14, 20);
-        doc.setFontSize(14); doc.setTextColor(40, 40, 40); 
-        
-        var isCart = carrinho && carrinho.length > 0;
-        var y = 35;
-        var vD, vS, vM;
-
-        if(isCart) {
-            doc.text("Itens do Pedido:", 14, y);
-            y += 10;
-            carrinho.forEach(i => {
-                doc.setFontSize(12);
-                doc.text("- " + i.nome, 14, y);
-                y += 8;
-            });
-            doc.setFontSize(14);
-            y += 5;
-            
-            vD = document.getElementById('cart_tot_vd').textContent;
-            vS = document.getElementById('cart_tot_vs').textContent;
-            vM = document.getElementById('cart_tot_vm').textContent;
-        } else {
-            var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D";
-            var elQtd = document.getElementById('qtdPecasProjeto');
-            var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
-            
-            doc.text("Projeto: " + qtd + nomeProj, 14, y);
-            y += 15;
-            
-            vD = document.getElementById('r_vendaD').textContent;
-            vS = document.getElementById('r_vendaS').textContent;
-            vM = document.getElementById('r_vendaM').textContent;
-        }
-
-        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
-        var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
-        var valPerso = pegaTexto('valorPersonalizado');
-        
-        if (isPersonalizado && valPerso) {
-            if(canalPerso === 'Direta') vD = valPerso;
-            if(canalPerso === 'Shopee') vS = valPerso;
-            if(canalPerso === 'Meli') vM = valPerso;
-        }
-
-        doc.text("Pagamento Pix: R$ " + vD, 14, y);
-        doc.text("Shopee: R$ " + vS, 14, y + 10);
-        doc.text("Mercado Livre: R$ " + vM, 14, y + 20);
+        var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D", vD = document.getElementById('r_vendaD').textContent, vS = document.getElementById('r_vendaS').textContent, vM = document.getElementById('r_vendaM').textContent;
+        var doc = new window.jspdf.jsPDF(); doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("Orçamento - 3D 4You", 14, 20);
+        doc.setFontSize(14); doc.setTextColor(40, 40, 40); doc.text("Projeto: " + nomeProj, 14, 35); doc.text("Pagamento Pix: R$ " + vD, 14, 50); doc.text("Shopee: R$ " + vS, 14, 60); doc.text("Mercado Livre: R$ " + vM, 14, 70);
         doc.save("Orcamento_Cliente.pdf");
     }
 
@@ -1404,7 +1437,7 @@
         carrinho = [];
         renderCarrinho();
         
-        ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'valorFreteManual'].forEach(id => { 
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'simuladorVenda', 'valorFreteManual'].forEach(id => { 
             var el = document.getElementById(id); 
             if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
         });
@@ -1433,6 +1466,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
+        // NOVO: Desliga os botões e zera a visualização da tela
         ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_simulador'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
@@ -1450,37 +1484,31 @@
     function wpp(tipo) {
         var txt = "*Orçamento 3D 4You*\n\n";
         var valF = 0;
-        var isCart = carrinho && carrinho.length > 0;
-        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
-        var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
 
-        if(isCart) {
+        if(carrinho && carrinho.length > 0) {
             txt += "*Itens do Pedido:*\n";
+            var totDireta = 0, totShopee = 0, totMeli = 0;
             carrinho.forEach(i => {
                 txt += "- " + i.nome + "\n";
+                totDireta += i.vD;
+                totShopee += i.vS;
+                totMeli += i.vM;
             });
-            
-            valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
+            valF = tipo === 'direta' ? totDireta : (tipo === 'shopee' ? totShopee : totMeli);
         } else {
+            var vD = document.getElementById('r_vendaD').textContent;
+            var vS = document.getElementById('r_vendaS').textContent;
+            var vM = document.getElementById('r_vendaM').textContent;
             var nProj = document.getElementById('nomeProjeto');
             var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
             var elQtd = document.getElementById('qtdPecasProjeto');
             var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
             
             txt += "*Projeto:* " + qtd + nome + "\n";
-            valF = tipo === 'direta' ? document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
+            valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
         }
         
-        if (isPersonalizado) {
-            var vPerso = pegaTexto('valorPersonalizado');
-            if (vPerso) {
-                if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) {
-                    valF = vPerso;
-                }
-            }
-        }
-        
-        txt += "\n*Valor Total:* R$ " + valF;
+        txt += "\n*Valor Total:* R$ " + (typeof valF === 'number' ? formatarMoeda(valF) : valF);
         var tCli = document.getElementById('telefoneCliente');
         var tel = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : "";
         window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
