@@ -292,7 +292,7 @@
                 <div class="grid-2">
                     <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Envio</label><select id="tipoEnvio" data-save="true" onchange="toggleFreteManual(); calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option><option value="Manual">Manual</option></select></div>
+                    <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
                     <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
             </div>
@@ -502,12 +502,6 @@
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
-    function toggleFreteManual() {
-        var tEnvio = document.getElementById('tipoEnvio');
-        // removidos dFrete e dCaixa que não existem mais neste contexto, 
-        // agora o input "valorFreteManual" é fixo independentemente.
-    }
-
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
@@ -545,9 +539,7 @@
             id: Date.now() + Math.floor(Math.random() * 1000),
             nome: nomeItem,
             custo: custoItem,
-            vD: vD,
-            vS: vS,
-            vM: vM,
+            valorComLucro: vD, // Usando VD como base de valor com lucro por item
             tempo: tempoItem,
             peso: pesoItem,
             materiais: stringMateriais
@@ -577,24 +569,44 @@
 
         container.style.display = 'block';
         lista.innerHTML = '';
-        var totC = 0, totD = 0, totS = 0, totM = 0;
+        
+        var totCusto = 0, totValorComLucro = 0;
 
         carrinho.forEach(item => {
-            totC += item.custo;
-            totD += item.vD;
-            totS += item.vS;
-            totM += item.vM;
+            totCusto += item.custo;
+            totValorComLucro += item.valorComLucro; // Aqui o vD já tem o lucro aplicado, mas sem frete do carrinho
 
             lista.innerHTML += `
                 <div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border);">
                     <button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer;">X</button>
                     <div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 15px;">${item.nome}</div>
-                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo: R$ ${formatarMoeda(item.custo)} | Dir: R$ ${formatarMoeda(item.vD)}</div>
+                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div>
                 </div>
             `;
         });
 
-        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totC);
+        var tLog = document.getElementById('toggle_logistica');
+        var cLog = 0, frete = 0;
+        if (tLog && tLog.checked) {
+            cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+            frete = pegaValor('valorFreteManual');
+        }
+
+        var totD = totValorComLucro + cLog + frete;
+        var vShopeeBase = totValorComLucro + cLog;
+        
+        var validShopee = [];
+        var p1 = (vShopeeBase + 4) / 0.80; if (p1 <= 79.991) validShopee.push(p1);
+        var p2 = (vShopeeBase + 16) / 0.86; if (p2 >= 79.99 && p2 <= 99.991) validShopee.push(p2);
+        var p3 = (vShopeeBase + 20) / 0.86; if (p3 >= 99.99 && p3 <= 199.991) validShopee.push(p3);
+        var p4 = (vShopeeBase + 26) / 0.86; if (p4 >= 199.99) validShopee.push(p4);
+        validShopee.sort((a, b) => a - b); 
+        var totS = validShopee.length > 0 ? validShopee[0] : p4;
+
+        var fixaMeliAplicada = (vShopeeBase >= 79.99) ? 0 : pegaValor('fixaMeli');
+        var totM = (vShopeeBase + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
+
+        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto);
         document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD);
         document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS);
         document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
@@ -997,15 +1009,17 @@
                 valorBruto = pegaValor('valorPersonalizado'); 
                 canal = document.getElementById('canalPersonalizadoDestino').value; 
             } else if(canal === "Direta") { 
-                valorBruto = carrinho.reduce((a,b) => a + b.vD, 0); 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); 
             } else if(canal === "Shopee") { 
-                valorBruto = carrinho.reduce((a,b) => a + b.vS, 0); 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); 
             } else { 
-                valorBruto = carrinho.reduce((a,b) => a + b.vM, 0); 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); 
             }
             
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
+                // Aqui podemos considerar que no carrinho as embalagens foram cobradas por item antes ou agora na soma
+                // Usando a soma base global para todos os itens
                 cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
                 freteCalculado = pegaValor('valorFreteManual');
             }
@@ -1135,6 +1149,7 @@
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
+        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
@@ -1248,6 +1263,7 @@
             var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
+            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
             if (h.valorBruto === undefined) {
                 if(h.canal === "Shopee") {
                     bruto = (liquido + 4) / 0.80; 
@@ -1330,9 +1346,54 @@
     }
 
     function gerarOrcamentoCliente() {
-        var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D", vD = document.getElementById('r_vendaD').textContent, vS = document.getElementById('r_vendaS').textContent, vM = document.getElementById('r_vendaM').textContent;
-        var doc = new window.jspdf.jsPDF(); doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("Orçamento - 3D 4You", 14, 20);
-        doc.setFontSize(14); doc.setTextColor(40, 40, 40); doc.text("Projeto: " + nomeProj, 14, 35); doc.text("Pagamento Pix: R$ " + vD, 14, 50); doc.text("Shopee: R$ " + vS, 14, 60); doc.text("Mercado Livre: R$ " + vM, 14, 70);
+        var doc = new window.jspdf.jsPDF(); 
+        doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("Orçamento - 3D 4You", 14, 20);
+        doc.setFontSize(14); doc.setTextColor(40, 40, 40); 
+        
+        var isCart = carrinho && carrinho.length > 0;
+        var y = 35;
+        var vD, vS, vM;
+
+        if(isCart) {
+            doc.text("Itens do Pedido:", 14, y);
+            y += 10;
+            carrinho.forEach(i => {
+                doc.setFontSize(12);
+                doc.text("- " + i.nome, 14, y);
+                y += 8;
+            });
+            doc.setFontSize(14);
+            y += 5;
+            
+            vD = document.getElementById('cart_tot_vd').textContent;
+            vS = document.getElementById('cart_tot_vs').textContent;
+            vM = document.getElementById('cart_tot_vm').textContent;
+        } else {
+            var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D";
+            var elQtd = document.getElementById('qtdPecasProjeto');
+            var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
+            
+            doc.text("Projeto: " + qtd + nomeProj, 14, y);
+            y += 15;
+            
+            vD = document.getElementById('r_vendaD').textContent;
+            vS = document.getElementById('r_vendaS').textContent;
+            vM = document.getElementById('r_vendaM').textContent;
+        }
+
+        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
+        var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
+        var valPerso = pegaTexto('valorPersonalizado');
+        
+        if (isPersonalizado && valPerso) {
+            if(canalPerso === 'Direta') vD = valPerso;
+            if(canalPerso === 'Shopee') vS = valPerso;
+            if(canalPerso === 'Meli') vM = valPerso;
+        }
+
+        doc.text("Pagamento Pix: R$ " + vD, 14, y);
+        doc.text("Shopee: R$ " + vS, 14, y + 10);
+        doc.text("Mercado Livre: R$ " + vM, 14, y + 20);
         doc.save("Orcamento_Cliente.pdf");
     }
 
@@ -1389,31 +1450,37 @@
     function wpp(tipo) {
         var txt = "*Orçamento 3D 4You*\n\n";
         var valF = 0;
+        var isCart = carrinho && carrinho.length > 0;
+        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
+        var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
 
-        if(carrinho && carrinho.length > 0) {
+        if(isCart) {
             txt += "*Itens do Pedido:*\n";
-            var totDireta = 0, totShopee = 0, totMeli = 0;
             carrinho.forEach(i => {
                 txt += "- " + i.nome + "\n";
-                totDireta += i.vD;
-                totShopee += i.vS;
-                totMeli += i.vM;
             });
-            valF = tipo === 'direta' ? totDireta : (tipo === 'shopee' ? totShopee : totMeli);
+            
+            valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
         } else {
-            var vD = document.getElementById('r_vendaD').textContent;
-            var vS = document.getElementById('r_vendaS').textContent;
-            var vM = document.getElementById('r_vendaM').textContent;
             var nProj = document.getElementById('nomeProjeto');
             var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
             var elQtd = document.getElementById('qtdPecasProjeto');
             var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
             
             txt += "*Projeto:* " + qtd + nome + "\n";
-            valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
+            valF = tipo === 'direta' ? document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
         }
         
-        txt += "\n*Valor Total:* R$ " + (typeof valF === 'number' ? formatarMoeda(valF) : valF);
+        if (isPersonalizado) {
+            var vPerso = pegaTexto('valorPersonalizado');
+            if (vPerso) {
+                if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) {
+                    valF = vPerso;
+                }
+            }
+        }
+        
+        txt += "\n*Valor Total:* R$ " + valF;
         var tCli = document.getElementById('telefoneCliente');
         var tel = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : "";
         window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
