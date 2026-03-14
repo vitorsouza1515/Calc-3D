@@ -398,6 +398,7 @@
                 <div class="total-row"><span style="font-weight: bold; color: var(--orange);">CUSTO TOTAL LOG/FRETE:</span><b style="color: var(--orange); font-size: 1rem;">R$ <span id="tot_logistica">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÍQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: #10b981;">LUCRO TOTAL LÍQUIDO:</span><b style="color: #10b981; font-size: 1rem;">R$ <span id="tot_lucro">0,00</span></b></div>
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
                 <div class="total-row"><span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b></div>
@@ -501,6 +502,10 @@
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
+
+    function toggleFreteManual() {
+        var tEnvio = document.getElementById('tipoEnvio');
+    }
 
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
@@ -915,6 +920,7 @@
         
         renderCoresExtras(); 
         updateSliderProgress(document.getElementById('margemSlider')); 
+        toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
     };
@@ -1089,7 +1095,7 @@
             var feeMl = (valorBruto * txMl) + fixMl;
             valorVendaFinal = valorBruto - feeMl - freteCalculado - cLog;
         } else { 
-            valorVendaFinal = valorBruto - freteCalculado - cLog; // Na direta o bruto é igual ao líquido
+            valorVendaFinal = valorBruto - freteCalculado - cLog;
         }
 
         if(valorVendaFinal < 0) valorVendaFinal = 0;
@@ -1103,9 +1109,9 @@
             telefone: cliTel, 
             canal: canal, 
             materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, 
-            valorBruto: valorBruto, 
-            valorLiquido: valorVendaFinal, 
+            valorVenda: valorVendaFinal, // Mantido por compatibilidade
+            valorBruto: valorBruto, // NOVO CAMPO: Valor cheio
+            valorLiquido: valorVendaFinal, // NOVO CAMPO: Valor descontado
             custo: custoProducaoFinal, 
             frete: freteCalculado, 
             logistica: cLog, 
@@ -1144,10 +1150,8 @@
         renderCarrinho();
 
         var match = item.nome.match(/^(\d+)x\s(.*)/);
-        var qtd = 1;
         if (match) {
-            qtd = parseInt(match[1]) || 1;
-            document.getElementById('qtdPecasProjeto').value = qtd;
+            document.getElementById('qtdPecasProjeto').value = match[1];
             document.getElementById('nomeProjeto').value = match[2];
         } else {
             document.getElementById('qtdPecasProjeto').value = "1";
@@ -1157,30 +1161,6 @@
         document.getElementById('nomeCliente').value = item.cliente || "";
         document.getElementById('telefoneCliente').value = item.telefone || "";
         
-        if(item.tempo !== undefined) document.getElementById('tempoH').value = formatarMoeda(item.tempo / qtd);
-        if(item.peso !== undefined) document.getElementById('pesoPeca').value = formatarMoeda(item.peso / qtd);
-        
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
-        }
-
-        var tLog = document.getElementById('toggle_logistica');
-        if (item.logistica > 0 || item.frete > 0) {
-            if(tLog && !tLog.checked) { tLog.checked = true; tLog.dispatchEvent(new Event('change')); }
-            document.getElementById('custoEmbalagem').value = "0,00";
-            document.getElementById('custoDeslocamento').value = formatarMoeda((item.logistica || 0) / qtd);
-            
-            var tEnvio = document.getElementById('tipoEnvio');
-            if(tEnvio) { tEnvio.value = 'Manual'; toggleFreteManual(); }
-            
-            var vFrete = document.getElementById('valorFreteManual');
-            if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
-        } else {
-            if(tLog && tLog.checked) { tLog.checked = false; tLog.dispatchEvent(new Event('change')); }
-        }
-
         var seletorCanal = document.getElementById('canalVendaSelecionado');
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
@@ -1189,34 +1169,33 @@
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
 
-        calcular();
-
         editHistoricoId = id;
         document.querySelector('.btn-save-hist').textContent = "💾 Confirmar Edição de Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--sky)";
         
         showToast("✏️ Editando Venda...");
+        
         window.scrollTo(0, 0);
     }
 
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico'); if(!lista) return; lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
-        var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
+        var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
         
         historico.forEach(function(item) {
             var custoItem = parseLocal(item.custo); 
             var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
-            
-            somaCusto += custoItem; 
-            somaLogistica += freteLogItem;
-            
             var canalStr = item.canal || "Direta";
-            
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
+            
+            var lucroItem = valLiq - custoItem - freteLogItem;
 
+            somaCusto += custoItem; 
+            somaLogistica += freteLogItem;
             somaBruto += valBruto;
             somaLiquido += valLiq;
+            somaLucro += lucroItem;
 
             if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } 
             else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } 
@@ -1229,7 +1208,7 @@
             
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
-            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
+            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
         
         document.getElementById('tot_qtd').textContent = historico.length; 
@@ -1237,6 +1216,7 @@
         document.getElementById('tot_logistica').textContent = formatarMoeda(somaLogistica); 
         document.getElementById('tot_faturamento_bruto').textContent = formatarMoeda(somaBruto); 
         document.getElementById('tot_faturamento').textContent = formatarMoeda(somaLiquido); 
+        document.getElementById('tot_lucro').textContent = formatarMoeda(somaLucro); 
         document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
         document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
         document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
@@ -1252,9 +1232,10 @@
                 var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
                 var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
                 var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
-                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido }; 
+                var lucro = liquido - parseLocal(h.custo) - custoLog;
+                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido, "Lucro Líquido (R$)": lucro }; 
             });
-            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
+            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
         }
         if(estoque.length > 0) {
             var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
@@ -1312,6 +1293,7 @@
             }
 
             var custoLog = (h.frete || 0) + (h.logistica || 0);
+            var lucro = liquido - parseLocal(h.custo) - custoLog;
 
             return [ 
                 h.data, 
@@ -1320,12 +1302,13 @@
                 'R$ '+formatarMoeda(h.custo), 
                 'R$ '+formatarMoeda(custoLog),
                 'R$ '+formatarMoeda(bruto), 
-                'R$ '+formatarMoeda(liquido) 
+                'R$ '+formatarMoeda(liquido),
+                'R$ '+formatarMoeda(lucro)
             ]; 
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Frete/Log.', 'Venda Bruta', 'Líquido']], 
+            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Frete/Log.', 'Venda Bruta', 'Líquido', 'Lucro']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid' 
