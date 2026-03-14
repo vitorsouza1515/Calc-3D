@@ -498,7 +498,7 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino', 'qtdPecasProjeto', 'valorFreteManual', 'toggle_multi_mat', 'qtdCoresExtras', 'toggle_estoque', 'toggle_catalogo', 'toggle_simulador'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino', 'qtdPecasProjeto', 'valorFreteManual'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
@@ -1079,7 +1079,7 @@
             }
         }
 
-        var valorVendaFinal = 0; 
+        var valorVendaFinal = 0; // Valor Líquido
         if(canal === "Shopee") {
             var feeShp = 0;
             if (valorBruto <= 79.99) feeShp = (valorBruto * 0.20) + 4; 
@@ -1093,7 +1093,7 @@
             var feeMl = (valorBruto * txMl) + fixMl;
             valorVendaFinal = valorBruto - feeMl;
         } else { 
-            valorVendaFinal = valorBruto;
+            valorVendaFinal = valorBruto; // Na direta o bruto é igual ao líquido
         }
 
         if(valorVendaFinal < 0) valorVendaFinal = 0;
@@ -1107,12 +1107,12 @@
             telefone: cliTel, 
             canal: canal, 
             materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, 
-            valorBruto: valorBruto, 
-            valorLiquido: valorVendaFinal, 
+            valorVenda: valorVendaFinal, // Mantido por compatibilidade
+            valorBruto: valorBruto, // NOVO CAMPO: Valor cheio
+            valorLiquido: valorVendaFinal, // NOVO CAMPO: Valor descontado
             custo: custoProducaoFinal, 
-            frete: freteCalculado, 
-            logistica: cLog, 
+            frete: freteCalculado, // NOVO: Guarda o valor do frete
+            logistica: cLog, // NOVO: Guarda o custo da embalagem e deslocamento
             peso: pesoFinal, 
             tempo: tempoFinal, 
             status: "Orçamento", 
@@ -1160,6 +1160,7 @@
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
+        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
@@ -1182,6 +1183,7 @@
             somaCusto += custoItem; 
             var canalStr = item.canal || "Direta";
             
+            // Lida com itens antigos e novos
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
 
@@ -1197,6 +1199,7 @@
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             
+            // Se tiver taxa, mostra o Bruto e o Liquido, se for Direta (ou seja, iguais), mostra só um
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
             lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
@@ -1268,6 +1271,7 @@
             var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
+            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
             if (h.valorBruto === undefined) {
                 if(h.canal === "Shopee") {
                     bruto = (liquido + 4) / 0.80; 
@@ -1363,10 +1367,16 @@
         carrinho = [];
         renderCarrinho();
         
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'qtdPecasProjeto'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'simuladorVenda'].forEach(id => { 
+            var el = document.getElementById(id); 
+            if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
+        });
         
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+
+        ['tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        var elPreco1 = document.getElementById('precoFilamento'); if(elPreco1) { elPreco1.value = "120,00"; }
 
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
@@ -1385,6 +1395,19 @@
             var selExtra = document.getElementById('sel_est_' + i); if(selExtra) selExtra.value = "";
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
+
+        // Desativar todas as chaves (toggles) para "zerar" a visualização
+        ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_simulador'].forEach(id => {
+            var t = document.getElementById(id);
+            if (t && t.checked) {
+                t.checked = false;
+                t.dispatchEvent(new Event('change'));
+            }
+        });
+        
+        var elQtdCores = document.getElementById('qtdCoresExtras');
+        if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
+
         calcular(); showToast("✅ Projeto Resetado!");
     }
 
