@@ -1,5 +1,3 @@
-top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk so oq eu pedir, gostei mas quero algumas mudanças após selecionar o filamento queria q a aba peso da peça ficasse em baixo das pre definições e baixo do preço pago no filamento e tmbm que desabilite a mudança manual do tipo, cor, marca e preço deixe travado Asim nao mexo por engano sabe:
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -64,6 +62,8 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
         .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
+
+        .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
 
         .peso-destaque { border: 2px solid var(--sky) !important; background: rgba(14, 165, 233, 0.1) !important; font-size: 1.1rem !important; color: #fff !important; }
 
@@ -180,7 +180,7 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
                     </select>
                 </div>
                 <div style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
-                    <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Cadastrar o que está preenchido abaixo como novo produto:</p>
+                    <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Ações do Catálogo:</p>
                     <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
                 </div>
                 <div id="lista_catalogo" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
@@ -233,18 +233,18 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
                     </select>
                 </div>
                 
-                <div class="input-group">
-                    <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
-                    <input type="text" inputmode="decimal" id="pesoPeca" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()">
-                </div>
-
                 <div id="detalhes_1" class="detalhes-material">
                     <div class="grid-3">
-                        <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1'); checarManual('1')"></div>
-                        <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" oninput="salvarDinamico('corFilamento1'); checarManual('1')"></div>
-                        <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1'); checarManual('1')"></div>
+                        <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" readonly></div>
+                        <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" readonly></div>
+                        <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" readonly></div>
                     </div>
-                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" oninput="aplicarMascara(this); calcular(); checarManual('1')"></div>
+                    <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" readonly></div>
+                </div>
+
+                <div class="input-group" style="margin-top: 10px;">
+                    <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
+                    <input type="text" inputmode="decimal" id="pesoPeca" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()">
                 </div>
             </div>
 
@@ -395,6 +395,7 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
     var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
     var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
     var editEstoqueId = null;
+    var editCatalogoId = null; // ID para controlar edição do catálogo
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -461,7 +462,7 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
-    // --- FUNÇÕES DO CATÁLOGO ---
+    // --- FUNÇÕES DO CATÁLOGO COM EDIÇÃO ---
     function salvarNoCatalogo() {
         var nome = pegaTexto('nomeProjeto');
         if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
@@ -481,23 +482,48 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
             }
         }
 
-        var novoProduto = {
-            id: Date.now(),
-            nome: nome,
-            peso1: pegaTexto('pesoPeca'),
-            tipo1: pegaTexto('tipoFilamento1'),
-            cor1: pegaTexto('corFilamento1'),
-            marca1: pegaTexto('marcaFilamento1'),
-            preco1: pegaTexto('precoFilamento'),
-            tempo: pegaTexto('tempoH'),
-            multi: multiOn,
-            qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0",
-            extras: extras
-        };
+        if(editCatalogoId) {
+            // Atualizando item existente
+            var idx = catalogo.findIndex(p => p.id === editCatalogoId);
+            if(idx > -1) {
+                catalogo[idx] = {
+                    id: editCatalogoId,
+                    nome: nome,
+                    peso1: pegaTexto('pesoPeca'),
+                    tipo1: pegaTexto('tipoFilamento1'),
+                    cor1: pegaTexto('corFilamento1'),
+                    marca1: pegaTexto('marcaFilamento1'),
+                    preco1: pegaTexto('precoFilamento'),
+                    tempo: pegaTexto('tempoH'),
+                    multi: multiOn,
+                    qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0",
+                    extras: extras
+                };
+            }
+            editCatalogoId = null;
+            document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo";
+            document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+            showToast("🏷️ Produto atualizado no catálogo!");
+        } else {
+            // Criando novo
+            var novoProduto = {
+                id: Date.now(),
+                nome: nome,
+                peso1: pegaTexto('pesoPeca'),
+                tipo1: pegaTexto('tipoFilamento1'),
+                cor1: pegaTexto('corFilamento1'),
+                marca1: pegaTexto('marcaFilamento1'),
+                preco1: pegaTexto('precoFilamento'),
+                tempo: pegaTexto('tempoH'),
+                multi: multiOn,
+                qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0",
+                extras: extras
+            };
+            catalogo.push(novoProduto);
+            showToast("🏷️ Produto salvo no catálogo!");
+        }
 
-        catalogo.push(novoProduto);
         syncNuvem();
-        showToast("🏷️ Produto salvo no catálogo!");
     }
 
     function renderCatalogo() {
@@ -511,6 +537,7 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
         catalogo.forEach(function(p) {
             htmlSel += `<option value="${p.id}">${p.nome}</option>`;
             htmlLista += `<div class="history-item" style="padding: 8px 12px;">
+                <button class="btn-edit-item" onclick="editarDoCatalogo(${p.id})">✎</button>
                 <button class="btn-del-item" onclick="removerDoCatalogo(${p.id})">×</button>
                 <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--orange);">${p.nome}</h4>
                 <div style="font-size: 0.65rem; color: var(--text-muted);">
@@ -526,7 +553,20 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
     function carregarDoCatalogo() {
         var id = document.getElementById('sel_catalogo').value;
         if(!id) return;
-        var p = catalogo.find(e => e.id.toString() === id);
+        aplicarDadosNoForm(id);
+        showToast("🏷️ Dados carregados!");
+    }
+
+    function editarDoCatalogo(id) {
+        aplicarDadosNoForm(id);
+        editCatalogoId = id;
+        document.getElementById('btn_salvar_catalogo').textContent = "💾 Confirmar Alteração no Catálogo";
+        document.getElementById('btn_salvar_catalogo').style.background = "var(--purple)";
+        showToast("✏️ Editando produto...");
+    }
+
+    function aplicarDadosNoForm(id) {
+        var p = catalogo.find(e => e.id.toString() === id.toString());
         if(!p) return;
 
         document.getElementById('nomeProjeto').value = p.nome;
@@ -546,16 +586,20 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
             renderCoresExtras();
             p.extras.forEach((ex, idx) => {
                 var i = idx + 2;
-                document.getElementById('tipoFilamento'+i).value = ex.tipo;
-                document.getElementById('corFilamento'+i).value = ex.cor;
-                document.getElementById('marcaFilamento'+i).value = ex.marca;
-                document.getElementById('precoFilamento'+i).value = ex.preco;
-                document.getElementById('pesoPeca'+i).value = ex.peso;
-                salvarDinamico('tipoFilamento'+i);
-                salvarDinamico('corFilamento'+i);
-                salvarDinamico('marcaFilamento'+i);
-                salvarDinamico('precoFilamento'+i);
-                salvarDinamico('pesoPeca'+i);
+                setTimeout(() => { // Timeout pequeno para garantir que o renderCoresExtras terminou
+                    if(document.getElementById('tipoFilamento'+i)) {
+                        document.getElementById('tipoFilamento'+i).value = ex.tipo;
+                        document.getElementById('corFilamento'+i).value = ex.cor;
+                        document.getElementById('marcaFilamento'+i).value = ex.marca;
+                        document.getElementById('precoFilamento'+i).value = ex.preco;
+                        document.getElementById('pesoPeca'+i).value = ex.peso;
+                        salvarDinamico('tipoFilamento'+i);
+                        salvarDinamico('corFilamento'+i);
+                        salvarDinamico('marcaFilamento'+i);
+                        salvarDinamico('precoFilamento'+i);
+                        salvarDinamico('pesoPeca'+i);
+                    }
+                }, 50);
             });
         }
 
@@ -563,7 +607,6 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
         
         document.getElementById('detalhes_1').style.display = 'block';
         calcular();
-        showToast("🏷️ Dados carregados!");
     }
 
     function removerDoCatalogo(id) {
@@ -659,11 +702,6 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
         showToast("📦 " + item.tipo + " Carregado!");
     }
 
-    function checarManual(indexStr) { 
-        var sel = document.getElementById('sel_est_' + indexStr); 
-        if(sel) sel.value = ""; 
-    }
-
     function renderCoresExtras() {
         var qtdInput = document.getElementById('qtdCoresExtras'); if (!qtdInput) return;
         var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1, container = document.getElementById('container_cores_extras'); if (!container) return; container.innerHTML = ''; 
@@ -679,20 +717,20 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
                             <option value="">-- Puxar material do Estoque --</option>
                         </select>
                     </div>
-                    <div class="input-group">
+                    <div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}">
+                        <div class="grid-3" style="margin-bottom: 8px;">
+                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" readonly></div>
+                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" readonly></div>
+                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" readonly></div>
+                        </div>
+                        <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" readonly></div>
+                    </div>
+                    <div class="input-group" style="margin-top: 10px;">
                         <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
                         <input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()">
                     </div>
-                    <div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}">
-                        <div class="grid-3" style="margin-bottom: 8px;">
-                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" oninput="salvarDinamico('tipoFilamento${i}'); checarManual('${i}')"></div>
-                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" oninput="salvarDinamico('corFilamento${i}'); checarManual('${i}')"></div>
-                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" oninput="salvarDinamico('marcaFilamento${i}'); checarManual('${i}')"></div>
-                        </div>
-                        <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" oninput="aplicarMascara(this); salvarDinamico('precoFilamento${i}'); calcular(); checarManual('${i}')"></div>
-                    </div>
                 </div>`;
-            aplicarMascara(document.getElementById('precoFilamento'+i)); aplicarMascara(document.getElementById('pesoPeca'+i));
+            aplicarMascara(document.getElementById('pesoPeca'+i));
         }
         atualizarDropdownsEstoque(); calcular();
     }
@@ -747,7 +785,6 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
         var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
         if(tEst && sEst) { tEst.checked = false; tEst.addEventListener('change', function() { sEst.style.display = tEst.checked ? 'block' : 'none'; }); sEst.style.display = 'none'; }
         
-        // NOVO TOGGLE CATALOGO
         var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
         if(tCat && sCat) { tCat.checked = false; tCat.addEventListener('change', function() { sCat.style.display = tCat.checked ? 'block' : 'none'; }); sCat.style.display = 'none'; }
 
@@ -815,6 +852,8 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
         syncNuvem();
         
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
+        
+        resetarDados();
         showToast("✅ Venda Registrada!");
     }
 
@@ -901,10 +940,30 @@ top agora faça isso mantenha esse codigo que irei mandar sem alterar nada ta kk
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(function(){ t.className = ""; }, 2000); } }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(function(id) { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(function(id) { 
+            var el = document.getElementById(id); 
+            if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
+        });
+
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
-        document.getElementById('sel_catalogo').value = "";
-        calcular(); showToast("✅ Projeto Resetado!");
+        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
+        var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
+        
+        editCatalogoId = null;
+        document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo";
+        document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+
+        var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
+        for(var i = 2; i <= qtdExtras + 1; i++) {
+            var selExtra = document.getElementById('sel_est_' + i);
+            if(selExtra) selExtra.value = "";
+            ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => {
+                var fieldId = pref + i;
+                localStorage.removeItem('3d4y_dark_' + fieldId);
+            });
+        }
+        calcular(); 
+        showToast("✅ Projeto Resetado!");
     }
 
     function wpp(tipo) {
