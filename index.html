@@ -173,13 +173,15 @@
                 <span>🏷️ Catálogo / Pre-sets</span>
                 <label class="switch"><input type="checkbox" id="toggle_catalogo"><span class="slider-switch" style="background-color: #334155;"></span></label>
             </div>
+            
+            <div class="input-group" style="margin-bottom: 10px;">
+                <label>Selecione um Produto Salvo</label>
+                <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
+                    <option value="">-- Escolher produto cadastrado --</option>
+                </select>
+            </div>
+
             <div id="secao_catalogo" style="display:none; padding-top: 5px;">
-                <div class="input-group">
-                    <label>Selecione um Produto Salvo</label>
-                    <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
-                        <option value="">-- Escolher produto cadastrado --</option>
-                    </select>
-                </div>
                 <div style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
                     <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Ações do Catálogo:</p>
                     <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
