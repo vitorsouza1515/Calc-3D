@@ -712,7 +712,6 @@
             }
         });
         
-        // Garante que qtdPecas tenha 1 se vazio
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
@@ -741,7 +740,6 @@
         var tempoUnitario = pegaValor('tempoH');
         var pesoUnitarioMatPrincipal = pegaValor('pesoPeca');
         
-        // Multiplica o tempo e o peso principal pela quantidade de peças
         var tempoTotal = tempoUnitario * qtdPecas;
         var pesoTotalPrincipal = pesoUnitarioMatPrincipal * qtdPecas;
 
@@ -755,7 +753,7 @@
             for(var i = 2; i <= qtdExtras + 1; i++) { 
                 var pPreco = pegaValor('precoFilamento' + i);
                 var pPesoUnitario = pegaValor('pesoPeca' + i);
-                var pPesoTotal = pPesoUnitario * qtdPecas; // Multiplica peso extra pela qtd
+                var pPesoTotal = pPesoUnitario * qtdPecas; 
                 matTotal += (pPreco / 1000) * pPesoTotal; 
                 pesoTotalPeca += pPesoTotal; 
             } 
@@ -772,11 +770,7 @@
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
         
         if (logEnabled) { 
-            // Embalagem multiplicada pela qtd de peças (se cada peça for numa caixa, ou se for embalagem por item)
-            // Assumindo que a embalagem e deslocamento são para o pedido todo. 
-            // Se embalagem for por peça: cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento');
             cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
-            
             var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000, tEnvio = document.getElementById('tipoEnvio'), base = (tEnvio && tEnvio.value === 'PAC') ? 18.50 : 24.50; 
             frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
         }
@@ -805,9 +799,7 @@
 
         var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
         var valorVendaBruto = 0;
-        var lucroFinalCustom = 0;
-
-        // Recupera valores calculados para a base de custo
+        
         var custoProducao = parseLocal(document.getElementById('r_gasto').textContent);
         var tLog = document.getElementById('toggle_logistica');
         var logEnabled = tLog ? tLog.checked : false;
@@ -826,23 +818,6 @@
         if (canal === "Personalizado") { 
             valorVendaBruto = pegaValor('valorPersonalizado'); 
             canal = document.getElementById('canalPersonalizadoDestino').value; 
-            
-            // Calcula o Lucro Real do Valor Personalizado baseado no canal
-            if(canal === "Shopee") {
-                var feeShp = 0;
-                if (valorVendaBruto <= 79.99) feeShp = (valorVendaBruto * 0.20) + 4; 
-                else if (valorVendaBruto <= 99.99) feeShp = (valorVendaBruto * 0.14) + 16; 
-                else if (valorVendaBruto <= 199.99) feeShp = (valorVendaBruto * 0.14) + 20; 
-                else feeShp = (valorVendaBruto * 0.14) + 26;
-                lucroFinalCustom = valorVendaBruto - feeShp - custoProducao - cLog;
-            } else if(canal === "Meli") {
-                var txMl = pegaValor('taxaMeli') / 100;
-                var fixMl = (valorVendaBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
-                var feeMl = (valorVendaBruto * txMl) + fixMl;
-                lucroFinalCustom = valorVendaBruto - feeMl - custoProducao - cLog;
-            } else { // Direta
-                lucroFinalCustom = valorVendaBruto - custoProducao - cLog - frete;
-            }
         } else if(canal === "Direta") { 
             valorVendaBruto = parseLocal(document.getElementById('r_vendaD').textContent); 
         } else if(canal === "Shopee") { 
@@ -865,8 +840,6 @@
         
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', rGasto = document.getElementById('r_gasto');
         
-        // Se for personalizado, o lucro que aparece no HTML vai estar errado para a view do histórico (pois ele mostra o sugerido). 
-        // Idealmente deveríamos guardar o Lucro também no histórico, mas por ora vamos focar em registrar a Venda correta.
         var novo = { id: Date.now(), nome: nome, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaBruto, custo: rGasto ? parseLocal(rGasto.textContent) : 0, peso: pesoSalvar, tempo: pegaValor('tempoH') * qtdPecas, status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
         
         historico.unshift(novo); syncNuvem();
@@ -907,10 +880,6 @@
             var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
             var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque); wsEstoque['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
         }
-        if(catalogo.length > 0) {
-            var dadosCat = catalogo.map(p => ({ "Produto": p.nome, "Tempo (h)": p.tempo, "Peso Principal (g)": p.peso1, "Material": p.tipo1 + " " + p.cor1 }));
-            var wsCat = XLSX.utils.json_to_sheet(dadosCat); XLSX.utils.book_append_sheet(wb, wsCat, "Catalogo");
-        }
         if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
     }
 
@@ -941,12 +910,37 @@
         doc.text("Relatório Geral - 3D 4You", 14, 20);
 
         var tableBody = historico.map(h => { 
-            var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre"; 
-            return [ h.data, h.nome, canalAjustado, h.status || "Finalizado", h.materiais || "-", h.tempo + 'h', 'R$ '+formatarMoeda(h.custo), 'R$ '+formatarMoeda(h.valorVenda || 0) ]; 
+            var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre";
+            var bruto = h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix);
+            var liquido = bruto;
+
+            // Recalcula o líquido para o relatório baseado nas regras
+            if(h.canal === "Shopee") {
+                var feeShp = 0;
+                if (bruto <= 79.99) feeShp = (bruto * 0.20) + 4; 
+                else if (bruto <= 99.99) feeShp = (bruto * 0.14) + 16; 
+                else if (bruto <= 199.99) feeShp = (bruto * 0.14) + 20; 
+                else feeShp = (bruto * 0.14) + 26;
+                liquido = bruto - feeShp;
+            } else if(h.canal === "Meli") {
+                var tMeli = 0.17; // Considerando 17% fixo para simplificar o relatorio
+                var fMeli = 6.75;
+                var feeMeli = (bruto * tMeli) + (bruto >= 79.99 ? 0 : fMeli);
+                liquido = bruto - feeMeli;
+            }
+
+            return [ 
+                h.data, 
+                h.nome, 
+                canalAjustado, 
+                'R$ '+formatarMoeda(h.custo), 
+                'R$ '+formatarMoeda(bruto), 
+                'R$ '+formatarMoeda(liquido) 
+            ]; 
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Status', 'Material', 'Tempo', 'Custo', 'Venda']], 
+            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Venda Bruta', 'Venda Líquida']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid' 
@@ -959,6 +953,7 @@
         let countDireta = historico.filter(h => h.canal === "Direta").length;
         let countShopee = historico.filter(h => h.canal === "Shopee").length;
         let countMeli = historico.filter(h => h.canal === "Meli").length;
+        let totalVendas = countDireta + countShopee + countMeli;
 
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
@@ -979,7 +974,17 @@
                 responsive: false,
                 animation: false,
                 plugins: {
-                    legend: { labels: { font: { size: 18 } } }
+                    legend: { labels: { font: { size: 14 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let percentage = totalVendas > 0 ? Math.round((value / totalVendas) * 100) : 0;
+                                return label + ': ' + percentage + '% (' + value + ' vendas)';
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -1005,14 +1010,12 @@
     function resetarDados() {
         ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'qtdPecasProjeto'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         
-        // Volta Qtd. Peças para 1 visualmente e no local storage
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
         document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-        var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
-        editCatalogoId = null; document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo"; document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+        
         var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
         for(var i = 2; i <= qtdExtras + 1; i++) {
             var selExtra = document.getElementById('sel_est_' + i); if(selExtra) selExtra.value = "";
