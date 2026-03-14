@@ -167,7 +167,7 @@
                     <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1')"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca" value="" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()"></div>
                 </div>
             </div>
@@ -236,23 +236,23 @@
         <div class="results">
             <h2 class="section-title" style="border:none; margin-bottom: 5px; color: #fff">📊 Resumo de Custos</h2>
             <div class="extrato">
-                <div class="result-row"><span>Depreciação Máquina</span><span class="value">R$ <span id="r_dep">0.00</span></span></div>
-                <div class="result-row"><span>Energia Elétrica</span><span class="value">R$ <span id="r_ene">0.00</span></span></div>
-                <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0.00</span></span></div>
+                <div class="result-row"><span>Depreciação Máquina</span><span class="value">R$ <span id="r_dep">0,00</span></span></div>
+                <div class="result-row"><span>Energia Elétrica</span><span class="value">R$ <span id="r_ene">0,00</span></span></div>
+                <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0,00</span></span></div>
                 <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)">
                     <span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span>
-                    <span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0.00</span></span>
+                    <span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0,00</span></span>
                 </div>
             </div>
 
             <div class="price-box direta">
                 <span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span>
-                <div class="total">R$ <span id="r_vendaD">0.00</span></div>
+                <div class="total">R$ <span id="r_vendaD">0,00</span></div>
             </div>
 
             <div class="grid-2">
-                <div class="price-box shopee"><span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0.00</span></div></div>
-                <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0.00</span></div></div>
+                <div class="price-box shopee"><span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0,00</span></div></div>
+                <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0,00</span></div></div>
             </div>
             
             <div class="input-group" style="margin-top: 10px;">
@@ -288,17 +288,17 @@
             
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
-                <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0.00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL:</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0.00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL:</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
                 
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                    <span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0.00</span></b>
+                    <span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b>
                 </div>
                 <div class="total-row">
-                    <span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0.00</span></b>
+                    <span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b>
                 </div>
                 <div class="total-row">
-                    <span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0.00</span></b>
+                    <span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b>
                 </div>
             </div>
 
@@ -313,52 +313,42 @@
 </div>
 
 <script>
-    // --- MAGIA UX: FORMATAÇÃO AUTOMÁTICA E SEGURA ---
+    // --- MAGIA UX: FORMATAÇÃO BRASILEIRA (1.500,00) ---
     function aplicarMascara(el) {
         if (!el) return;
-        
-        var start = el.selectionStart;
-        var oldVal = el.value;
-        
-        // Pulo do Gato: Suporte ao ponto do teclado numérico (Numpad)
-        // Se ele digitar um ponto e não tiver vírgula, e for um decimal curto, converte pra vírgula
-        var partsDot = oldVal.split('.');
-        if (partsDot.length === 2 && oldVal.indexOf(',') === -1 && partsDot[1].length <= 3) {
-            oldVal = oldVal.replace('.', ',');
+        var val = el.value;
+
+        // Limpa tudo que não for número e vírgula, e remove os pontos para recalcular o milhar
+        val = val.replace(/\./g, '').replace(/[^0-9,]/g, '');
+
+        // Permite apenas UMA vírgula decimal
+        var parts = val.split(',');
+        if (parts.length > 2) {
+            val = parts[0] + ',' + parts.slice(1).join('');
+            parts = val.split(',');
         }
 
-        // Removemos a formatação de milhar atual para recalcular
-        var v = oldVal.replace(/\./g, '');
-        
-        // Blindagem: Apaga qualquer coisa que não seja número ou vírgula (impede letras e barras)
-        v = v.replace(/[^0-9,]/g, '');
-        
-        // Trava: Impede duas vírgulas
-        var parts = v.split(',');
-        if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('');
-        
-        // Aplica o milhar de volta na parte inteira (ex: 4275 -> 4.275)
+        // Aplica o ponto de milhar na parte inteira
         var intPart = parts[0];
         if (intPart) {
-            if (intPart.length > 1 && intPart.charAt(0) === '0') {
-                intPart = parseInt(intPart, 10).toString(); // Tira zeros esquecidos à esquerda
-            }
+            intPart = intPart.replace(/^0+(?=\d)/, ''); // Remove zeros à esquerda (04 -> 4)
             intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
+
+        var finalVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
         
-        var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
-        
-        // Só atualiza se mudou, para o cursor não pular e irritar o usuário
-        if (el.value !== newVal) {
-            el.value = newVal;
-            // Tenta devolver o cursor pro mesmo lugar
-            var newStart = start + (newVal.length - oldVal.length);
-            if (newStart < 0) newStart = 0;
-            try { el.setSelectionRange(newStart, newStart); } catch(e) {}
-        }
+        // Evita que o cursor pule para o final sozinho enquanto digita no celular
+        if (el.value !== finalVal) el.value = finalVal;
     }
 
-    // Leitor universal que converte "1.500,90" Brasileiro para o "1500.90" do computador calcular
+    // Função que formata o número bonitinho (ex: 1337.8 => 1.337,80) na tela
+    function formatarMoeda(num) {
+        var n = parseFloat(num);
+        if (isNaN(n)) return "0,00";
+        return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Leitor Universal: Transforma o "1.500,90" Brasileiro do Input para o "1500.90" do JavaScript calcular
     function pegaValor(id) {
         var el = document.getElementById(id);
         if (!el || !el.value) return 0;
@@ -372,13 +362,22 @@
         return '';
     }
 
+    // Conversor de dados salvos antigos p/ novo padrão p/ não quebrar a conta de quem tem histórico salvo
+    function parseLocal(val) {
+        if (val === undefined || val === null || val === '') return 0;
+        if (typeof val === 'number') return val;
+        var str = val.toString();
+        if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; }
+        if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; }
+        return parseFloat(str) || 0;
+    }
+
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
 
     var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 
                 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
                 'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
 
-    // Campos preenchidos manualmente que guardam texto e valores extras
     var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
 
     function updateSliderProgress(slider) {
@@ -400,10 +399,10 @@
             var sTipo = localStorage.getItem('3d4y_dark_tipoFilamento' + i) || '';
             var sCor = localStorage.getItem('3d4y_dark_corFilamento' + i) || '';
             var sMarca = localStorage.getItem('3d4y_dark_marcaFilamento' + i) || '';
-            var sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120';
+            var sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120,00';
             var sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || '';
 
-            // Upgrade de Segurança p/ Dados Salvos Antigos: Se tiver ponto e não vírgula, conserta.
+            // Se for um save bem antigo sem virgula e com ponto, ajusta
             if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ',');
             if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
             
@@ -421,7 +420,6 @@
                 '</div>' +
             '</div>';
 
-            // Aplica a máscara logo que a caixa extra é criada
             aplicarMascara(document.getElementById('precoFilamento'+i));
             aplicarMascara(document.getElementById('pesoPeca'+i));
         }
@@ -449,14 +447,13 @@
                 if (saved !== null) {
                     if (el.type === 'checkbox') { el.checked = (saved === 'true'); }
                     else { 
-                        // Fix salvos antigos
+                        // Fix salvos muito antigos
                         if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); }
                         el.value = saved; 
                     }
                 }
             }
             if (el) {
-                // Se for input livre, aplica máscara na hora que entra no site
                 if (el.tagName === 'INPUT' && el.type === 'text' && id !== 'cepOrigem' && id !== 'cepDestino') {
                     aplicarMascara(el);
                 }
@@ -543,16 +540,15 @@
             }
         }
 
-        // Blindagem: Protege contra erro de divisão por zero na Taxa de Sucesso
         var suc = pegaValor('taxaSucesso');
         if (suc <= 0) suc = 100; 
         
         var custoProducao = (dep + ene + matTotal) / (suc / 100);
         
-        var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = dep.toFixed(2);
-        var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = ene.toFixed(2);
-        var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = matTotal.toFixed(2);
-        var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = custoProducao.toFixed(2);
+        var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = formatarMoeda(dep);
+        var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene);
+        var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal);
+        var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
 
         var mInput = pegaValor('margemInput');
         var valorComLucro = custoProducao * (1 + (mInput / 100));
@@ -571,9 +567,9 @@
         var fixaMeliAplicada = (valorComLucro + cLog > 70) ? 0 : pegaValor('fixaMeli');
         var vm = (valorComLucro + cLog + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
 
-        var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = vd.toFixed(2);
-        var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = vs.toFixed(2);
-        var elVm = document.getElementById('r_vendaM'); if(elVm) elVm.textContent = vm.toFixed(2);
+        var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = formatarMoeda(vd);
+        var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = formatarMoeda(vs);
+        var elVm = document.getElementById('r_vendaM'); if(elVm) elVm.textContent = formatarMoeda(vm);
     }
 
     function salvarHistorico() {
@@ -581,18 +577,18 @@
         var elCanal = document.getElementById('canalVendaSelecionado');
         var canal = elCanal ? elCanal.value : "Direta";
         
-        var valorRegistrado = "0.00";
+        var valorRegistradoNum = 0;
         
+        // Transforma o número em formato Universal (computador) para salvar no banco histórico
         if (canal === "Personalizado") {
-            var vPerso = pegaValor('valorPersonalizado');
-            valorRegistrado = vPerso.toFixed(2);
+            valorRegistradoNum = pegaValor('valorPersonalizado');
             canal = "Direta"; 
         } else if(canal === "Direta") { 
-            var e=document.getElementById('r_vendaD'); if(e) valorRegistrado = e.textContent; 
+            var e=document.getElementById('r_vendaD'); if(e) valorRegistradoNum = parseLocal(e.textContent); 
         } else if(canal === "Shopee") { 
-            var e=document.getElementById('r_vendaS'); if(e) valorRegistrado = e.textContent; 
+            var e=document.getElementById('r_vendaS'); if(e) valorRegistradoNum = parseLocal(e.textContent); 
         } else { 
-            var e=document.getElementById('r_vendaM'); if(e) valorRegistrado = e.textContent; 
+            var e=document.getElementById('r_vendaM'); if(e) valorRegistradoNum = parseLocal(e.textContent); 
         }
         
         var materiaisArray = [];
@@ -616,6 +612,7 @@
         }
         
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
+        
         var rGasto = document.getElementById('r_gasto');
         var rVd = document.getElementById('r_vendaD');
         var rVs = document.getElementById('r_vendaS');
@@ -626,11 +623,11 @@
             nome: nome,
             canal: canal,
             materiais: stringMateriais, 
-            valorVenda: valorRegistrado, 
-            custo: rGasto ? rGasto.textContent : "0.00",
-            pix: rVd ? rVd.textContent : "0.00",
-            shopee: rVs ? rVs.textContent : "0.00",
-            meli: rVm ? rVm.textContent : "0.00",
+            valorVenda: valorRegistradoNum, 
+            custo: rGasto ? parseLocal(rGasto.textContent) : 0,
+            pix: rVd ? parseLocal(rVd.textContent) : 0,
+            shopee: rVs ? parseLocal(rVs.textContent) : 0,
+            meli: rVm ? parseLocal(rVm.textContent) : 0,
             peso: pesoSalvar,
             tempo: pegaValor('tempoH'),
             data: new Date().toLocaleDateString('pt-BR')
@@ -641,7 +638,7 @@
         renderHistorico();
         
         var elPerso = document.getElementById('valorPersonalizado');
-        if(elPerso) { elPerso.value = ''; }
+        if(elPerso) elPerso.value = '';
         localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
         showToast("✅ Venda Salva!");
@@ -656,10 +653,12 @@
         var qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
 
         historico.forEach(function(item) {
-            var custoItem = parseFloat(item.custo) || 0;
+            // Leitura de banco de dados c/ proteção anti erros antigos
+            var custoItem = parseLocal(item.custo);
             somaCusto += custoItem;
+            
             var canalStr = item.canal || "Direta";
-            var valVenda = parseFloat(item.valorVenda) || parseFloat(item.pix) || 0;
+            var valVenda = item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix);
 
             if(canalStr === "Shopee") { somaShopee += valVenda; qtdShopee++; }
             else if(canalStr === "Meli") { somaMeli += valVenda; qtdMeli++; }
@@ -673,26 +672,26 @@
                     '<button class="btn-del-item" onclick="removerItem('+item.id+')">×</button>' +
                     '<h4>'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4>' +
                     '<div class="hist-vals">' +
-                        '<span>Venda: <b style="color:#fff">R$ '+valVenda.toFixed(2)+'</b></span>' +
-                        '<span>Custo: R$ '+custoItem.toFixed(2)+'</span>' +
+                        '<span>Venda: <b style="color:#fff">R$ '+formatarMoeda(valVenda)+'</b></span>' +
+                        '<span>Custo: R$ '+formatarMoeda(custoItem)+'</span>' +
                         '<span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span>' +
                     '</div>' +
                 '</div>';
         });
 
         var fTotQtd = document.getElementById('tot_qtd'); if(fTotQtd) fTotQtd.textContent = historico.length;
-        var fTotCusto = document.getElementById('tot_custo'); if(fTotCusto) fTotCusto.textContent = somaCusto.toFixed(2);
+        var fTotCusto = document.getElementById('tot_custo'); if(fTotCusto) fTotCusto.textContent = formatarMoeda(somaCusto);
         
-        var fTotFatu = document.getElementById('tot_faturamento'); if(fTotFatu) fTotFatu.textContent = (somaDireta + somaShopee + somaMeli).toFixed(2);
+        var fTotFatu = document.getElementById('tot_faturamento'); if(fTotFatu) fTotFatu.textContent = formatarMoeda(somaDireta + somaShopee + somaMeli);
         
         var fQtdD = document.getElementById('qtd_direta'); if(fQtdD) fQtdD.textContent = qtdDireta;
-        var fTotD = document.getElementById('tot_direta'); if(fTotD) fTotD.textContent = somaDireta.toFixed(2);
+        var fTotD = document.getElementById('tot_direta'); if(fTotD) fTotD.textContent = formatarMoeda(somaDireta);
         
         var fQtdS = document.getElementById('qtd_shopee'); if(fQtdS) fQtdS.textContent = qtdShopee;
-        var fTotS = document.getElementById('tot_shopee'); if(fTotS) fTotS.textContent = somaShopee.toFixed(2);
+        var fTotS = document.getElementById('tot_shopee'); if(fTotS) fTotS.textContent = formatarMoeda(somaShopee);
         
         var fQtdM = document.getElementById('qtd_meli'); if(fQtdM) fQtdM.textContent = qtdMeli;
-        var fTotM = document.getElementById('tot_meli'); if(fTotM) fTotM.textContent = somaMeli.toFixed(2);
+        var fTotM = document.getElementById('tot_meli'); if(fTotM) fTotM.textContent = formatarMoeda(somaMeli);
     }
 
     function removerItem(id) {
@@ -712,13 +711,13 @@
                 "Projeto": h.nome,
                 "Canal": canalAmigavel,
                 "Materiais Usados": h.materiais || "-",
-                "Peso (g)": parseFloat(h.peso || 0),
-                "Tempo (h)": parseFloat(h.tempo || 0),
-                "Custo Prod. (R$)": parseFloat(h.custo || 0),
-                "Venda Realizada (R$)": parseFloat(h.valorVenda || h.pix || 0),
-                "Opção Pix": parseFloat(h.pix || 0),
-                "Opção Shopee": parseFloat(h.shopee || 0),
-                "Opção M. Livre": parseFloat(h.meli || 0)
+                "Peso (g)": parseLocal(h.peso),
+                "Tempo (h)": parseLocal(h.tempo),
+                "Custo Prod. (R$)": parseLocal(h.custo),
+                "Venda Realizada (R$)": h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix),
+                "Opção Pix": parseLocal(h.pix),
+                "Opção Shopee": parseLocal(h.shopee),
+                "Opção M. Livre": parseLocal(h.meli)
             };
         });
 
@@ -745,18 +744,19 @@
                 if(canalEncontrado === "PIX") canalEncontrado = "Direta";
                 if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli";
 
+                // Excel salva os números limpos, então puxamos bruto e convertemos de volta
                 return {
                     id: Date.now() + index,
                     nome: item["Projeto"] || "Sem Nome",
                     canal: canalEncontrado,
                     materiais: item["Materiais Usados"] || "-",
-                    peso: String(item["Peso (g)"] || "0"),
-                    tempo: String(item["Tempo (h)"] || "0"),
-                    custo: String(item["Custo Prod. (R$)"] || item["Custo Produção (R$)"] || item["Custo Produção"] || "0.00"),
-                    valorVenda: String(item["Venda Realizada (R$)"] || item["Valor Vendido (R$)"] || item["Valor da Venda"] || "0.00"),
-                    pix: String(item["Opção Pix"] || item["Ref. Pix"] || "0.00"),
-                    shopee: String(item["Opção Shopee"] || item["Ref. Shopee"] || "0.00"),
-                    meli: String(item["Opção M. Livre"] || item["Ref. Meli"] || "0.00"),
+                    peso: item["Peso (g)"] || 0,
+                    tempo: item["Tempo (h)"] || 0,
+                    custo: item["Custo Prod. (R$)"] || item["Custo Produção (R$)"] || item["Custo Produção"] || 0,
+                    valorVenda: item["Venda Realizada (R$)"] || item["Valor Vendido (R$)"] || item["Valor da Venda"] || 0,
+                    pix: item["Opção Pix"] || item["Ref. Pix"] || 0,
+                    shopee: item["Opção Shopee"] || item["Ref. Shopee"] || 0,
+                    meli: item["Opção M. Livre"] || item["Ref. Meli"] || 0,
                     data: item["Data"] || new Date().toLocaleDateString('pt-BR')
                 };
             });
@@ -786,27 +786,27 @@
         doc.setFontSize(10);
         doc.setTextColor(80, 80, 80);
         doc.text("Total de Vendas: " + (tQtd ? tQtd.textContent : '0') + " pecas", 14, 30);
-        doc.text("Faturamento Total: R$ " + (tFatu ? tFatu.textContent : '0.00'), 14, 36);
-        doc.text("Custo Total Produção: R$ " + (tCusto ? tCusto.textContent : '0.00'), 14, 42);
+        doc.text("Faturamento Total: R$ " + (tFatu ? tFatu.textContent : '0,00'), 14, 36);
+        doc.text("Custo Total Produção: R$ " + (tCusto ? tCusto.textContent : '0,00'), 14, 42);
 
         var sumPeso = 0, sumTempo = 0, sumCusto = 0, sumVenda = 0;
 
         var tableBody = historico.map(function(h) {
             var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre";
-            var p = parseFloat(h.peso || 0);
-            var t = parseFloat(h.tempo || 0);
-            var c = parseFloat(h.custo || 0);
-            var v = parseFloat(h.valorVenda || h.pix || 0);
+            var p = parseLocal(h.peso);
+            var t = parseLocal(h.tempo);
+            var c = parseLocal(h.custo);
+            var v = h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix);
 
             sumPeso += p; sumTempo += t; sumCusto += c; sumVenda += v;
 
-            return [ h.data, h.nome, canalAjustado, h.materiais || (p.toFixed(1)+'g'), t.toFixed(1)+'h', 'R$ '+c.toFixed(2), 'R$ '+v.toFixed(2) ];
+            return [ h.data, h.nome, canalAjustado, h.materiais || (p.toLocaleString('pt-BR')+'g'), t.toLocaleString('pt-BR')+'h', 'R$ '+formatarMoeda(c), 'R$ '+formatarMoeda(v) ];
         });
 
         doc.autoTable({
             head: [['Data', 'Projeto', 'Canal', 'Material', 'Tempo', 'Custo', 'Venda']],
             body: tableBody,
-            foot: [['', '', 'TOTAIS:', sumPeso.toFixed(1)+'g', sumTempo.toFixed(1)+'h', 'R$ '+sumCusto.toFixed(2), 'R$ '+sumVenda.toFixed(2)]],
+            foot: [['', '', 'TOTAIS:', sumPeso.toLocaleString('pt-BR')+'g', sumTempo.toLocaleString('pt-BR')+'h', 'R$ '+formatarMoeda(sumCusto), 'R$ '+formatarMoeda(sumVenda)]],
             startY: 50,
             theme: 'grid',
             headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
@@ -849,14 +849,11 @@
     function resetarDados() {
         ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(function(id) { 
             var el = document.getElementById(id);
-            if(el) {
-                el.value = ""; 
-                localStorage.removeItem('3d4y_dark_' + id); 
-            }
+            if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); }
         });
 
         var pFil1 = document.getElementById('precoFilamento');
-        if(pFil1) { pFil1.value = "120"; localStorage.setItem('3d4y_dark_precoFilamento', "120"); aplicarMascara(pFil1); }
+        if(pFil1) { pFil1.value = "120,00"; localStorage.setItem('3d4y_dark_precoFilamento', "120,00"); }
 
         for(var i = 2; i <= 21; i++) {
             ['tipoFilamento', 'corFilamento', 'marcaFilamento', 'precoFilamento', 'pesoPeca'].forEach(function(prefix) {
@@ -865,10 +862,7 @@
         }
 
         var qCores = document.getElementById('qtdCoresExtras');
-        if(qCores) {
-            qCores.value = "1";
-            localStorage.setItem('3d4y_dark_qtdCoresExtras', "1");
-        }
+        if(qCores) { qCores.value = "1"; localStorage.setItem('3d4y_dark_qtdCoresExtras', "1"); }
 
         var tMulti = document.getElementById('toggle_multi_mat');
         var sMulti = document.getElementById('secao_multi_mat');
@@ -879,7 +873,6 @@
         }
 
         renderCoresExtras();
-
         var dtTexto = document.getElementById('destinoTexto');
         if(dtTexto) dtTexto.textContent = "";
 
@@ -887,11 +880,10 @@
         showToast("✅ Projeto Resetado!");
     }
 
-    // Blindagem de Segurança para WhatsApp
     function wpp(tipo) {
-        var vD = document.getElementById('r_vendaD') ? document.getElementById('r_vendaD').textContent : '0';
-        var vS = document.getElementById('r_vendaS') ? document.getElementById('r_vendaS').textContent : '0';
-        var vM = document.getElementById('r_vendaM') ? document.getElementById('r_vendaM').textContent : '0';
+        var vD = document.getElementById('r_vendaD') ? document.getElementById('r_vendaD').textContent : '0,00';
+        var vS = document.getElementById('r_vendaS') ? document.getElementById('r_vendaS').textContent : '0,00';
+        var vM = document.getElementById('r_vendaM') ? document.getElementById('r_vendaM').textContent : '0,00';
         var nProj = document.getElementById('nomeProjeto');
         var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
         
@@ -901,7 +893,6 @@
             var valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
             txt += "Valor: *R$ " + valF + "*"; 
         }
-        
         window.open("https://wa.me/?text=" + encodeURIComponent(txt), '_blank');
     }
 </script>
