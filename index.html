@@ -62,8 +62,13 @@
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
         .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
 
+        /* Estilo para destaque do Peso */
+        .peso-destaque { border: 2px solid var(--sky) !important; background: rgba(14, 165, 233, 0.1) !important; font-size: 1.1rem !important; color: #fff !important; }
+
         .filament-box { background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
         .filament-box-title { font-size: 0.7rem; color: var(--sky); font-weight: 800; margin-bottom: 10px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .detalhes-material { display: none; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
 
         .range-area { margin-top: 15px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .range-container { display: flex; align-items: center; gap: 15px; }
@@ -197,6 +202,7 @@
                     <label class="switch"><input type="checkbox" id="toggle_multi_mat" data-save="true"><span class="slider-switch"></span></label>
                 </div>
             </div>
+            
             <div class="filament-box">
                 <span class="filament-box-title">Filamento 1 (Principal)</span>
                 <div class="input-group" style="margin-bottom: 8px;">
@@ -204,20 +210,27 @@
                         <option value="">-- Puxar material do Estoque --</option>
                     </select>
                 </div>
-                <div class="grid-3">
-                    <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1'); checarManual('1')"></div>
-                    <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" oninput="salvarDinamico('corFilamento1'); checarManual('1')"></div>
-                    <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1'); checarManual('1')"></div>
+                
+                <div class="input-group">
+                    <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
+                    <input type="text" inputmode="decimal" id="pesoPeca" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()">
                 </div>
-                <div class="grid-2">
+
+                <div id="detalhes_1" class="detalhes-material">
+                    <div class="grid-3">
+                        <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" oninput="salvarDinamico('tipoFilamento1'); checarManual('1')"></div>
+                        <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" oninput="salvarDinamico('corFilamento1'); checarManual('1')"></div>
+                        <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1'); checarManual('1')"></div>
+                    </div>
                     <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" oninput="aplicarMascara(this); calcular(); checarManual('1')"></div>
-                    <div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca" value="" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()"></div>
                 </div>
             </div>
+
             <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
                 <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
                 <div id="container_cores_extras"></div>
             </div>
+
             <div class="grid-2" style="margin-top: 8px;">
                 <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
                 <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -455,7 +468,6 @@
     }
 
     function atualizarDropdownsEstoque() {
-        // --- ORDENAÇÃO ALFABÉTICA (A-Z) PELO TIPO ---
         var estoqueOrdenado = [...estoque].sort(function(a, b) {
             return (a.tipo || "").localeCompare(b.tipo || "");
         });
@@ -471,18 +483,39 @@
     }
 
     function puxarDoEstoque(indexStr) {
-        var sel = document.getElementById('sel_est_' + indexStr); if (!sel || !sel.value) return; 
-        var item = estoque.find(function(e) { return e.id.toString() === sel.value; }); if (!item) return;
+        var sel = document.getElementById('sel_est_' + indexStr); 
+        var det = document.getElementById('detalhes_' + indexStr);
+        
+        if (!sel || !sel.value) {
+            if(det) det.style.display = 'none';
+            return;
+        } 
+        
+        var item = estoque.find(function(e) { return e.id.toString() === sel.value; }); 
+        if (!item) return;
+        
         var idx = parseInt(indexStr);
-        var sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx, sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx, sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx, sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx;
+        var sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx, 
+            sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx, 
+            sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx, 
+            sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx;
+        
         var elT = document.getElementById(sTipo); if(elT) { elT.value = item.tipo; salvarDinamico(sTipo); }
         var elC = document.getElementById(sCor); if(elC) { elC.value = item.cor; salvarDinamico(sCor); }
         var elM = document.getElementById(sMarca); if(elM) { elM.value = item.marca; salvarDinamico(sMarca); }
         var elP = document.getElementById(sPreco); if(elP) { elP.value = item.preco; aplicarMascara(elP); salvarDinamico(sPreco); }
-        calcular(); showToast("📦 Filamento Carregado!");
+        
+        // Exibe os detalhes para conferência
+        if(det) det.style.display = 'block';
+        
+        calcular(); 
+        showToast("📦 " + item.tipo + " Carregado!");
     }
 
-    function checarManual(indexStr) { var sel = document.getElementById('sel_est_' + indexStr); if(sel) sel.value = ""; }
+    function checarManual(indexStr) { 
+        var sel = document.getElementById('sel_est_' + indexStr); 
+        if(sel) sel.value = ""; 
+    }
 
     function renderCoresExtras() {
         var qtdInput = document.getElementById('qtdCoresExtras'); if (!qtdInput) return;
@@ -490,7 +523,28 @@
         for(var i = 2; i <= qtd + 1; i++) {
             var sTipo = localStorage.getItem('3d4y_dark_tipoFilamento' + i) || '', sCor = localStorage.getItem('3d4y_dark_corFilamento' + i) || '', sMarca = localStorage.getItem('3d4y_dark_marcaFilamento' + i) || '', sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120,00', sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || '';
             if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ','); if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
-            container.innerHTML += '<div class="filament-box" style="margin-top:10px;"><span class="filament-box-title">Filamento ' + i + '</span><div class="input-group" style="margin-bottom: 8px;"><select id="sel_est_'+i+'" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque(\''+i+'\')"><option value="">-- Puxar material do Estoque --</option></select></div><div class="grid-3" style="margin-bottom: 8px;"><div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento'+i+'" value="'+sTipo+'" placeholder="Ex: PETG" oninput="salvarDinamico(\'tipoFilamento'+i+'\'); checarManual(\''+i+'\')"></div><div class="input-group"><label>Cor</label><input type="text" id="corFilamento'+i+'" value="'+sCor+'" placeholder="Ex: Branco" oninput="salvarDinamico(\'corFilamento'+i+'\'); checarManual(\''+i+'\')"></div><div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento'+i+'" value="'+sMarca+'" placeholder="Ex: 3DLab" oninput="salvarDinamico(\'marcaFilamento'+i+'\'); checarManual(\''+i+'\')"></div></div><div class="grid-2"><div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento'+i+'" value="'+sPreco+'" oninput="aplicarMascara(this); salvarDinamico(\'precoFilamento'+i+'\'); calcular(); checarManual(\''+i+'\')"></div><div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca'+i+'" value="'+sPeso+'" oninput="aplicarMascara(this); salvarDinamico(\'pesoPeca'+i+'\'); calcular()"></div></div></div>';
+            
+            container.innerHTML += `
+                <div class="filament-box" style="margin-top:10px;">
+                    <span class="filament-box-title">Filamento ${i}</span>
+                    <div class="input-group" style="margin-bottom: 8px;">
+                        <select id="sel_est_${i}" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque('${i}')">
+                            <option value="">-- Puxar material do Estoque --</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
+                        <input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()">
+                    </div>
+                    <div id="detalhes_${i}" class="detalhes-material">
+                        <div class="grid-3" style="margin-bottom: 8px;">
+                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" oninput="salvarDinamico('tipoFilamento${i}'); checarManual('${i}')"></div>
+                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" oninput="salvarDinamico('corFilamento${i}'); checarManual('${i}')"></div>
+                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" oninput="salvarDinamico('marcaFilamento${i}'); checarManual('${i}')"></div>
+                        </div>
+                        <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" oninput="aplicarMascara(this); salvarDinamico('precoFilamento${i}'); calcular(); checarManual('${i}')"></div>
+                    </div>
+                </div>`;
             aplicarMascara(document.getElementById('precoFilamento'+i)); aplicarMascara(document.getElementById('pesoPeca'+i));
         }
         atualizarDropdownsEstoque(); calcular();
@@ -688,6 +742,7 @@
 
     function resetarDados() {
         ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(function(id) { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
         calcular(); showToast("✅ Projeto Resetado!");
     }
 
