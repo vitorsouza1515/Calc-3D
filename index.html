@@ -385,6 +385,7 @@
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÍQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
@@ -707,8 +708,12 @@
 
     function renderEstoque() {
         var lista = document.getElementById('lista_estoque'); if(!lista) return;
-        lista.innerHTML = estoque.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
-        estoque.forEach(function(item) {
+        
+        // ORDENANDO ESTOQUE ALFABETICAMENTE NA VISUALIZAÇÃO
+        var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
+        
+        lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
+        estoqueOrdenado.forEach(function(item) {
             lista.innerHTML += '<div class="history-item" style="padding: 8px 12px;"><button class="btn-edit-item" onclick="editarItemEstoque('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItemEstoque('+item.id+')">×</button><h4 style="margin-bottom:0; font-size:0.75rem; color:var(--success);">' + item.tipo + ' ' + item.cor + ' <span style="color:#fff">(' + item.marca + ')</span></h4><div style="font-size: 0.7rem; color: var(--text-muted);">Preço: R$ ' + item.preco + '</div></div>';
         });
         atualizarDropdownsEstoque();
@@ -938,7 +943,7 @@
             
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
-                cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+                cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); // Assumindo custo único de envio pro carrinho todo
             }
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
@@ -984,7 +989,7 @@
             }
         }
 
-        var valorVendaFinal = 0;
+        var valorVendaFinal = 0; // Valor Líquido
         if(canal === "Shopee") {
             var feeShp = 0;
             if (valorBruto <= 79.99) feeShp = (valorBruto * 0.20) + 4; 
@@ -998,14 +1003,29 @@
             var feeMl = (valorBruto * txMl) + fixMl;
             valorVendaFinal = valorBruto - feeMl;
         } else { 
-            valorVendaFinal = valorBruto;
+            valorVendaFinal = valorBruto; // Na direta o bruto é igual ao líquido
         }
 
         if(valorVendaFinal < 0) valorVendaFinal = 0;
 
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
         
-        var novo = { id: Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaFinal, custo: custoProducaoFinal, peso: pesoFinal, tempo: tempoFinal, status: "Orçamento", data: new Date().toLocaleDateString('pt-BR') };
+        var novo = { 
+            id: Date.now(), 
+            nome: nomeFinal, 
+            cliente: cliNome, 
+            telefone: cliTel, 
+            canal: canal, 
+            materiais: stringMateriais, 
+            valorVenda: valorVendaFinal, // Mantido por compatibilidade
+            valorBruto: valorBruto, // NOVO CAMPO: Valor cheio
+            valorLiquido: valorVendaFinal, // NOVO CAMPO: Valor descontado
+            custo: custoProducaoFinal, 
+            peso: pesoFinal, 
+            tempo: tempoFinal, 
+            status: "Orçamento", 
+            data: new Date().toLocaleDateString('pt-BR') 
+        };
         
         if (editHistoricoId) {
             var idx = historico.findIndex(h => h.id === editHistoricoId);
@@ -1048,7 +1068,9 @@
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
-        document.getElementById('valorPersonalizado').value = formatarMoeda(item.valorVenda);
+        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
+        var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
+        document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
 
         editHistoricoId = id;
@@ -1062,17 +1084,39 @@
 
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico'); if(!lista) return; lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
-        var somaCusto = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
+        var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
+        
         historico.forEach(function(item) {
-            var custoItem = parseLocal(item.custo); somaCusto += custoItem; var canalStr = item.canal || "Direta", valVenda = item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix);
-            if(canalStr === "Shopee") { somaShopee += valVenda; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valVenda; qtdMeli++; } else { somaDireta += valVenda; qtdDireta++; }
+            var custoItem = parseLocal(item.custo); 
+            somaCusto += custoItem; 
+            var canalStr = item.canal || "Direta";
+            
+            // Lida com itens antigos e novos
+            var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
+            var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
+
+            somaBruto += valBruto;
+            somaLiquido += valLiq;
+
+            if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } 
+            else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } 
+            else { somaDireta += valLiq; qtdDireta++; }
+            
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
-            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">R$ '+formatarMoeda(valVenda)+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
+            
+            // Se tiver taxa, mostra o Bruto e o Liquido, se for Direta (ou seja, iguais), mostra só um
+            var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
+
+            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
-        document.getElementById('tot_qtd').textContent = historico.length; document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); document.getElementById('tot_faturamento').textContent = formatarMoeda(somaDireta + somaShopee + somaMeli); 
+        
+        document.getElementById('tot_qtd').textContent = historico.length; 
+        document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); 
+        document.getElementById('tot_faturamento_bruto').textContent = formatarMoeda(somaBruto); 
+        document.getElementById('tot_faturamento').textContent = formatarMoeda(somaLiquido); 
         document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
         document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
         document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
@@ -1083,8 +1127,13 @@
     function exportarExcel() {
         var wb = XLSX.utils.book_new();
         if(historico.length > 0) {
-            var dados = historico.map(h => { var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre"; return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Venda Realizada (R$)": h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix) }; });
-            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
+            var dados = historico.map(h => { 
+                var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre"; 
+                var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
+                var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
+                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido }; 
+            });
+            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
         }
         if(estoque.length > 0) {
             var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
@@ -1104,7 +1153,7 @@
             var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
             if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo") {
                 var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
-                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), valorVenda: String(item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
+                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), valorVenda: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
                 if (novosItens.length > 0) { historico = novosItens; }
             }
             if (workbook.Sheets["Estoque"]) {
@@ -1126,17 +1175,20 @@
         var tableBody = historico.map(h => { 
             var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre";
             
-            var liquido = h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix);
-            var bruto = liquido; 
+            var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
+            var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
-            if(h.canal === "Shopee") {
-                bruto = (liquido + 4) / 0.80; 
-                if (bruto > 79.99 && bruto <= 99.99) bruto = (liquido + 16) / 0.86;
-                else if (bruto > 99.99 && bruto <= 199.99) bruto = (liquido + 20) / 0.86;
-                else if (bruto > 199.99) bruto = (liquido + 26) / 0.86;
-            } else if(h.canal === "Meli") {
-                bruto = (liquido + 6.75) / 0.83; 
-                if (bruto >= 79.99) bruto = liquido / 0.83; 
+            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
+            if (h.valorBruto === undefined) {
+                if(h.canal === "Shopee") {
+                    bruto = (liquido + 4) / 0.80; 
+                    if (bruto > 79.99 && bruto <= 99.99) bruto = (liquido + 16) / 0.86;
+                    else if (bruto > 99.99 && bruto <= 199.99) bruto = (liquido + 20) / 0.86;
+                    else if (bruto > 199.99) bruto = (liquido + 26) / 0.86;
+                } else if(h.canal === "Meli") {
+                    bruto = (liquido + 6.75) / 0.83; 
+                    if (bruto >= 79.99) bruto = liquido / 0.83; 
+                }
             }
 
             return [ 
@@ -1165,6 +1217,11 @@
         let countMeli = historico.filter(h => h.canal === "Meli").length;
         let totalVendas = countDireta + countShopee + countMeli;
 
+        // Porcentagens calculadas direto para as labels
+        let pctDireta = totalVendas > 0 ? Math.round((countDireta / totalVendas) * 100) : 0;
+        let pctShopee = totalVendas > 0 ? Math.round((countShopee / totalVendas) * 100) : 0;
+        let pctMeli = totalVendas > 0 ? Math.round((countMeli / totalVendas) * 100) : 0;
+
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -1173,7 +1230,11 @@
         window.myChartPDF = new Chart(ctx, {
             type: 'pie',
             data: {
-                labels: ['Venda Direta / Pix', 'Shopee', 'Mercado Livre'],
+                labels: [
+                    `Venda Direta / Pix (${pctDireta}%)`, 
+                    `Shopee (${pctShopee}%)`, 
+                    `Mercado Livre (${pctMeli}%)`
+                ],
                 datasets: [{
                     data: [countDireta, countShopee, countMeli],
                     backgroundColor: ['#10b981', '#f94d30', '#facc15'],
@@ -1184,17 +1245,7 @@
                 responsive: false,
                 animation: false,
                 plugins: {
-                    legend: { labels: { font: { size: 14 } } },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                let value = context.raw || 0;
-                                let percentage = totalVendas > 0 ? Math.round((value / totalVendas) * 100) : 0;
-                                return label + ': ' + percentage + '% (' + value + ' vendas)';
-                            }
-                        }
-                    }
+                    legend: { labels: { font: { size: 14 } } }
                 }
             }
         });
