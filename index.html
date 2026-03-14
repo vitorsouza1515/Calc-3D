@@ -313,7 +313,6 @@
 </div>
 
 <script>
-    // FUNÇÕES DE SEGURANÇA E LEITURA 
     function pegaValor(id) {
         var el = document.getElementById(id);
         if (el && el.value) { return parseFloat(el.value) || 0; }
@@ -377,7 +376,6 @@
         if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); }
     }
 
-    // Função para mostrar/esconder o campo de valor personalizado
     function mostrarValorPersonalizado() {
         var seletor = document.getElementById('canalVendaSelecionado');
         var divPersonalizado = document.getElementById('divValorPersonalizado');
@@ -429,7 +427,7 @@
         updateSliderProgress(document.getElementById('margemSlider'));
         renderHistorico();
         calcular();
-        mostrarValorPersonalizado(); // Garante o estado correto ao carregar
+        mostrarValorPersonalizado();
     };
 
     function calcular() {
@@ -502,11 +500,10 @@
         
         var valorRegistrado = "0.00";
         
-        // Pega o valor baseado na seleção
         if (canal === "Personalizado") {
             var vPerso = pegaValor('valorPersonalizado');
             valorRegistrado = vPerso.toFixed(2);
-            canal = "Direta"; // Lança como direta para o histórico, já que não é marketplace
+            canal = "Direta"; 
         } else if(canal === "Direta") { 
             var e=document.getElementById('r_vendaD'); if(e) valorRegistrado = e.textContent; 
         } else if(canal === "Shopee") { 
@@ -556,7 +553,6 @@
         localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
         renderHistorico();
         
-        // Limpa o campo personalizado após salvar
         var elPerso = document.getElementById('valorPersonalizado');
         if(elPerso) elPerso.value = '';
         
@@ -763,20 +759,51 @@
     }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'valorPersonalizado'].forEach(function(id) { 
+        // Limpa campos principais do formulário
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(function(id) { 
             var el = document.getElementById(id);
-            if(el) el.value = ""; 
+            if(el) {
+                el.value = ""; 
+                localStorage.removeItem('3d4y_dark_' + id); // Apaga do cache para não voltar no F5
+            }
         });
-        var qCores = document.getElementById('qtdCoresExtras');
-        var qtdExtras = qCores ? (parseInt(qCores.value) || 1) : 1;
-        for(var i = 2; i <= qtdExtras + 1; i++) {
-            var elP = document.getElementById('pesoPeca'+i);
-            if(elP) elP.value = '';
+
+        // Restaura o preço do filamento principal para o padrão
+        var pFil1 = document.getElementById('precoFilamento');
+        if(pFil1) { pFil1.value = "120"; localStorage.setItem('3d4y_dark_precoFilamento', "120"); }
+
+        // Apaga todos os filamentos extras que foram gerados da memória (até o limite máximo 20)
+        for(var i = 2; i <= 21; i++) {
+            ['tipoFilamento', 'corFilamento', 'marcaFilamento', 'precoFilamento', 'pesoPeca'].forEach(function(prefix) {
+                localStorage.removeItem('3d4y_dark_' + prefix + i);
+            });
         }
+
+        // Reseta o contador de cores extras para 1
+        var qCores = document.getElementById('qtdCoresExtras');
+        if(qCores) {
+            qCores.value = "1";
+            localStorage.setItem('3d4y_dark_qtdCoresExtras', "1");
+        }
+
+        // Desliga a chave Multi-Cor visualmente e no sistema
+        var tMulti = document.getElementById('toggle_multi_mat');
+        var sMulti = document.getElementById('secao_multi_mat');
+        if(tMulti) {
+            tMulti.checked = false;
+            localStorage.setItem('3d4y_dark_toggle_multi_mat', false);
+            if(sMulti) sMulti.style.display = 'none';
+        }
+
+        // Redesenha a tela de extras zerada
+        renderCoresExtras();
+
+        // Limpa o texto do CEP
         var dtTexto = document.getElementById('destinoTexto');
         if(dtTexto) dtTexto.textContent = "";
+
         calcular();
-        showToast("✅ Resetado");
+        showToast("✅ Projeto Resetado!");
     }
 
     function wpp(tipo) {
