@@ -407,7 +407,7 @@
     var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
     var editEstoqueId = null;
     var editCatalogoId = null; 
-    var editHistoricoId = null; // ID para controlar a edição de vendas já salvas
+    var editHistoricoId = null; 
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -799,7 +799,7 @@
         var nome = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
 
         var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
-        var valorVendaFinal = 0; // Valor LÍQUIDO
+        var valorVendaFinal = 0; 
 
         var custoProducao = parseLocal(document.getElementById('r_gasto').textContent);
         var tLog = document.getElementById('toggle_logistica');
@@ -896,7 +896,6 @@
         var item = historico.find(h => h.id === id);
         if (!item) return;
 
-        // Tenta remover o "Nx " do início do nome caso exista para recuperar o nome base
         var match = item.nome.match(/^(\d+)x\s(.*)/);
         if (match) {
             document.getElementById('qtdPecasProjeto').value = match[1];
@@ -909,7 +908,6 @@
         document.getElementById('nomeCliente').value = item.cliente || "";
         document.getElementById('telefoneCliente').value = item.telefone || "";
         
-        // Carrega o canal
         var seletorCanal = document.getElementById('canalVendaSelecionado');
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
@@ -1084,7 +1082,7 @@
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'qtdPecasProjeto'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
