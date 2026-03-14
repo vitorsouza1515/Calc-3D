@@ -90,6 +90,10 @@
         input:checked + .slider-switch { background-color: var(--primary); }
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
+        /* NOVO: Cores específicas para cada toggle */
+        #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
+        #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
+
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
         .result-row span:first-child { flex: 1; line-height: 1.2; }
@@ -288,8 +292,10 @@
                     <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Origem</label><input type="text" id="cepOrigem" placeholder="00000-000" data-save="true" onkeyup="buscarCEP(this.value, 'origemTexto')"><div id="origemTexto" class="endereco-txt"></div></div>
                     <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')" oninput="salvarDinamico('cepDestino')"><div id="destinoTexto" class="endereco-txt"></div></div>
-                    <div class="input-group"><label>Envio</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="PAC">PAC</option><option value="SEDEX">SEDEX</option></select></div>
-                    <div class="input-group"><label>Caixa (g)</label><input type="text" inputmode="decimal" id="pesoBruto" value="300" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Envio</label><select id="tipoEnvio" data-save="true" onchange="toggleFreteManual(); calcular()"><option value="PAC">PAC</option><option value="SEDEX">SEDEX</option><option value="Manual">Manual</option></select></div>
+                    
+                    <div class="input-group" id="divCaixaG"><label>Caixa (g)</label><input type="text" inputmode="decimal" id="pesoBruto" value="300" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group" id="divFreteManual" style="display:none;"><label style="color:var(--orange)">Frete Manual (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
             </div>
         </div>
@@ -327,6 +333,12 @@
                 <div class="result-row"><span>Energia Elétrica</span><span class="value">R$ <span id="r_ene">0,00</span></span></div>
                 <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0,00</span></span></div>
                 <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span><span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0,00</span></span></div>
+                
+                <div id="resumo_logistica" style="display:none; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+                    <div class="result-row" style="color: var(--sky);"><span>Logística (Emb+Desloc)</span><span class="value">R$ <span id="r_log_fixo">0,00</span></span></div>
+                    <div class="result-row" style="color: var(--sky);"><span>Frete</span><span class="value">R$ <span id="r_log_frete">0,00</span></span></div>
+                    <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: var(--success);">Custo Final (Prod+Log)</span><span class="value" style="color: var(--success);">R$ <span id="r_gasto_total">0,00</span></span></div>
+                </div>
             </div>
             
             <button class="btn" style="background: var(--orange); width: 100%; padding: 12px; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; font-weight: 700; color: white;" onclick="adicionarAoCarrinho()">➕ Adicionar Item ao Carrinho</button>
@@ -486,10 +498,25 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino', 'qtdPecasProjeto'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'pesoBruto', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino', 'qtdPecasProjeto', 'valorFreteManual'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
+
+    function toggleFreteManual() {
+        var tEnvio = document.getElementById('tipoEnvio');
+        var dFrete = document.getElementById('divFreteManual');
+        var dCaixa = document.getElementById('divCaixaG');
+        if (tEnvio && dFrete && dCaixa) {
+            if (tEnvio.value === 'Manual') {
+                dFrete.style.display = 'flex';
+                dCaixa.style.display = 'none';
+            } else {
+                dFrete.style.display = 'none';
+                dCaixa.style.display = 'flex';
+            }
+        }
+    }
 
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
@@ -822,7 +849,7 @@
                 el.addEventListener('input', function() {
                     if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); }
                     if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } }
-                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular();
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto' || id === 'valorFreteManual') calcular();
                 });
             }
         });
@@ -850,9 +877,15 @@
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
         if(tSim && sSim) { tSim.checked = false; tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } }); sSim.style.display = 'none'; }
+        
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
-        renderCoresExtras(); updateSliderProgress(document.getElementById('margemSlider')); calcular(); mostrarValorPersonalizado();
+        
+        renderCoresExtras(); 
+        updateSliderProgress(document.getElementById('margemSlider')); 
+        toggleFreteManual();
+        calcular(); 
+        mostrarValorPersonalizado();
     };
 
     function calcular() {
@@ -898,8 +931,28 @@
         
         if (logEnabled) { 
             cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
-            var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000, tEnvio = document.getElementById('tipoEnvio'), base = (tEnvio && tEnvio.value === 'PAC') ? 18.50 : 24.50; 
-            frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
+            var tEnvio = document.getElementById('tipoEnvio');
+            var tipoE = tEnvio ? tEnvio.value : 'PAC';
+            
+            if (tipoE === 'Manual') {
+                frete = pegaValor('valorFreteManual');
+            } else {
+                var pReal = (pegaValor('pesoBruto') + pesoTotalPeca) / 1000;
+                var base = (tipoE === 'PAC') ? 18.50 : 24.50; 
+                frete = pReal > 0.3 ? base + (pReal * 4.5) : base; 
+            }
+        }
+        
+        var divResumoLog = document.getElementById('resumo_logistica');
+        if (divResumoLog) {
+            if (logEnabled) {
+                divResumoLog.style.display = 'block';
+                var rLogFixo = document.getElementById('r_log_fixo'); if(rLogFixo) rLogFixo.textContent = formatarMoeda(cLog);
+                var rLogFrete = document.getElementById('r_log_frete'); if(rLogFrete) rLogFrete.textContent = formatarMoeda(frete);
+                var rGastoTotal = document.getElementById('r_gasto_total'); if(rGastoTotal) rGastoTotal.textContent = formatarMoeda(custoProducao + cLog + frete);
+            } else {
+                divResumoLog.style.display = 'none';
+            }
         }
         
         var vd = valorComLucro + cLog + frete, vShopeeBase = valorComLucro + cLog, validShopee = [];
@@ -930,6 +983,7 @@
         var tempoFinal = 0;
         var materiaisArray = [];
         var cLog = 0;
+        var freteCalculado = 0;
 
         if(isCart) {
             nomeFinal = carrinho.map(i => i.nome).join(' + ');
@@ -952,6 +1006,15 @@
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
                 cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+                var tEnvio = document.getElementById('tipoEnvio');
+                var tipoE = tEnvio ? tEnvio.value : 'PAC';
+                if(tipoE === 'Manual') {
+                    freteCalculado = pegaValor('valorFreteManual');
+                } else {
+                    var pReal = (pegaValor('pesoBruto') + pesoFinal) / 1000;
+                    var baseEnvio = (tipoE === 'PAC') ? 18.50 : 24.50;
+                    freteCalculado = pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio;
+                }
             }
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
@@ -972,6 +1035,15 @@
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
                 cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+                var tEnvio = document.getElementById('tipoEnvio');
+                var tipoE = tEnvio ? tEnvio.value : 'PAC';
+                if(tipoE === 'Manual') {
+                    freteCalculado = pegaValor('valorFreteManual');
+                } else {
+                    var pReal = (pegaValor('pesoBruto') + pesoFinal) / 1000;
+                    var baseEnvio = (tipoE === 'PAC') ? 18.50 : 24.50;
+                    freteCalculado = pReal > 0.3 ? baseEnvio + (pReal * 4.5) : baseEnvio;
+                }
             }
 
             var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
@@ -1025,9 +1097,9 @@
             telefone: cliTel, 
             canal: canal, 
             materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, // Mantido por compatibilidade
-            valorBruto: valorBruto, // NOVO CAMPO: Valor cheio
-            valorLiquido: valorVendaFinal, // NOVO CAMPO: Valor descontado
+            valorVenda: valorVendaFinal, 
+            valorBruto: valorBruto, 
+            valorLiquido: valorVendaFinal, 
             custo: custoProducaoFinal, 
             peso: pesoFinal, 
             tempo: tempoFinal, 
@@ -1076,7 +1148,6 @@
         seletorCanal.value = "Personalizado";
         mostrarValorPersonalizado();
         
-        // Puxa o valor bruto original se existir (ou o liquido se for registro antigo)
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         document.getElementById('canalPersonalizadoDestino').value = item.canal;
@@ -1099,7 +1170,6 @@
             somaCusto += custoItem; 
             var canalStr = item.canal || "Direta";
             
-            // Lida com itens antigos e novos
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
 
@@ -1115,7 +1185,6 @@
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             
-            // Se tiver taxa, mostra o Bruto e o Liquido, se for Direta (ou seja, iguais), mostra só um
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
             lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span>Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo: R$ '+formatarMoeda(custoItem)+'</span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
@@ -1186,7 +1255,6 @@
             var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido; 
             
-            // Faz a conta reversa APENAS se for um item antigo gravado antes dessa atualização (onde o bruto não existia)
             if (h.valorBruto === undefined) {
                 if(h.canal === "Shopee") {
                     bruto = (liquido + 4) / 0.80; 
@@ -1225,7 +1293,6 @@
         let countMeli = historico.filter(h => h.canal === "Meli").length;
         let totalVendas = countDireta + countShopee + countMeli;
 
-        // Porcentagens calculadas direto para as labels
         let pctDireta = totalVendas > 0 ? Math.round((countDireta / totalVendas) * 100) : 0;
         let pctShopee = totalVendas > 0 ? Math.round((countShopee / totalVendas) * 100) : 0;
         let pctMeli = totalVendas > 0 ? Math.round((countMeli / totalVendas) * 100) : 0;
