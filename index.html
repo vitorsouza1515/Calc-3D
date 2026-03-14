@@ -257,11 +257,17 @@
             
             <div class="input-group" style="margin-top: 10px;">
                 <label style="color: var(--purple);">Canal de Venda Realizada</label>
-                <select id="canalVendaSelecionado" style="border-color: var(--purple); color: var(--purple);">
+                <select id="canalVendaSelecionado" style="border-color: var(--purple); color: var(--purple);" onchange="mostrarValorPersonalizado()">
                     <option value="Direta">Venda Direta / Pix</option>
                     <option value="Shopee">Shopee</option>
                     <option value="Meli">Mercado Livre</option>
+                    <option value="Personalizado">Valor Personalizado (Negociado)</option>
                 </select>
+            </div>
+            
+            <div class="input-group" id="divValorPersonalizado" style="display: none; margin-top: 5px;">
+                <label style="color: var(--sky);">Digite o valor da venda (R$)</label>
+                <input type="number" id="valorPersonalizado" placeholder="Ex: 150.00" style="border-color: var(--sky);">
             </div>
 
             <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
@@ -286,7 +292,7 @@
                 <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL:</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0.00</span></b></div>
                 
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                    <span>Total PIX (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0.00</span></b>
+                    <span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0.00</span></b>
                 </div>
                 <div class="total-row">
                     <span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0.00</span></b>
@@ -307,7 +313,7 @@
 </div>
 
 <script>
-    // FUNÇÕES DE SEGURANÇA E LEITURA (Sem usar atalhos que travam navegadores antigos)
+    // FUNÇÕES DE SEGURANÇA E LEITURA 
     function pegaValor(id) {
         var el = document.getElementById(id);
         if (el && el.value) { return parseFloat(el.value) || 0; }
@@ -371,6 +377,15 @@
         if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); }
     }
 
+    // Função para mostrar/esconder o campo de valor personalizado
+    function mostrarValorPersonalizado() {
+        var seletor = document.getElementById('canalVendaSelecionado');
+        var divPersonalizado = document.getElementById('divValorPersonalizado');
+        if (seletor && divPersonalizado) {
+            divPersonalizado.style.display = seletor.value === 'Personalizado' ? 'flex' : 'none';
+        }
+    }
+
     window.onload = function() {
         ids.forEach(function(id) {
             var el = document.getElementById(id);
@@ -414,6 +429,7 @@
         updateSliderProgress(document.getElementById('margemSlider'));
         renderHistorico();
         calcular();
+        mostrarValorPersonalizado(); // Garante o estado correto ao carregar
     };
 
     function calcular() {
@@ -485,9 +501,19 @@
         var canal = elCanal ? elCanal.value : "Direta";
         
         var valorRegistrado = "0.00";
-        if(canal === "Direta") { var e=document.getElementById('r_vendaD'); if(e) valorRegistrado = e.textContent; }
-        else if(canal === "Shopee") { var e=document.getElementById('r_vendaS'); if(e) valorRegistrado = e.textContent; }
-        else { var e=document.getElementById('r_vendaM'); if(e) valorRegistrado = e.textContent; }
+        
+        // Pega o valor baseado na seleção
+        if (canal === "Personalizado") {
+            var vPerso = pegaValor('valorPersonalizado');
+            valorRegistrado = vPerso.toFixed(2);
+            canal = "Direta"; // Lança como direta para o histórico, já que não é marketplace
+        } else if(canal === "Direta") { 
+            var e=document.getElementById('r_vendaD'); if(e) valorRegistrado = e.textContent; 
+        } else if(canal === "Shopee") { 
+            var e=document.getElementById('r_vendaS'); if(e) valorRegistrado = e.textContent; 
+        } else { 
+            var e=document.getElementById('r_vendaM'); if(e) valorRegistrado = e.textContent; 
+        }
         
         var materiaisArray = [];
         var pesoSalvar = 0;
@@ -525,9 +551,15 @@
             tempo: pegaValor('tempoH'),
             data: new Date().toLocaleDateString('pt-BR')
         };
+        
         historico.unshift(novo);
         localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
         renderHistorico();
+        
+        // Limpa o campo personalizado após salvar
+        var elPerso = document.getElementById('valorPersonalizado');
+        if(elPerso) elPerso.value = '';
+        
         showToast("✅ Venda Salva!");
     }
 
@@ -731,7 +763,7 @@
     }
 
     function resetarDados() {
-        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto'].forEach(function(id) { 
+        ['pesoPeca', 'tempoH', 'cepDestino', 'nomeProjeto', 'valorPersonalizado'].forEach(function(id) { 
             var el = document.getElementById(id);
             if(el) el.value = ""; 
         });
