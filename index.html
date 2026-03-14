@@ -140,10 +140,10 @@
         <div class="card">
             <h2 class="section-title">⚙️ Base Operacional</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Máquina (R$)</label><input type="number" id="maquina" value="1500" data-save="true" oninput="calcular()"></div>
-                <div class="input-group"><label>Vida Útil (h)</label><input type="number" id="vidaUtil" value="5000" data-save="true" oninput="calcular()"></div>
-                <div class="input-group"><label>Consumo (W)</label><input type="number" id="consumoW" value="250" data-save="true" oninput="calcular()"></div>
-                <div class="input-group"><label>kWh (R$)</label><input type="number" id="precoKwh" value="0.90" step="0.01" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1500" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0.90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
 
@@ -167,22 +167,22 @@
                     <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Voolt" data-save="true" oninput="salvarDinamico('marcaFilamento1')"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="input-group"><label>Preço (R$/kg)</label><input type="number" id="precoFilamento" value="120" data-save="true" oninput="calcular()"></div>
-                    <div class="input-group"><label>Peso (g)</label><input type="number" id="pesoPeca" value="" oninput="salvarDinamico('pesoPeca'); calcular()"></div>
+                    <div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca" value="" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()"></div>
                 </div>
             </div>
 
             <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
                 <div class="input-group" style="margin-bottom: 12px;">
                     <label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label>
-                    <input type="number" id="qtdCoresExtras" value="1" min="1" max="20" data-save="true" style="border-color: var(--sky);">
+                    <input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()">
                 </div>
                 <div id="container_cores_extras"></div>
             </div>
 
             <div class="grid-2" style="margin-top: 8px;">
-                <div class="input-group"><label>Tempo Total (h)</label><input type="number" id="tempoH" value="" step="0.1" oninput="salvarDinamico('tempoH'); calcular()"></div>
-                <div class="input-group"><label>Sucesso (%)</label><input type="number" id="taxaSucesso" value="95" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
+                <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
             
             <div class="range-area">
@@ -190,7 +190,7 @@
                 <div class="range-container">
                     <input type="range" id="margemSlider" min="0" max="1000" value="100" data-save="true">
                     <div class="margem-box">
-                        <input type="number" id="margemInput" value="100" data-save="true">
+                        <input type="text" inputmode="decimal" id="margemInput" value="100" data-save="true" oninput="aplicarMascara(this)">
                         <span>%</span>
                     </div>
                 </div>
@@ -202,12 +202,12 @@
         <div class="card">
             <div class="section-title">
                 <span>🚚 Logística</span>
-                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true"><span class="slider-switch"></span></label>
+                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
             </div>
             <div id="section_logistica">
                 <div class="grid-2">
-                    <div class="input-group"><label>Embalagem</label><input type="number" id="custoEmbalagem" value="4.50" data-save="true" oninput="calcular()"></div>
-                    <div class="input-group"><label>Deslocamento</label><input type="number" id="custoDeslocamento" value="8.00" data-save="true" oninput="calcular()"></div>
+                    <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4.50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8.00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Origem</label><input type="text" id="cepOrigem" placeholder="00000-000" data-save="true" onkeyup="buscarCEP(this.value, 'origemTexto')"><div id="origemTexto" class="endereco-txt"></div></div>
                     <div class="input-group"><label>Destino</label><input type="text" id="cepDestino" placeholder="00000-000" onkeyup="buscarCEP(this.value, 'destinoTexto')" oninput="salvarDinamico('cepDestino')"><div id="destinoTexto" class="endereco-txt"></div></div>
                     <div class="input-group">
@@ -217,17 +217,17 @@
                             <option value="SEDEX">SEDEX</option>
                         </select>
                     </div>
-                    <div class="input-group"><label>Caixa (g)</label><input type="number" id="pesoBruto" value="300" data-save="true" oninput="calcular()"></div>
+                    <div class="input-group"><label>Caixa (g)</label><input type="text" inputmode="decimal" id="pesoBruto" value="300" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
             </div>
         </div>
         <div class="card">
             <h2 class="section-title">🛒 Marketplaces</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Shopee (%)</label><input type="number" id="taxaShopee" value="20" data-save="true" oninput="calcular()"></div>
-                <div class="input-group"><label>Fixo Shopee</label><input type="number" id="fixaShopee" value="4.00" data-save="true" oninput="calcular()"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="number" id="taxaMeli" value="17" data-save="true" oninput="calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="number" id="fixaMeli" value="6.75" data-save="true" oninput="calcular()"></div>
+                <div class="input-group"><label>Shopee (%)</label><input type="text" inputmode="decimal" id="taxaShopee" value="20" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo Shopee</label><input type="text" inputmode="decimal" id="fixaShopee" value="4.00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6.75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
     </div>
@@ -267,7 +267,7 @@
             
             <div class="input-group" id="divValorPersonalizado" style="display: none; margin-top: 5px;">
                 <label style="color: var(--sky);">Digite o valor da venda (R$)</label>
-                <input type="number" id="valorPersonalizado" placeholder="Ex: 150.00" style="border-color: var(--sky);" oninput="salvarDinamico('valorPersonalizado')">
+                <input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 150.00" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')">
             </div>
 
             <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
@@ -313,6 +313,20 @@
 </div>
 
 <script>
+    // --- MAGIA UX: FORMATAÇÃO AUTOMÁTICA E SEGURA ---
+    function aplicarMascara(el) {
+        if (!el) return;
+        // Transforma vírgula em ponto instantaneamente
+        var val = el.value.replace(/,/g, '.');
+        // Impede letras ou múltiplos pontos de quebrarem a matemática
+        val = val.replace(/[^0-9.]/g, ''); 
+        var parts = val.split('.');
+        if (parts.length > 2) {
+            val = parts[0] + '.' + parts.slice(1).join('');
+        }
+        el.value = val;
+    }
+
     function pegaValor(id) {
         var el = document.getElementById(id);
         if (el && el.value) { return parseFloat(el.value) || 0; }
@@ -329,11 +343,10 @@
 
     var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 
                 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 
-                'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino',
-                'toggle_multi_mat', 'qtdCoresExtras', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
+                'tipoEnvio', 'pesoBruto', 'taxaShopee', 'fixaShopee', 'taxaMeli', 'fixaMeli', 'cepOrigem', 'cepDestino'];
 
-    // Carrega os campos que não têm dataset-save mas que salvamos via salvarDinamico()
-    var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino'];
+    // Campos preenchidos manualmente pelo usuário que guardam texto e valores
+    var dynIds = ['nomeProjeto', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'cepDestino', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1'];
 
     function updateSliderProgress(slider) {
         if (!slider) return;
@@ -366,8 +379,8 @@
                     '<div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento'+i+'" value="'+sMarca+'" placeholder="3DLab" oninput="salvarDinamico(\'marcaFilamento'+i+'\')"></div>' +
                 '</div>' +
                 '<div class="grid-2">' +
-                    '<div class="input-group"><label>Preço (R$/kg)</label><input type="number" id="precoFilamento'+i+'" value="'+sPreco+'" oninput="salvarDinamico(\'precoFilamento'+i+'\'); calcular()"></div>' +
-                    '<div class="input-group"><label>Peso (g)</label><input type="number" id="pesoPeca'+i+'" value="'+sPeso+'" oninput="salvarDinamico(\'pesoPeca'+i+'\'); calcular()"></div>' +
+                    '<div class="input-group"><label>Preço (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento'+i+'" value="'+sPreco+'" oninput="aplicarMascara(this); salvarDinamico(\'precoFilamento'+i+'\'); calcular()"></div>' +
+                    '<div class="input-group"><label>Peso (g)</label><input type="text" inputmode="decimal" id="pesoPeca'+i+'" value="'+sPeso+'" oninput="aplicarMascara(this); salvarDinamico(\'pesoPeca'+i+'\'); calcular()"></div>' +
                 '</div>' +
             '</div>';
         }
@@ -475,7 +488,10 @@
             }
         }
 
-        var suc = pegaValor('taxaSucesso') || 100;
+        // Correção de Segurança: Protege contra erro de "divisão por zero" se o usuário apagar a Taxa de Sucesso
+        var suc = pegaValor('taxaSucesso');
+        if (suc <= 0) suc = 100; 
+        
         var custoProducao = (dep + ene + matTotal) / (suc / 100);
         
         var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = dep.toFixed(2);
@@ -527,8 +543,11 @@
         var materiaisArray = [];
         var pesoSalvar = 0;
 
+        // Correção de Estética: Se o usuário esquecer de colocar o Tipo/Cor, preenche genérico para não ficar vazio no PDF
         var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca');
-        if(p1 > 0) { materiaisArray.push((t1 + ' ' + c1 + ' ' + m1 + ' (' + p1 + 'g)').trim()); pesoSalvar += p1; }
+        var nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
+        if (nomeMat1 === '') nomeMat1 = 'Filamento 1';
+        if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); pesoSalvar += p1; }
 
         var tMulti = document.getElementById('toggle_multi_mat');
         if (tMulti && tMulti.checked) {
@@ -536,7 +555,9 @@
             var qtdExtras = qCores ? (parseInt(qCores.value) || 1) : 1;
             for(var i = 2; i <= qtdExtras + 1; i++) {
                 var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i);
-                if(pi > 0) { materiaisArray.push((ti + ' ' + ci + ' ' + mi + ' (' + pi + 'g)').trim()); pesoSalvar += pi; }
+                var nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
+                if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
+                if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); pesoSalvar += pi; }
             }
         }
         
@@ -814,6 +835,7 @@
         showToast("✅ Projeto Resetado!");
     }
 
+    // Correção de Segurança: Codifica o texto do WPP para não quebrar links com "+" ou "&"
     function wpp(tipo) {
         var vD = document.getElementById('r_vendaD') ? document.getElementById('r_vendaD').textContent : '0';
         var vS = document.getElementById('r_vendaS') ? document.getElementById('r_vendaS').textContent : '0';
@@ -821,13 +843,13 @@
         var nProj = document.getElementById('nomeProjeto');
         var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
         
-        var txt = "*Orçamento 3D 4You*%0A*Projeto:* " + nome + "%0A%0A";
-        if (tipo === 'completo') { txt += "Pix: *R$ " + vD + "*%0AShopee: *R$ " + vS + "*%0AM.Livre: *R$ " + vM + "*"; }
+        var txt = "*Orçamento 3D 4You*\n*Projeto:* " + nome + "\n\n";
+        if (tipo === 'completo') { txt += "Pix: *R$ " + vD + "*\nShopee: *R$ " + vS + "*\nM.Livre: *R$ " + vM + "*"; }
         else { 
             var valF = tipo === 'direta' ? vD : (tipo === 'shopee' ? vS : vM);
             txt += "Valor: *R$ " + valF + "*"; 
         }
-        window.open("https://wa.me/?text=" + txt, '_blank');
+        window.open("https://wa.me/?text=" + encodeURIComponent(txt), '_blank');
     }
 </script>
 </body>
