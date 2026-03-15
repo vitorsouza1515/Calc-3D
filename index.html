@@ -1464,31 +1464,34 @@
         var lista = document.getElementById('listaHistorico'); if(!lista) return; 
         var filtroDiv = document.getElementById('filtroHistorico');
 
-        var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
+        var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0;
         
         var counts = { 'Todos': historico.length, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0 };
 
         historico.forEach(function(item) {
-            var custoItem = parseLocal(item.custo); 
-            var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
-            var canalStr = item.canal || "Direta";
-            var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
-            var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
-            
-            var lucroItem = valLiq - custoItem - freteLogItem;
-
-            somaCusto += custoItem; 
-            somaLogistica += freteLogItem;
-            somaBruto += valBruto;
-            somaLiquido += valLiq;
-            somaLucro += lucroItem;
-
-            if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } 
-            else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } 
-            else { somaDireta += valLiq; qtdDireta++; }
-
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
+
+            if (st !== 'Orçamento') {
+                var custoItem = parseLocal(item.custo); 
+                var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
+                var canalStr = item.canal || "Direta";
+                var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
+                var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
+                
+                var lucroItem = valLiq - custoItem - freteLogItem;
+
+                somaCusto += custoItem; 
+                somaLogistica += freteLogItem;
+                somaBruto += valBruto;
+                somaLiquido += valLiq;
+                somaLucro += lucroItem;
+                qtdValida++;
+
+                if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } 
+                else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } 
+                else { somaDireta += valLiq; qtdDireta++; }
+            }
         });
 
         if (filtroDiv) {
@@ -1527,7 +1530,7 @@
             lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
         
-        document.getElementById('tot_qtd').textContent = historico.length; 
+        document.getElementById('tot_qtd').textContent = qtdValida; 
         document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); 
         document.getElementById('tot_logistica').textContent = formatarMoeda(somaLogistica); 
         document.getElementById('tot_faturamento_bruto').textContent = formatarMoeda(somaBruto); 
@@ -1589,7 +1592,6 @@
             if (workbook.Sheets["Despesas"]) {
                 var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
                 despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
-                // Remove the "TOTAL" row if it was imported back
                 despesas = despesas.filter(d => d.data !== "TOTAL");
             }
             syncNuvem(); showToast("✅ Nuvem Atualizada!");
@@ -1605,6 +1607,7 @@
         doc.text("Relatório de Desempenho - 3D 4You", 14, 20);
 
         var totalPeso = 0, totalCusto = 0, totalLog = 0, totalBruto = 0, totalLiquido = 0, totalLucro = 0;
+        var qtdValidaPDF = 0;
 
         var tableBody = historico.map(h => { 
             var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre";
@@ -1629,12 +1632,17 @@
             var lucro = liquido - custoFab - custoLog; 
             var pesoPeca = parseLocal(h.peso);
             
-            totalPeso += pesoPeca;
-            totalCusto += custoFab;
-            totalLog += custoLog;
-            totalBruto += bruto;
-            totalLiquido += liquido;
-            totalLucro += lucro;
+            var st = h.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
+            
+            if (st !== 'Orçamento') {
+                totalPeso += pesoPeca;
+                totalCusto += custoFab;
+                totalLog += custoLog;
+                totalBruto += bruto;
+                totalLiquido += liquido;
+                totalLucro += lucro;
+                qtdValidaPDF++;
+            }
 
             var txtMat = h.materiais && h.materiais !== 'Não informado' ? h.materiais : '-';
 
@@ -1699,7 +1707,7 @@
         doc.setTextColor(71, 85, 105);
         let yR = finalY + 8;
         
-        doc.text(`Qtd. de Vendas: ${historico.length}`, 14, yR);
+        doc.text(`Qtd. de Vendas Ativas: ${qtdValidaPDF}`, 14, yR);
         doc.text(`Material Usado: ${formatarMoeda(totalPeso)} g`, 14, yR + 6);
         doc.text(`Custo de Produção: R$ ${formatarMoeda(totalCusto)}`, 14, yR + 12);
         doc.text(`Custos Log/Frete: R$ ${formatarMoeda(totalLog)}`, 14, yR + 18);
@@ -1723,14 +1731,10 @@
         
         doc.setFont(undefined, 'normal');
 
-        let countDireta = historico.filter(h => h.canal === "Direta").length;
-        let countShopee = historico.filter(h => h.canal === "Shopee").length;
-        let countMeli = historico.filter(h => h.canal === "Meli").length;
+        let countDireta = historico.filter(h => h.canal === "Direta" && h.status !== "Orçamento").length;
+        let countShopee = historico.filter(h => h.canal === "Shopee" && h.status !== "Orçamento").length;
+        let countMeli = historico.filter(h => h.canal === "Meli" && h.status !== "Orçamento").length;
         let totalVendas = countDireta + countShopee + countMeli;
-
-        let pctDireta = totalVendas > 0 ? Math.round((countDireta / totalVendas) * 100) : 0;
-        let pctShopee = totalVendas > 0 ? Math.round((countShopee / totalVendas) * 100) : 0;
-        let pctMeli = totalVendas > 0 ? Math.round((countMeli / totalVendas) * 100) : 0;
 
         const canvas = document.getElementById('chartCanvas');
         const ctx = canvas.getContext('2d');
@@ -1741,9 +1745,9 @@
             type: 'pie',
             data: {
                 labels: [
-                    `PIX/Direta (${pctDireta}%)`, 
-                    `Shopee (${pctShopee}%)`, 
-                    `Mercado Livre (${pctMeli}%)`
+                    `PIX/Direta`, 
+                    `Shopee`, 
+                    `Mercado Livre`
                 ],
                 datasets: [{
                     data: [countDireta, countShopee, countMeli],
