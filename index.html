@@ -1300,7 +1300,8 @@
         
         showToast("✏️ Editando Venda no Carrinho...");
         
-        window.scrollTo(0, 0);
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderHistorico() {
@@ -1421,7 +1422,7 @@
 
             var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             var custoFab = parseLocal(h.custo);
-            var lucro = liquido - custoFab - custoLog;
+            var lucro = liquido - custoFab;
             var pesoPeca = parseLocal(h.peso);
             
             totalPeso += pesoPeca;
@@ -1446,7 +1447,7 @@
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Frete/Log.', 'Venda Bruta', 'Líquido', 'Lucro']], 
+            head: [['Data', 'Projeto', 'Canal', 'Materiais (g)', 'Custo Fab.', 'Venda Bruta', 'Líquido', 'Lucro']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid',
@@ -1632,7 +1633,9 @@
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
         calcular(); showToast("✅ Projeto Resetado!");
-        window.scrollTo(0, 0);
+        
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
