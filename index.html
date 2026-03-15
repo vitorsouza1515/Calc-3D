@@ -173,7 +173,7 @@
 <div id="configModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="document.getElementById('configModal').style.display='none'">&times;</span>
-        <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; cursor:default;">⚙️ Base Operacional</h2>
+        <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0;">⚙️ Base Operacional</h2>
         <div class="grid-2">
             <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -1109,6 +1109,11 @@
         toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
+        
+        var tempoHInput = document.getElementById('tempoH');
+        if (tempoHInput && !tempoHInput.getAttribute('inputmode')) {
+            tempoHInput.setAttribute('inputmode', 'decimal');
+        }
     };
 
     function calcular() {
