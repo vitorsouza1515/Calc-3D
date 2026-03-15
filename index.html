@@ -92,6 +92,8 @@
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
         /* Cores específicas para cada toggle */
+        #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
+        #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
         #toggle_marketplaces:checked + .slider-switch { background-color: var(--primary); }
         #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
@@ -134,9 +136,9 @@
         .filter-btn:active { transform: scale(0.95); }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
-        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; word-break: break-word; padding-right: 25px; }
+        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1.2rem; cursor: pointer; line-height: 1; }
@@ -160,7 +162,7 @@
 
         /* MODAIS DO CABEÇALHO */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .modal-content { background-color: var(--card-bg); margin: 20% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
+        .modal-content { background-color: var(--card-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
     </style>
 </head>
@@ -179,6 +181,56 @@
             <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
         </div>
         <button class="btn btn-direta" onclick="document.getElementById('configModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
+    </div>
+</div>
+
+<div id="logisticaModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="document.getElementById('logisticaModal').style.display='none'">&times;</span>
+        <div class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--sky);">
+            <span>🚚 Logística</span>
+            <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
+        </div>
+        <div id="secao_logistica">
+            <div class="grid-2">
+                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
+                <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
+            </div>
+        </div>
+        <button class="btn btn-direta" onclick="document.getElementById('logisticaModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
+    </div>
+</div>
+
+<div id="marketplacesModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="document.getElementById('marketplacesModal').style.display='none'">&times;</span>
+        <div class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--primary);">
+            <span>🛒 Taxas Marketplaces</span>
+            <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
+        </div>
+        <div id="secao_marketplaces">
+            <div class="grid-2">
+                <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
+                <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            </div>
+        </div>
+        
+        <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
+            <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
+            <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
+        </div>
+        <div id="secao_simulador" style="display:none; padding-top: 5px;">
+            <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
+            <div class="grid-2" style="margin-top: 8px;">
+                <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
+                <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
+            </div>
+        </div>
+        <button class="btn btn-direta" onclick="document.getElementById('marketplacesModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
@@ -221,6 +273,8 @@
     </div>
     
     <div style="position:absolute; right:10px; top:5px; display:flex; gap:8px;">
+        <button onclick="document.getElementById('logisticaModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Logística">🚚</button>
+        <button onclick="document.getElementById('marketplacesModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Taxas e Marketplaces">🛒</button>
         <button onclick="document.getElementById('estoqueModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Estoque de Filamentos">🧻</button>
         <button onclick="document.getElementById('catalogoModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Catálogo de Pre-sets">🏷️</button>
         <button onclick="document.getElementById('configModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Configurações">⚙️</button>
@@ -244,7 +298,7 @@
             </div>
 
             <div class="grid-2">
-                <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente')"></div>
+                <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" list="listaClientes" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente'); checarClienteAutoFill()"></div>
                 <div class="input-group"><label>WhatsApp (Opcional)</label><input type="text" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
             </div>
         </div>
@@ -306,50 +360,6 @@
                 <div class="range-container">
                     <input type="range" id="margemSlider" min="0" max="1000" value="100" data-save="true">
                     <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="100" data-save="true" oninput="aplicarMascara(this)"><span>%</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col">
-        <div class="card">
-            <div class="section-title">
-                <span>🚚 Logística</span>
-                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
-            </div>
-            <div id="secao_logistica">
-                <div class="grid-2">
-                    <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
-                    <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card" style="margin-top: 12px;">
-            <div class="section-title">
-                <span>🛒 Taxas Marketplaces</span>
-                <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
-            </div>
-            <div id="secao_marketplaces">
-                <div class="grid-2">
-                    <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
-                    <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
-                    <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                </div>
-            </div>
-            
-            <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
-                <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
-                <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
-            </div>
-            <div id="secao_simulador" style="display:none; padding-top: 5px;">
-                <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
-                <div class="grid-2" style="margin-top: 8px;">
-                    <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
-                    <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
                 </div>
             </div>
         </div>
@@ -442,7 +452,7 @@
         <div class="card" style="margin-top:12px;">
             <h2 class="section-title">📂 Histórico de Vendas</h2>
             <div id="filtroHistorico" class="filter-container"></div>
-            <div id="listaHistorico" class="history-list" style="margin-top: 0;"></div>
+            <div id="listaHistorico" class="history-list" style="margin-top: 0; max-height: 600px;"></div>
             
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
@@ -500,6 +510,15 @@
     var editHistoricoId = null; 
     var editDespesaId = null;
     var filtroStatusAtual = 'Todos';
+    var clientesCadastrados = {};
+
+    function checarClienteAutoFill() {
+        var nome = document.getElementById('nomeCliente').value;
+        if (clientesCadastrados[nome]) {
+            document.getElementById('telefoneCliente').value = clientesCadastrados[nome];
+            salvarDinamico('telefoneCliente');
+        }
+    }
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -1105,6 +1124,23 @@
         toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
+        
+        // Popula as opções de auto-complete
+        clientesCadastrados = {};
+        historico.forEach(function(item) {
+            if (item.cliente && item.cliente.trim() !== '') {
+                if (!clientesCadastrados[item.cliente] && item.telefone) {
+                    clientesCadastrados[item.cliente] = item.telefone;
+                }
+            }
+        });
+        var dl = document.getElementById('listaClientes');
+        if (dl) {
+            dl.innerHTML = '';
+            for (var c in clientesCadastrados) {
+                dl.innerHTML += `<option value="${c}">`;
+            }
+        }
     };
 
     function calcular() {
@@ -1376,6 +1412,17 @@
         }
 
         syncNuvem();
+        
+        if (cliNome.trim() !== '') {
+            if (!clientesCadastrados[cliNome] && cliTel) {
+                clientesCadastrados[cliNome] = cliTel;
+                var dl = document.getElementById('listaClientes');
+                if (dl) {
+                    dl.innerHTML += `<option value="${cliNome}">`;
+                }
+            }
+        }
+        
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
         resetarDados(); showToast("✅ Venda Registrada!");
@@ -1900,6 +1947,9 @@
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
         calcular(); showToast("✅ Projeto Resetado!");
+        
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
