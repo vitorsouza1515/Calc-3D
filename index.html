@@ -290,7 +290,7 @@
         <div class="card">
             <div class="section-title">
                 <span>🚚 Logística</span>
-                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
+                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_logistica">
                 <div class="grid-2">
@@ -304,7 +304,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title">
-                <span>🛒 Marketplaces</span>
+                <span>🛒 Taxas Marketplaces</span>
                 <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_marketplaces">
@@ -314,17 +314,17 @@
                     <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
-                
-                <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
-                    <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
-                    <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
-                </div>
-                <div id="secao_simulador" style="display:none;">
-                    <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
-                    <div class="grid-2" style="margin-top: 8px;">
-                        <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
-                        <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
-                    </div>
+            </div>
+            
+            <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
+                <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
+                <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
+            </div>
+            <div id="secao_simulador" style="display:none; padding-top: 5px;">
+                <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
+                <div class="grid-2" style="margin-top: 8px;">
+                    <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
+                    <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
                 </div>
             </div>
         </div>
@@ -531,7 +531,7 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_marketplaces'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_marketplaces', 'toggle_simulador', 'toggle_despesas', 'toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
@@ -1002,9 +1002,8 @@
                 tDesp.checked = true;
                 tDesp.dispatchEvent(new Event('change'));
             }
-            // scroll suave para a área de despesas
             var dash = document.querySelector('.dashboard');
-            if(dash) dash.scrollTo({ top: document.getElementById('secao_despesas').offsetTop - 50, behavior: 'smooth' });
+            if(dash) dash.scrollTo({ top: document.getElementById('toggle_despesas').offsetTop - 50, behavior: 'smooth' });
         }
     }
 
@@ -1069,13 +1068,13 @@
         if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.style.display = tLog.checked ? 'block' : 'none'; calcular(); }); sLog.style.display = tLog.checked ? 'block' : 'none'; }
 
         var tMkt = document.getElementById('toggle_marketplaces'), sMkt = document.getElementById('secao_marketplaces');
-        if(tMkt && sMkt) { tMkt.addEventListener('change', () => { sMkt.style.display = tMkt.checked ? 'block' : 'none'; }); sMkt.style.display = tMkt.checked ? 'block' : 'none'; }
+        if(tMkt && sMkt) { tMkt.addEventListener('change', () => { sMkt.style.display = tMkt.checked ? 'block' : 'none'; calcular(); }); sMkt.style.display = tMkt.checked ? 'block' : 'none'; }
 
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
         if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
         
         var tDesp = document.getElementById('toggle_despesas'), sDesp = document.getElementById('secao_despesas');
-        if(tDesp && sDesp) { tDesp.addEventListener('change', () => { sDesp.style.display = tDesp.checked ? 'block' : 'none'; }); sDesp.style.display = tDesp.checked ? 'block' : 'none'; }
+        if(tDesp && sDesp) { tDesp.addEventListener('change', () => { sDesp.style.display = tDesp.checked ? 'block' : 'none'; calcular(); }); sDesp.style.display = tDesp.checked ? 'block' : 'none'; }
 
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
