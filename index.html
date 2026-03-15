@@ -159,10 +159,6 @@
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
-        
-        /* Botão Mágico Importador */
-        #btn_temp_import { background: linear-gradient(90deg, #ef4444, #f97316); width: 100%; padding: 14px; border-radius: 12px; color: white; font-weight: 900; text-transform: uppercase; border: none; cursor: pointer; margin-top: 15px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -430,27 +426,32 @@
             <h2 class="section-title">📂 Histórico de Vendas</h2>
             <div id="filtroHistorico" class="filter-container"></div>
             <div id="listaHistorico" class="history-list" style="margin-top: 0;"></div>
+            
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
-                <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: var(--orange);">CUSTO TOTAL LOG/FRETE:</span><b style="color: var(--orange); font-size: 1rem;">R$ <span id="tot_logistica">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÍQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: #10b981;">LUCRO LÍQUIDO DAS VENDAS:</span><b style="color: #10b981; font-size: 1rem;">R$ <span id="tot_lucro">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: #ef4444;">DESPESAS GERAIS (COMPRAS):</span><b style="color: #ef4444; font-size: 1rem;">R$ <span id="tot_despesas">0,00</span></b></div>
-                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span style="font-weight: 900; color: #10b981; font-size: 0.85rem;">LUCRO REAL (LÍQUIDO - DESPESAS):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
+                
+                <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fbbf24;">(-) CUSTO DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: var(--orange);">(-) CUSTO LOG/FRETE:</span><b style="color: var(--orange); font-size: 1rem;">R$ <span id="tot_logistica">0,00</span></b></div>
+
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: #10b981; font-size: 0.9rem;">💰 LUCRO LÍQUIDO (OPERAÇÃO):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro">0,00</span></b></div>
+                
+                <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #ef4444;">(-) DESPESAS GERAIS:</span><b style="color: #ef4444; font-size: 1rem;">R$ <span id="tot_despesas">0,00</span></b></div>
+                
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: var(--sky); font-size: 0.85rem;">🏦 CAIXA REAL (LUCRO - DESPESAS):</span><b style="color: var(--sky); font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
+
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
                 <div class="total-row"><span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b></div>
             </div>
+            
             <div class="report-grid">
                 <button class="btn-report" onclick="gerarPDF()">📄 PDF Geral</button>
                 <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel</button>
             </div>
             <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
             <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
-            
-            <button id="btn_temp_import" onclick="importarListaDaImagem()">🚨 IMPORTAR LISTA DA IMAGEM 🚨</button>
         </div>
     </div>
 </div>
@@ -937,58 +938,6 @@
 
         if(elS) elS.textContent = formatarMoeda(netShopee); 
         if(elM) elM.textContent = formatarMoeda(netMeli);
-    }
-
-    function importarListaDaImagem() {
-        var itens = [
-            {n: "Impressora 3D", v: 4214.47},
-            {n: "Saco Zip Lock", v: 57.79},
-            {n: "Silica", v: 41.96},
-            {n: "Filamento Petg Preto", v: 47.05},
-            {n: "Filamento Petg Branco", v: 47.68},
-            {n: "Filamento Pla Verde", v: 74.92},
-            {n: "Caixa Plastica", v: 59.76},
-            {n: "Filamento Pla Amarelo", v: 76.17},
-            {n: "Filamento Pla Rosa", v: 77.00},
-            {n: "Filamento Pla Vermelho", v: 76.17},
-            {n: "Filamento Pla Cinza", v: 75.50},
-            {n: "Filamento Pla Azul", v: 76.17},
-            {n: "Filamento Pla Preto", v: 81.90},
-            {n: "Filamento Pla Branco", v: 81.90}, 
-            {n: "Jogo de Lima", v: 14.99},
-            {n: "Estilete", v: 11.85},
-            {n: "Alicate", v: 10.39},
-            {n: "Adesivo mesa impressora", v: 19.00},
-            {n: "Filamento Pla Branco", v: 75.50},
-            {n: "Filamento Pla Branco", v: 75.50},
-            {n: "Filamento Pla Preto", v: 75.50},
-            {n: "Filamento Pla Preto", v: 75.50},
-            {n: "Fita Led", v: 20.07},
-            {n: "Parafusos", v: 5.00},
-            {n: "Papel pardo", v: 2.90},
-            {n: "Óleo singer", v: 9.90},
-            {n: "Fita adesiva trasparente", v: 6.90},
-            {n: "Parafusos", v: 5.40},
-            {n: "Filamento Petg Preto 2 kg", v: 86.79},
-            {n: "Filamento Petg Preto 3 kg", v: 146.47},
-            {n: "Papel pardo", v: 8.00},
-            {n: "Fita adesiva trasparente", v: 7.00},
-            {n: "Parafusos", v: 9.00}
-        ];
-
-        itens.reverse().forEach((i, idx) => {
-            despesas.unshift({
-                id: Date.now() + idx,
-                data: new Date().toLocaleDateString('pt-BR'), 
-                qtd: 1,
-                nome: i.n,
-                valor: i.v
-            });
-        });
-        syncNuvem();
-        renderDespesas();
-        document.getElementById('btn_temp_import').style.display = 'none';
-        showToast("✅ 33 despesas importadas com sucesso!");
     }
 
     // --- NOVA FUNÇÃO: DESPESAS GERAIS ---
@@ -1526,7 +1475,7 @@
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
             
-            var lucroItem = valLiq - custoItem;
+            var lucroItem = valLiq - custoItem - freteLogItem;
 
             somaCusto += custoItem; 
             somaLogistica += freteLogItem;
@@ -1566,7 +1515,7 @@
             var canalStr = item.canal || "Direta";
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
-            var lucroItem = valLiq - custoItem;
+            var lucroItem = valLiq - custoItem - freteLogItem;
             
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
@@ -1601,7 +1550,7 @@
                 var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
                 var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
                 var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
-                var lucro = liquido - parseLocal(h.custo);
+                var lucro = liquido - parseLocal(h.custo) - custoLog;
                 return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido, "Lucro Líquido (R$)": lucro }; 
             });
             var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
