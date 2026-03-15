@@ -34,6 +34,7 @@
             --sky: #0ea5e9;
             --purple: #8b5cf6;
             --orange: #f97316;
+            --danger: #ef4444;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -95,6 +96,7 @@
         #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
         #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
+        #toggle_despesas:checked + .slider-switch { background-color: var(--danger); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
@@ -204,7 +206,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--success);">
-                <span>🧻 Estoque de Filamentos</span>
+                <span>🧻 Cadastrar / Escolher Filamento</span>
                 <label class="switch"><input type="checkbox" id="toggle_estoque" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_estoque" style="display:none; padding-top: 5px;">
@@ -390,6 +392,24 @@
         </div>
 
         <div class="card" style="margin-top:12px;">
+            <div class="section-title" style="color: #ef4444;">
+                <span>💸 Despesas / Compras</span>
+                <label class="switch"><input type="checkbox" id="toggle_despesas" data-save="true"><span class="slider-switch"></span></label>
+            </div>
+            <div id="secao_despesas" style="display:none; padding-top: 5px;">
+                <div class="grid-3">
+                    <div class="input-group"><label>Qtd</label><input type="text" inputmode="numeric" id="desp_qtd" value="1" oninput="aplicarMascara(this)"></div>
+                    <div class="input-group" style="grid-column: span 2;"><label>Produto/Material</label><input type="text" id="desp_nome" placeholder="Ex: Fita Kapton"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="input-group"><label>Valor Total (R$)</label><input type="text" inputmode="decimal" id="desp_valor" placeholder="Ex: 25,00" oninput="aplicarMascara(this)"></div>
+                    <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">➕ Adicionar</button>
+                </div>
+                <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 150px;"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;">
             <h2 class="section-title">📂 Histórico de Vendas</h2>
             <div id="listaHistorico" class="history-list"></div>
             <div class="total-summary">
@@ -398,7 +418,9 @@
                 <div class="total-row"><span style="font-weight: bold; color: var(--orange);">CUSTO TOTAL LOG/FRETE:</span><b style="color: var(--orange); font-size: 1rem;">R$ <span id="tot_logistica">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÍQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: #10b981;">LUCRO TOTAL LÍQUIDO:</span><b style="color: #10b981; font-size: 1rem;">R$ <span id="tot_lucro">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: #10b981;">LUCRO LÍQUIDO DAS VENDAS:</span><b style="color: #10b981; font-size: 1rem;">R$ <span id="tot_lucro">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: #ef4444;">DESPESAS GERAIS (COMPRAS):</span><b style="color: #ef4444; font-size: 1rem;">R$ <span id="tot_despesas">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span style="font-weight: 900; color: #10b981; font-size: 0.85rem;">LUCRO REAL (LÍQUIDO - DESPESAS):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
                 <div class="total-row"><span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b></div>
@@ -432,6 +454,7 @@
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
     var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
     var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
+    var despesas = JSON.parse(localStorage.getItem('3d4y_despesas_dark')) || [];
     
     var carrinho = []; 
     var editEstoqueId = null;
@@ -444,15 +467,17 @@
             historico = data.historico || [];
             estoque = data.estoque || [];
             catalogo = data.catalogo || [];
+            despesas = data.despesas || [];
             renderHistorico();
             renderEstoque();
             renderCatalogo();
+            renderDespesas();
             atualizarDropdownsEstoque(); 
         } else {
-            if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0) {
+            if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0 || despesas.length > 0) {
                 syncNuvem();
             } else {
-                nuvemRef.set({ historico: [], estoque: [], catalogo: [] });
+                nuvemRef.set({ historico: [], estoque: [], catalogo: [], despesas: [] });
             }
         }
     });
@@ -461,11 +486,13 @@
         nuvemRef.set({
             historico: historico,
             estoque: estoque,
-            catalogo: catalogo
+            catalogo: catalogo,
+            despesas: despesas
         }).then(function() {
             localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
             localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
             localStorage.setItem('3d4y_catalogo_dark', JSON.stringify(catalogo));
+            localStorage.setItem('3d4y_despesas_dark', JSON.stringify(despesas));
         }).catch(function(error) {
             console.error("Erro na nuvem:", error);
             showToast("❌ Erro ao Sincronizar Nuvem");
@@ -498,7 +525,7 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
@@ -890,6 +917,67 @@
         if(elM) elM.textContent = formatarMoeda(netMeli);
     }
 
+    // --- NOVA FUNÇÃO: DESPESAS GERAIS ---
+    function salvarDespesa() {
+        var qtd = parseInt(pegaValor('desp_qtd')) || 1;
+        var nome = pegaTexto('desp_nome');
+        var val = document.getElementById('desp_valor').value;
+        if(!nome || !val) { alert("Preencha o produto/material e o valor pago para adicionar a despesa."); return; }
+        
+        despesas.unshift({ 
+            id: Date.now(), 
+            data: new Date().toLocaleDateString('pt-BR'), 
+            qtd: qtd, 
+            nome: nome, 
+            valor: parseLocal(val) 
+        });
+        
+        syncNuvem();
+        document.getElementById('desp_qtd').value = "1";
+        document.getElementById('desp_nome').value = "";
+        document.getElementById('desp_valor').value = "";
+        showToast("💸 Despesa Registrada!");
+    }
+
+    function renderDespesas() {
+        var lista = document.getElementById('lista_despesas'); if(!lista) return;
+        lista.innerHTML = despesas.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhuma despesa registrada</p>' : '';
+        var soma = 0;
+        despesas.forEach(function(d) {
+            soma += d.valor;
+            lista.innerHTML += `
+                <div class="history-item" style="padding: 8px 12px; border-color: rgba(239, 68, 68, 0.3);">
+                    <button class="btn-del-item" onclick="removerDespesa(${d.id})">×</button>
+                    <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--danger);">${d.qtd}x ${d.nome}</h4>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">
+                        Valor Total: R$ ${formatarMoeda(d.valor)} 
+                        <span style="float:right; opacity:0.5; font-size:0.6rem;">${d.data}</span>
+                    </div>
+                </div>`;
+        });
+        
+        var td = document.getElementById('tot_despesas'); 
+        if(td) td.textContent = formatarMoeda(soma);
+        
+        atualizarLucroReal();
+    }
+
+    function removerDespesa(id) { 
+        if(confirm("Deseja apagar esta despesa?")) { 
+            despesas = despesas.filter(d => d.id !== id); 
+            syncNuvem(); 
+        } 
+    }
+
+    function atualizarLucroReal() {
+        var valLucro = parseLocal(document.getElementById('tot_lucro').textContent);
+        var valDesp = parseLocal(document.getElementById('tot_despesas').textContent);
+        var real = valLucro - valDesp;
+        var elReal = document.getElementById('tot_lucro_real');
+        if(elReal) elReal.textContent = formatarMoeda(real);
+    }
+    // -------------------------------------
+
     window.onload = function() {
         ids.forEach(function(id) {
             var el = document.getElementById(id);
@@ -944,6 +1032,9 @@
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
         if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
         
+        var tDesp = document.getElementById('toggle_despesas'), sDesp = document.getElementById('secao_despesas');
+        if(tDesp && sDesp) { tDesp.addEventListener('change', () => { sDesp.style.display = tDesp.checked ? 'block' : 'none'; }); sDesp.style.display = tDesp.checked ? 'block' : 'none'; }
+
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
         
@@ -1346,6 +1437,8 @@
         document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
         document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
         document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
+        
+        atualizarLucroReal();
     }
 
     function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
@@ -1371,6 +1464,10 @@
             var dadosCat = catalogo.map(p => ({ "Produto": p.nome, "Tempo (h)": p.tempo, "Peso Principal (g)": p.peso1, "Material": p.tipo1 + " " + p.cor1 }));
             var wsCat = XLSX.utils.json_to_sheet(dadosCat); XLSX.utils.book_append_sheet(wb, wsCat, "Catalogo");
         }
+        if(despesas.length > 0) {
+            var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Qtd": d.qtd, "Produto/Material": d.nome, "Valor Total (R$)": d.valor }));
+            var wsDespesas = XLSX.utils.json_to_sheet(dadosDespesas); wsDespesas['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 20 }]; XLSX.utils.book_append_sheet(wb, wsDespesas, "Despesas");
+        }
         if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
     }
 
@@ -1379,7 +1476,7 @@
         reader.onload = function(e) {
             var data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'});
             var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
-            if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo") {
+            if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo" && nomeAbaVendas !== "Despesas") {
                 var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
                 var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), frete: parseLocal(item["Logística/Frete (R$)"] || "0"), logistica: 0, valorVenda: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
                 if (novosItens.length > 0) { historico = novosItens; }
@@ -1387,6 +1484,10 @@
             if (workbook.Sheets["Estoque"]) {
                 var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
                 estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }));
+            }
+            if (workbook.Sheets["Despesas"]) {
+                var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
+                despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
             }
             syncNuvem(); showToast("✅ Nuvem Atualizada!");
         }; reader.readAsArrayBuffer(file);
@@ -1422,7 +1523,7 @@
 
             var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             var custoFab = parseLocal(h.custo);
-            var lucro = liquido - custoFab;
+            var lucro = liquido - custoFab - custoLog; // Dedução do Log
             var pesoPeca = parseLocal(h.peso);
             
             totalPeso += pesoPeca;
@@ -1456,10 +1557,28 @@
             columnStyles: { 3: { cellWidth: 40 } }
         });
 
-        let finalY = doc.lastAutoTable.finalY + 15;
+        let finalY = doc.lastAutoTable.finalY + 10;
         let pageHeight = doc.internal.pageSize.height;
-        
-        if (finalY + 70 > pageHeight) {
+
+        if (despesas.length > 0) {
+            if (finalY + 30 > pageHeight) { doc.addPage(); finalY = 20; }
+            doc.setFontSize(14);
+            doc.setTextColor(239, 68, 68); 
+            doc.text("Relatório de Despesas / Compras", 14, finalY);
+            
+            var despBody = despesas.map(d => [d.data, d.qtd, d.nome, 'R$ ' + formatarMoeda(d.valor)]);
+            doc.autoTable({
+                head: [['Data', 'Qtd', 'Produto/Material', 'Valor Total']],
+                body: despBody,
+                startY: finalY + 5,
+                theme: 'grid',
+                styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [239, 68, 68] }
+            });
+            finalY = doc.lastAutoTable.finalY + 15;
+        }
+
+        if (finalY + 80 > pageHeight) {
             doc.addPage();
             finalY = 20;
         }
@@ -1467,6 +1586,8 @@
         doc.setFontSize(14);
         doc.setTextColor(30, 41, 59);
         doc.text("Resumo Financeiro Geral", 14, finalY);
+
+        var totalDespesas = despesas.reduce((a,b) => a + b.valor, 0);
 
         doc.setFontSize(10);
         doc.setTextColor(71, 85, 105);
@@ -1476,16 +1597,24 @@
         doc.text(`Material Usado: ${formatarMoeda(totalPeso)} g`, 14, yR + 6);
         doc.text(`Custo de Produção: R$ ${formatarMoeda(totalCusto)}`, 14, yR + 12);
         doc.text(`Custos Log/Frete: R$ ${formatarMoeda(totalLog)}`, 14, yR + 18);
+        doc.setTextColor(239, 68, 68); 
+        doc.text(`Despesas Gerais: R$ ${formatarMoeda(totalDespesas)}`, 14, yR + 24);
 
         doc.setFont(undefined, 'bold');
+        doc.setTextColor(71, 85, 105);
         doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totalBruto)}`, 75, yR);
         doc.setTextColor(14, 165, 233);
         doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totalLiquido)}`, 75, yR + 6);
         doc.setTextColor(16, 185, 129);
-        doc.text(`Lucro Líquido Real: R$ ${formatarMoeda(totalLucro)}`, 75, yR + 12);
+        doc.text(`Lucro Líquido Vendas: R$ ${formatarMoeda(totalLucro)}`, 75, yR + 12);
         
         let margem = totalLiquido > 0 ? (totalLucro / totalLiquido) * 100 : 0;
         doc.text(`Margem de Lucro (%): ${formatarMoeda(margem)}%`, 75, yR + 18);
+        
+        let lucroRealFinal = totalLucro - totalDespesas;
+        doc.setTextColor(16, 185, 129);
+        doc.text(`LUCRO REAL FINAL: R$ ${formatarMoeda(lucroRealFinal)}`, 75, yR + 24);
+        
         doc.setFont(undefined, 'normal');
 
         let countDireta = historico.filter(h => h.canal === "Direta").length;
@@ -1508,7 +1637,7 @@
                 labels: [
                     `PIX/Direta (${pctDireta}%)`, 
                     `Shopee (${pctShopee}%)`, 
-                    `M. Livre (${pctMeli}%)`
+                    `Mercado Livre (${pctMeli}%)`
                 ],
                 datasets: [{
                     data: [countDireta, countShopee, countMeli],
@@ -1621,7 +1750,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
-        ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_simulador'].forEach(id => {
+        ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_simulador', 'toggle_despesas'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
                 t.checked = false;
