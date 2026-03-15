@@ -953,7 +953,6 @@
         calcular(); 
         mostrarValorPersonalizado();
         
-        // CORREÇÃO: Forçar o inputmode="decimal" no campo tempoH caso o HTML tenha sido carregado sem ele
         var tempoHInput = document.getElementById('tempoH');
         if (tempoHInput && !tempoHInput.getAttribute('inputmode')) {
             tempoHInput.setAttribute('inputmode', 'decimal');
@@ -1447,7 +1446,7 @@
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Venda Bruta', 'Líquido', 'Lucro']], 
+            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Frete/Log.', 'Venda Bruta', 'Líquido', 'Lucro']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid',
@@ -1633,6 +1632,7 @@
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
         calcular(); showToast("✅ Projeto Resetado!");
+        window.scrollTo(0, 0);
     }
 
     function wpp(tipo) {
