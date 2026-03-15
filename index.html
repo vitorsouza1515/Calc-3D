@@ -503,6 +503,10 @@
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
+    function toggleFreteManual() {
+        var tEnvio = document.getElementById('tipoEnvio');
+    }
+
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
@@ -945,7 +949,6 @@
         
         renderCoresExtras(); 
         updateSliderProgress(document.getElementById('margemSlider')); 
-        toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
     };
@@ -1305,7 +1308,7 @@
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
             
-            var lucroItem = valLiq - custoItem;
+            var lucroItem = valLiq - custoItem - freteLogItem;
 
             somaCusto += custoItem; 
             somaLogistica += freteLogItem;
@@ -1348,7 +1351,7 @@
                 var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
                 var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
                 var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
-                var lucro = liquido - parseLocal(h.custo);
+                var lucro = liquido - parseLocal(h.custo) - custoLog;
                 return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido, "Lucro Líquido (R$)": lucro }; 
             });
             var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
@@ -1388,7 +1391,9 @@
         const doc = new window.jspdf.jsPDF();
         doc.setFontSize(18);
         doc.setTextColor(59, 130, 246);
-        doc.text("Relatório Geral - 3D 4You", 14, 20);
+        doc.text("Relatório de Desempenho - 3D 4You", 14, 20);
+
+        var totalPeso = 0, totalCusto = 0, totalLog = 0, totalBruto = 0, totalLiquido = 0, totalLucro = 0;
 
         var tableBody = historico.map(h => { 
             var canalAjustado = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "M. Livre";
@@ -1408,15 +1413,26 @@
                 }
             }
 
-            var custoLog = (h.frete || 0) + (h.logistica || 0);
-            var lucro = liquido - parseLocal(h.custo);
+            var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
+            var custoFab = parseLocal(h.custo);
+            var lucro = liquido - custoFab - custoLog;
+            var pesoPeca = parseLocal(h.peso);
+            
+            totalPeso += pesoPeca;
+            totalCusto += custoFab;
+            totalLog += custoLog;
+            totalBruto += bruto;
+            totalLiquido += liquido;
+            totalLucro += lucro;
+
+            var txtMat = h.materiais && h.materiais !== 'Não informado' ? h.materiais : '-';
 
             return [ 
                 h.data, 
                 h.nome, 
                 canalAjustado, 
-                'R$ '+formatarMoeda(h.custo), 
-                'R$ '+formatarMoeda(custoLog),
+                txtMat + '\nTotal: ' + formatarMoeda(pesoPeca) + 'g', 
+                'R$ '+formatarMoeda(custoFab), 
                 'R$ '+formatarMoeda(bruto), 
                 'R$ '+formatarMoeda(liquido),
                 'R$ '+formatarMoeda(lucro)
@@ -1424,15 +1440,39 @@
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Frete/Log.', 'Venda Bruta', 'Líquido', 'Lucro']], 
+            head: [['Data', 'Projeto', 'Canal', 'Materiais (g)', 'Custo Fab.', 'Venda Bruta', 'Líquido', 'Lucro']], 
             body: tableBody, 
             startY: 30, 
-            theme: 'grid' 
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2, valign: 'middle' },
+            headStyles: { fillColor: [59, 130, 246] },
+            columnStyles: { 3: { cellWidth: 40 } }
         });
 
-        const finalY = doc.lastAutoTable.finalY + 20;
+        const finalY = doc.lastAutoTable.finalY + 15;
         doc.setFontSize(14);
-        doc.text("Distribuição por Método de Pagamento / Canal", 14, finalY);
+        doc.setTextColor(30, 41, 59);
+        doc.text("Resumo Financeiro Geral", 14, finalY);
+
+        doc.setFontSize(10);
+        doc.setTextColor(71, 85, 105);
+        let yR = finalY + 8;
+        
+        doc.text(`Qtd. de Vendas: ${historico.length}`, 14, yR);
+        doc.text(`Material Usado: ${formatarMoeda(totalPeso)} g`, 14, yR + 6);
+        doc.text(`Custo de Produção: R$ ${formatarMoeda(totalCusto)}`, 14, yR + 12);
+        doc.text(`Custos Log/Frete: R$ ${formatarMoeda(totalLog)}`, 14, yR + 18);
+
+        doc.setFont(undefined, 'bold');
+        doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totalBruto)}`, 75, yR);
+        doc.setTextColor(14, 165, 233);
+        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totalLiquido)}`, 75, yR + 6);
+        doc.setTextColor(16, 185, 129);
+        doc.text(`Lucro Líquido Real: R$ ${formatarMoeda(totalLucro)}`, 75, yR + 12);
+        
+        let margem = totalLiquido > 0 ? (totalLucro / totalLiquido) * 100 : 0;
+        doc.text(`Margem de Lucro (%): ${formatarMoeda(margem)}%`, 75, yR + 18);
+        doc.setFont(undefined, 'normal');
 
         let countDireta = historico.filter(h => h.canal === "Direta").length;
         let countShopee = historico.filter(h => h.canal === "Shopee").length;
@@ -1452,9 +1492,9 @@
             type: 'pie',
             data: {
                 labels: [
-                    `Venda Direta / Pix (${pctDireta}%)`, 
+                    `PIX/Direta (${pctDireta}%)`, 
                     `Shopee (${pctShopee}%)`, 
-                    `Mercado Livre (${pctMeli}%)`
+                    `M. Livre (${pctMeli}%)`
                 ],
                 datasets: [{
                     data: [countDireta, countShopee, countMeli],
@@ -1466,7 +1506,7 @@
                 responsive: false,
                 animation: false,
                 plugins: {
-                    legend: { labels: { font: { size: 14 } } }
+                    legend: { labels: { font: { size: 10 } } }
                 }
             }
         });
@@ -1474,9 +1514,9 @@
         await new Promise(resolve => setTimeout(resolve, 300));
         const chartImg = canvas.toDataURL('image/png', 1.0);
         
-        doc.addImage(chartImg, 'PNG', 55, finalY + 5, 100, 100);
+        doc.addImage(chartImg, 'PNG', 140, finalY - 5, 55, 55);
 
-        doc.save("vendas_3d4you_com_grafico.pdf");
+        doc.save("Relatorio_Gerencial_3D4You.pdf");
     }
 
     function gerarOrcamentoCliente() {
