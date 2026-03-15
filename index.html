@@ -46,10 +46,10 @@
         
         .nuvem-icon { font-size: 0.8rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        .dashboard { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-y: auto; overflow-x: hidden; padding-bottom: 20px; }
+        .dashboard { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding-bottom: 20px; }
         
         @media (min-width: 1024px) { 
-            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 340px; overflow-y: hidden; }
+            .dashboard { grid-template-columns: 1fr 1fr 340px; overflow-y: hidden; }
             .col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 5px; height: 100%; }
         }
 
@@ -63,7 +63,7 @@
 
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
-        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; height: 42px; }
+        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
 
         .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
 
@@ -92,6 +92,8 @@
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
         /* Cores específicas para cada toggle */
+        #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
+        #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
         #toggle_marketplaces:checked + .slider-switch { background-color: var(--primary); }
         #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
@@ -136,7 +138,7 @@
 
         .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
-        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; word-break: break-word; padding-right: 25px; }
+        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1.2rem; cursor: pointer; line-height: 1; }
@@ -157,67 +159,16 @@
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
-
-        /* MODAL DE CONFIGURAÇÕES / OUTROS */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .modal-content { background-color: var(--card-bg); margin: 30% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
-        .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
     </style>
 </head>
 <body>
 
 <div id="toast">✅ Operação Realizada</div>
 
-<div id="configModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('configModal').style.display='none'">&times;</span>
-        <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0;">⚙️ Base Operacional</h2>
-        <div class="grid-2">
-            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-        </div>
-        <button class="btn btn-direta" onclick="document.getElementById('configModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
-    </div>
-</div>
-
-<div id="catalogoModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('catalogoModal').style.display='none'">&times;</span>
-        <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0;">🏷️ Gerenciar Catálogo</h2>
-        <div style="border-top: 1px dashed var(--border); margin-bottom: 10px; padding-top: 10px;">
-            <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Ações do Catálogo:</p>
-            <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
-        </div>
-        <div id="lista_catalogo" class="history-list" style="margin-top: 12px; max-height: 250px;"></div>
-        <button class="btn btn-direta" onclick="document.getElementById('catalogoModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
-    </div>
-</div>
-
-<div id="estoqueModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('estoqueModal').style.display='none'">&times;</span>
-        <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0;">🧻 Estoque de Filamentos</h2>
-        <div class="grid-3">
-            <div class="input-group"><label>Tipo</label><input type="text" id="est_tipo" placeholder="Ex: PLA"></div>
-            <div class="input-group"><label>Cor</label><input type="text" id="est_cor" placeholder="Ex: Preto"></div>
-            <div class="input-group"><label>Marca</label><input type="text" id="est_marca" placeholder="Ex: Sunlu"></div>
-        </div>
-        <div class="grid-2">
-            <div class="input-group"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
-            <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="margin-top: 14px; background: var(--success);">➕ Salvar / Atualizar</button>
-        </div>
-        <div id="lista_estoque" class="history-list" style="margin-top: 12px; max-height: 250px;"></div>
-        <button class="btn btn-direta" onclick="document.getElementById('estoqueModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
-    </div>
-</div>
-
 <header>
     <div>
         <h1>3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span>
     </div>
-    <button onclick="document.getElementById('configModal').style.display='block'" style="position:absolute; right:10px; top:5px; background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Configurações">⚙️</button>
     <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de Precisão na Nuvem</p>
 </header>
 
@@ -244,21 +195,51 @@
         <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--orange);">
                 <span>🏷️ Catálogo / Pre-sets</span>
-                <button onclick="document.getElementById('catalogoModal').style.display='block'" style="background:none; border:none; font-size:1.2rem; cursor:pointer; padding:0;">⚙️</button>
+                <label class="switch"><input type="checkbox" id="toggle_catalogo" data-save="true"><span class="slider-switch"></span></label>
             </div>
             
-            <div class="input-group" style="margin-bottom: 0;">
+            <div class="input-group" style="margin-bottom: 10px;">
                 <label>Selecione um Produto Salvo</label>
                 <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
                     <option value="">-- Escolher produto cadastrado --</option>
                 </select>
             </div>
+
+            <div id="secao_catalogo" style="display:none; padding-top: 5px;">
+                <div style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
+                    <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Ações do Catálogo:</p>
+                    <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
+                </div>
+                <div id="lista_catalogo" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
+            </div>
         </div>
 
-        <div class="card" style="margin-top: 12px; cursor: pointer;" onclick="document.getElementById('estoqueModal').style.display='block'">
-            <div class="section-title" style="color: var(--success); margin-bottom: 0; border: none; padding-bottom: 0;">
-                <span>🧻 Gerenciar Filamentos</span>
-                <span style="font-size:1.2rem;">⚙️</span>
+        <div class="card" style="margin-top: 12px;">
+            <div class="section-title" style="color: var(--success);">
+                <span>🧻 Cadastrar / Escolher Filamento</span>
+                <label class="switch"><input type="checkbox" id="toggle_estoque" data-save="true"><span class="slider-switch"></span></label>
+            </div>
+            <div id="secao_estoque" style="display:none; padding-top: 5px;">
+                <div class="grid-3">
+                    <div class="input-group"><label>Tipo</label><input type="text" id="est_tipo" placeholder="Ex: PLA"></div>
+                    <div class="input-group"><label>Cor</label><input type="text" id="est_cor" placeholder="Ex: Preto"></div>
+                    <div class="input-group"><label>Marca</label><input type="text" id="est_marca" placeholder="Ex: Sunlu"></div>
+                </div>
+                <div class="grid-2">
+                    <div class="input-group"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
+                    <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="margin-top: 14px; background: var(--success);">➕ Salvar / Atualizar</button>
+                </div>
+                <div id="lista_estoque" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 12px;">
+            <h2 class="section-title">⚙️ Base Operacional</h2>
+            <div class="grid-2">
+                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
 
@@ -864,6 +845,12 @@
         if(item) {
             document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco;
             editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição";
+            
+            var tEst = document.getElementById('toggle_estoque');
+            if(tEst && !tEst.checked) {
+                tEst.checked = true;
+                tEst.dispatchEvent(new Event('change'));
+            }
         }
     }
 
@@ -953,6 +940,7 @@
         if(elM) elM.textContent = formatarMoeda(netMeli);
     }
 
+    // --- NOVA FUNÇÃO: DESPESAS GERAIS ---
     function salvarDespesa() {
         var qtd = parseInt(pegaValor('desp_qtd')) || 1;
         var nome = pegaTexto('desp_nome');
@@ -1025,6 +1013,14 @@
             document.getElementById('desp_valor').value = formatarMoeda(d.valor);
             editDespesaId = id;
             document.querySelector('#secao_despesas button').textContent = "💾 Confirmar Edição";
+            
+            var tDesp = document.getElementById('toggle_despesas');
+            if(tDesp && !tDesp.checked) {
+                tDesp.checked = true;
+                tDesp.dispatchEvent(new Event('change'));
+            }
+            var dash = document.querySelector('.dashboard');
+            if(dash) dash.scrollTo({ top: document.getElementById('toggle_despesas').offsetTop - 50, behavior: 'smooth' });
         }
     }
 
@@ -1035,6 +1031,7 @@
         var elReal = document.getElementById('tot_lucro_real');
         if(elReal) elReal.textContent = formatarMoeda(real);
     }
+    // -------------------------------------
 
     window.onload = function() {
         ids.forEach(function(id) {
@@ -1075,6 +1072,12 @@
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
+        var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
+        if(tEst && sEst) { tEst.addEventListener('change', () => { sEst.style.display = tEst.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_estoque', tEst.checked); calcular(); }); sEst.style.display = tEst.checked ? 'block' : 'none'; }
+        
+        var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
+        if(tCat && sCat) { tCat.addEventListener('change', () => { sCat.style.display = tCat.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_catalogo', tCat.checked); calcular(); }); sCat.style.display = tCat.checked ? 'block' : 'none'; }
+        
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
@@ -1098,6 +1101,11 @@
         toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
+        
+        var tempoHInput = document.getElementById('tempoH');
+        if (tempoHInput && !tempoHInput.getAttribute('inputmode')) {
+            tempoHInput.setAttribute('inputmode', 'decimal');
+        }
     };
 
     function calcular() {
@@ -1447,6 +1455,9 @@
         document.querySelector('.btn-save-hist').style.background = "var(--sky)";
         
         showToast("✏️ Editando Venda no Carrinho...");
+        
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderHistorico() {
@@ -1578,41 +1589,12 @@
                 var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
                 estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }));
             }
-            if (workbook.Sheets["Catalogo"]) {
-                var jsonCatalogo = XLSX.utils.sheet_to_json(workbook.Sheets["Catalogo"]);
-                catalogo = jsonCatalogo.map((item, index) => {
-                    var mat = item["Material"] || "";
-                    var parts = mat.split(" ");
-                    var t = parts[0] || "-";
-                    var c = parts.slice(1).join(" ") || "-";
-                    return { 
-                        id: Date.now() + index + 30000, 
-                        nome: item["Produto"] || "Sem Nome", 
-                        tempo: String(item["Tempo (h)"] || "0").replace('.', ','), 
-                        peso1: String(item["Peso Principal (g)"] || "0").replace('.', ','), 
-                        tipo1: t, 
-                        cor1: c, 
-                        marca1: "-", 
-                        preco1: "120,00", 
-                        multi: false, 
-                        qtdCores: "0", 
-                        extras: [] 
-                    };
-                });
-            }
             if (workbook.Sheets["Despesas"]) {
                 var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
                 despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
                 despesas = despesas.filter(d => d.data !== "TOTAL");
             }
-            syncNuvem(); 
-            renderHistorico();
-            renderEstoque();
-            renderCatalogo();
-            renderDespesas();
-            atualizarDropdownsEstoque();
-            showToast("✅ Nuvem Atualizada!");
-            input.value = "";
+            syncNuvem(); showToast("✅ Nuvem Atualizada!");
         }; reader.readAsArrayBuffer(file);
     }
 
@@ -1700,7 +1682,7 @@
             despBody.push(['', '', 'TOTAL DAS DESPESAS', 'R$ ' + formatarMoeda(tDesp)]);
 
             doc.autoTable({
-                head: [['Data', 'Qtd', 'Produto/Material', 'Valor Total']],
+                head: [['Data', 'Qtd', 'Produto/Material', 'Valor']],
                 body: despBody,
                 startY: finalY + 5,
                 theme: 'grid',
@@ -1878,7 +1860,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
-        ['toggle_multi_mat', 'toggle_logistica', 'toggle_marketplaces', 'toggle_simulador', 'toggle_despesas'].forEach(id => {
+        ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_marketplaces', 'toggle_simulador', 'toggle_despesas'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
                 t.checked = false;
@@ -1890,6 +1872,9 @@
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
         calcular(); showToast("✅ Projeto Resetado!");
+        
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
