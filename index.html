@@ -269,7 +269,7 @@
             </div>
 
             <div class="grid-2" style="margin-top: 8px;">
-                <div class="input-group"><label>Tempo Total (h)</label><input type="text" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
+                <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
                 <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
             <div class="range-area">
@@ -307,8 +307,8 @@
                 </div>
             </div>
             <div class="grid-2">
-                <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
-                <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
+                <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
+                <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
                 <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
@@ -949,8 +949,15 @@
         
         renderCoresExtras(); 
         updateSliderProgress(document.getElementById('margemSlider')); 
+        toggleFreteManual();
         calcular(); 
         mostrarValorPersonalizado();
+        
+        // CORREÇÃO: Forçar o inputmode="decimal" no campo tempoH caso o HTML tenha sido carregado sem ele
+        var tempoHInput = document.getElementById('tempoH');
+        if (tempoHInput && !tempoHInput.getAttribute('inputmode')) {
+            tempoHInput.setAttribute('inputmode', 'decimal');
+        }
     };
 
     function calcular() {
@@ -1440,7 +1447,7 @@
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Materiais (g)', 'Custo Fab.', 'Venda Bruta', 'Líquido', 'Lucro']], 
+            head: [['Data', 'Projeto', 'Canal', 'Custo Fab.', 'Venda Bruta', 'Líquido', 'Lucro']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid',
