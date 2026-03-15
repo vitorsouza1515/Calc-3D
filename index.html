@@ -95,8 +95,10 @@
         #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
         #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
+        #toggle_marketplaces:checked + .slider-switch { background-color: var(--primary); }
         #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
         #toggle_despesas:checked + .slider-switch { background-color: var(--danger); }
+        #toggle_logistica:checked + .slider-switch { background-color: var(--primary); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
@@ -290,7 +292,7 @@
                 <span>🚚 Logística</span>
                 <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
             </div>
-            <div id="section_logistica">
+            <div id="secao_logistica">
                 <div class="grid-2">
                     <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -303,23 +305,26 @@
         <div class="card" style="margin-top: 12px;">
             <div class="section-title">
                 <span>🛒 Marketplaces</span>
-                <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
-                    <span style="color:var(--text-muted)">SIMULADOR</span>
+                <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
+            </div>
+            <div id="secao_marketplaces">
+                <div class="grid-2">
+                    <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
+                    <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
+                    <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                </div>
+                
+                <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
+                    <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
                     <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
                 </div>
-            </div>
-            <div class="grid-2">
-                <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="taxaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
-                <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" inputmode="decimal" id="fixaShopee" value="" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee);"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            </div>
-            <div id="secao_simulador" style="display:none; padding-top: 15px; margin-top: 10px; border-top: 1px dashed var(--border);">
-                <h3 style="font-size: 0.75rem; color: var(--sky); margin-bottom: 8px; text-transform: uppercase;">🧮 Simular Lucro Líquido</h3>
-                <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
-                <div class="grid-2" style="margin-top: 8px;">
-                    <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
-                    <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
+                <div id="secao_simulador" style="display:none;">
+                    <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
+                    <div class="grid-2" style="margin-top: 8px;">
+                        <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
+                        <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -460,6 +465,7 @@
     var editEstoqueId = null;
     var editCatalogoId = null; 
     var editHistoricoId = null; 
+    var editDespesaId = null;
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -525,7 +531,7 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'toggle_logistica', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_marketplaces'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
@@ -924,19 +930,31 @@
         var val = document.getElementById('desp_valor').value;
         if(!nome || !val) { alert("Preencha o produto/material e o valor pago para adicionar a despesa."); return; }
         
-        despesas.unshift({ 
-            id: Date.now(), 
-            data: new Date().toLocaleDateString('pt-BR'), 
-            qtd: qtd, 
-            nome: nome, 
-            valor: parseLocal(val) 
-        });
+        if (editDespesaId) {
+            var idx = despesas.findIndex(d => d.id === editDespesaId);
+            if(idx > -1) {
+                despesas[idx].qtd = qtd;
+                despesas[idx].nome = nome;
+                despesas[idx].valor = parseLocal(val);
+            }
+            editDespesaId = null;
+            document.querySelector('#secao_despesas button').textContent = "➕ Adicionar";
+            showToast("💸 Despesa Atualizada!");
+        } else {
+            despesas.unshift({ 
+                id: Date.now(), 
+                data: new Date().toLocaleDateString('pt-BR'), 
+                qtd: qtd, 
+                nome: nome, 
+                valor: parseLocal(val) 
+            });
+            showToast("💸 Despesa Registrada!");
+        }
         
         syncNuvem();
         document.getElementById('desp_qtd').value = "1";
         document.getElementById('desp_nome').value = "";
         document.getElementById('desp_valor').value = "";
-        showToast("💸 Despesa Registrada!");
     }
 
     function renderDespesas() {
@@ -947,6 +965,7 @@
             soma += d.valor;
             lista.innerHTML += `
                 <div class="history-item" style="padding: 8px 12px; border-color: rgba(239, 68, 68, 0.3);">
+                    <button class="btn-edit-item" onclick="editarDespesa(${d.id})">✎</button>
                     <button class="btn-del-item" onclick="removerDespesa(${d.id})">×</button>
                     <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--danger);">${d.qtd}x ${d.nome}</h4>
                     <div style="font-size: 0.7rem; color: var(--text-muted);">
@@ -967,6 +986,26 @@
             despesas = despesas.filter(d => d.id !== id); 
             syncNuvem(); 
         } 
+    }
+
+    function editarDespesa(id) {
+        var d = despesas.find(e => e.id === id);
+        if(d) {
+            document.getElementById('desp_qtd').value = d.qtd;
+            document.getElementById('desp_nome').value = d.nome;
+            document.getElementById('desp_valor').value = formatarMoeda(d.valor);
+            editDespesaId = id;
+            document.querySelector('#secao_despesas button').textContent = "💾 Confirmar Edição";
+            
+            var tDesp = document.getElementById('toggle_despesas');
+            if(tDesp && !tDesp.checked) {
+                tDesp.checked = true;
+                tDesp.dispatchEvent(new Event('change'));
+            }
+            // scroll suave para a área de despesas
+            var dash = document.querySelector('.dashboard');
+            if(dash) dash.scrollTo({ top: document.getElementById('secao_despesas').offsetTop - 50, behavior: 'smooth' });
+        }
     }
 
     function atualizarLucroReal() {
@@ -1026,8 +1065,11 @@
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
-        var tLog = document.getElementById('toggle_logistica'), sLog = document.getElementById('section_logistica');
-        if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.className = tLog.checked ? '' : 'card-disabled'; calcular(); }); sLog.className = tLog.checked ? '' : 'card-disabled'; }
+        var tLog = document.getElementById('toggle_logistica'), sLog = document.getElementById('secao_logistica');
+        if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.style.display = tLog.checked ? 'block' : 'none'; calcular(); }); sLog.style.display = tLog.checked ? 'block' : 'none'; }
+
+        var tMkt = document.getElementById('toggle_marketplaces'), sMkt = document.getElementById('secao_marketplaces');
+        if(tMkt && sMkt) { tMkt.addEventListener('change', () => { sMkt.style.display = tMkt.checked ? 'block' : 'none'; }); sMkt.style.display = tMkt.checked ? 'block' : 'none'; }
 
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
         if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
@@ -1056,7 +1098,7 @@
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
 
-        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false, sLog = document.getElementById('section_logistica'); if(sLog) sLog.className = logEnabled ? '' : 'card-disabled';
+        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false;
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         
         var tempoUnitario = pegaValor('tempoH');
@@ -1523,7 +1565,7 @@
 
             var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             var custoFab = parseLocal(h.custo);
-            var lucro = liquido - custoFab - custoLog; // Dedução do Log
+            var lucro = liquido - custoFab - custoLog;
             var pesoPeca = parseLocal(h.peso);
             
             totalPeso += pesoPeca;
@@ -1750,7 +1792,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
-        ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_simulador', 'toggle_despesas'].forEach(id => {
+        ['toggle_catalogo', 'toggle_estoque', 'toggle_multi_mat', 'toggle_logistica', 'toggle_marketplaces', 'toggle_simulador', 'toggle_despesas'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
                 t.checked = false;
