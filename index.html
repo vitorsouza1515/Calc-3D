@@ -1592,6 +1592,7 @@
             if (workbook.Sheets["Despesas"]) {
                 var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
                 despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
+                // Remove the "TOTAL" row if it was imported back
                 despesas = despesas.filter(d => d.data !== "TOTAL");
             }
             syncNuvem(); showToast("✅ Nuvem Atualizada!");
@@ -1682,7 +1683,7 @@
             despBody.push(['', '', 'TOTAL DAS DESPESAS', 'R$ ' + formatarMoeda(tDesp)]);
 
             doc.autoTable({
-                head: [['Data', 'Qtd', 'Produto/Material', 'Valor']],
+                head: [['Data', 'Qtd', 'Produto/Material', 'Valor Total']],
                 body: despBody,
                 startY: finalY + 5,
                 theme: 'grid',
