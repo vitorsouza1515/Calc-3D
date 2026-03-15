@@ -1564,7 +1564,9 @@
             var wsCat = XLSX.utils.json_to_sheet(dadosCat); XLSX.utils.book_append_sheet(wb, wsCat, "Catalogo");
         }
         if(despesas.length > 0) {
+            var totalDesp = despesas.reduce((sum, d) => sum + d.valor, 0);
             var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Qtd": d.qtd, "Produto/Material": d.nome, "Valor Total (R$)": d.valor }));
+            dadosDespesas.push({ "Data": "TOTAL", "Qtd": "", "Produto/Material": "", "Valor Total (R$)": totalDesp });
             var wsDespesas = XLSX.utils.json_to_sheet(dadosDespesas); wsDespesas['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 20 }]; XLSX.utils.book_append_sheet(wb, wsDespesas, "Despesas");
         }
         if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
@@ -1587,6 +1589,8 @@
             if (workbook.Sheets["Despesas"]) {
                 var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
                 despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
+                // Remove the "TOTAL" row if it was imported back
+                despesas = despesas.filter(d => d.data !== "TOTAL");
             }
             syncNuvem(); showToast("✅ Nuvem Atualizada!");
         }; reader.readAsArrayBuffer(file);
@@ -1622,7 +1626,7 @@
 
             var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             var custoFab = parseLocal(h.custo);
-            var lucro = liquido - custoFab - custoLog; // Dedução do Log
+            var lucro = liquido - custoFab - custoLog; 
             var pesoPeca = parseLocal(h.peso);
             
             totalPeso += pesoPeca;
@@ -1665,9 +1669,12 @@
             doc.setTextColor(239, 68, 68); 
             doc.text("Relatório de Despesas / Compras", 14, finalY);
             
+            var tDesp = despesas.reduce((a,b)=>a+b.valor,0);
             var despBody = despesas.map(d => [d.data, d.qtd, d.nome, 'R$ ' + formatarMoeda(d.valor)]);
+            despBody.push(['', '', 'TOTAL DAS DESPESAS', 'R$ ' + formatarMoeda(tDesp)]);
+
             doc.autoTable({
-                head: [['Data', 'Qtd', 'Produto/Material', 'Valor Total']],
+                head: [['Data', 'Qtd', 'Produto/Material', 'Valor']],
                 body: despBody,
                 startY: finalY + 5,
                 theme: 'grid',
