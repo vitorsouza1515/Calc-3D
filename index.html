@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -40,7 +39,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height:100vh; display:flex; flex-direction:column; padding:12px; overflow-x:hidden; overflow-y:auto; }
 
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
@@ -92,7 +91,7 @@
         input:checked + .slider-switch { background-color: var(--primary); }
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
-        /* Cores específicas para cada toggle */
+        /* Cores especÃ­ficas para cada toggle */
         #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
         #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
@@ -160,42 +159,66 @@
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
-    </style>
+    
+/* ===== FIX SCROLL HORIZONTAL MOBILE ===== */
+html,body{
+max-width:100%;
+overflow-x:hidden;
+}
+
+.dashboard{
+width:100%;
+max-width:100%;
+}
+
+.card,button,input,select,textarea{
+max-width:100%;
+}
+
+/* forÃ§a layout vertical no mobile */
+@media(max-width:900px){
+.dashboard{
+grid-template-columns:1fr !important;
+}
+}
+/* ===== END FIX ===== */
+
+</style>
 </head>
 <body>
 
-<div id="toast">✅ Operação Realizada</div>
+<div id="toast">â OperaÃ§Ã£o Realizada</div>
 
 <header>
     <div>
-        <h1>3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span>
+        <h1>3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">âï¸</span>
     </div>
-    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de Precisão na Nuvem</p>
+    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de PrecisÃ£o na Nuvem</p>
 </header>
 
 <div class="dashboard">
     <div class="col">
         <div class="card">
-            <h2 class="section-title">👤 Identificação / CRM</h2>
+            <h2 class="section-title">ð¤ IdentificaÃ§Ã£o / CRM</h2>
             <div class="input-group">
-                <label>Nome do Projeto / Peça</label>
-                <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
+                <label>Nome do Projeto / PeÃ§a</label>
+                <input type="text" id="nomeProjeto" placeholder="Ex: Vaso ArtÃ­stico v2" oninput="salvarDinamico('nomeProjeto')">
             </div>
             
             <div class="input-group">
-                <label style="color: var(--sky);">Qtd. de Peças</label>
+                <label style="color: var(--sky);">Qtd. de PeÃ§as</label>
                 <input type="text" inputmode="numeric" id="qtdPecasProjeto" value="1" placeholder="Ex: 5" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('qtdPecasProjeto'); calcular()">
             </div>
 
             <div class="grid-2">
-                <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente')"></div>
+                <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" placeholder="Ex: JoÃ£o Silva" oninput="salvarDinamico('nomeCliente')"></div>
                 <div class="input-group"><label>WhatsApp (Opcional)</label><input type="text" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
             </div>
         </div>
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--orange);">
-                <span>🏷️ Catálogo / Pre-sets</span>
+                <span>ð·ï¸ CatÃ¡logo / Pre-sets</span>
                 <label class="switch"><input type="checkbox" id="toggle_catalogo" data-save="true"><span class="slider-switch"></span></label>
             </div>
             
@@ -208,8 +231,8 @@
 
             <div id="secao_catalogo" style="display:none; padding-top: 5px;">
                 <div style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
-                    <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Ações do Catálogo:</p>
-                    <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
+                    <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">AÃ§Ãµes do CatÃ¡logo:</p>
+                    <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">ð¾ Salvar Projeto Atual no CatÃ¡logo</button>
                 </div>
                 <div id="lista_catalogo" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
             </div>
@@ -217,7 +240,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--success);">
-                <span>🧻 Cadastrar / Escolher Filamento</span>
+                <span>ð§» Cadastrar / Escolher Filamento</span>
                 <label class="switch"><input type="checkbox" id="toggle_estoque" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_estoque" style="display:none; padding-top: 5px;">
@@ -227,18 +250,18 @@
                     <div class="input-group"><label>Marca</label><input type="text" id="est_marca" placeholder="Ex: Sunlu"></div>
                 </div>
                 <div class="grid-2">
-                    <div class="input-group"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
-                    <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="margin-top: 14px; background: var(--success);">➕ Salvar / Atualizar</button>
+                    <div class="input-group"><label>PreÃ§o Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
+                    <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="margin-top: 14px; background: var(--success);">â Salvar / Atualizar</button>
                 </div>
                 <div id="lista_estoque" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
             </div>
         </div>
 
         <div class="card" style="margin-top: 12px;">
-            <h2 class="section-title">⚙️ Base Operacional</h2>
+            <h2 class="section-title">âï¸ Base Operacional</h2>
             <div class="grid-2">
-                <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>MÃ¡quina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Vida Ãtil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
@@ -246,7 +269,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title">
-                <span>📦 O Projeto</span>
+                <span>ð¦ O Projeto</span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--text-muted)">MULTI-COR</span>
                     <label class="switch"><input type="checkbox" id="toggle_multi_mat" data-save="true"><span class="slider-switch"></span></label>
@@ -267,11 +290,11 @@
                         <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" readonly></div>
                         <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" readonly></div>
                     </div>
-                    <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" readonly></div>
+                    <div class="input-group"><label>PreÃ§o Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" readonly></div>
                 </div>
 
                 <div class="input-group" style="margin-top: 10px;">
-                    <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
+                    <label style="color: var(--sky); font-weight: 800;">Peso da PeÃ§a (g)</label>
                     <input type="text" inputmode="decimal" id="pesoPeca" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()">
                 </div>
             </div>
@@ -298,7 +321,7 @@
     <div class="col">
         <div class="card">
             <div class="section-title">
-                <span>🚚 Logística</span>
+                <span>ð LogÃ­stica</span>
                 <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_logistica">
@@ -313,7 +336,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title">
-                <span>🛒 Taxas Marketplaces</span>
+                <span>ð Taxas Marketplaces</span>
                 <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_marketplaces">
@@ -326,7 +349,7 @@
             </div>
             
             <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
-                <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
+                <span style="font-size: 0.75rem;">ð§® SIMULADOR DE LUCRO</span>
                 <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_simulador" style="display:none; padding-top: 5px;">
@@ -341,27 +364,27 @@
 
     <div class="col">
         <div class="results">
-            <h2 class="section-title" style="border:none; margin-bottom: 5px; color: #fff">📊 Resumo de Custos</h2>
+            <h2 class="section-title" style="border:none; margin-bottom: 5px; color: #fff">ð Resumo de Custos</h2>
             <div class="extrato">
-                <div class="result-row"><span>Depreciação Máquina</span><span class="value">R$ <span id="r_dep">0,00</span></span></div>
-                <div class="result-row"><span>Energia Elétrica</span><span class="value">R$ <span id="r_ene">0,00</span></span></div>
+                <div class="result-row"><span>DepreciaÃ§Ã£o MÃ¡quina</span><span class="value">R$ <span id="r_dep">0,00</span></span></div>
+                <div class="result-row"><span>Energia ElÃ©trica</span><span class="value">R$ <span id="r_ene">0,00</span></span></div>
                 <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0,00</span></span></div>
                 <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span><span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0,00</span></span></div>
                 
                 <div id="resumo_logistica" style="display:none; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
-                    <div class="result-row" style="color: var(--sky);"><span>Logística (Emb+Desloc)</span><span class="value">R$ <span id="r_log_fixo">0,00</span></span></div>
+                    <div class="result-row" style="color: var(--sky);"><span>LogÃ­stica (Emb+Desloc)</span><span class="value">R$ <span id="r_log_fixo">0,00</span></span></div>
                     <div class="result-row" style="color: var(--sky);"><span>Frete</span><span class="value">R$ <span id="r_log_frete">0,00</span></span></div>
                     <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: var(--success);">Custo Final (Prod+Log)</span><span class="value" style="color: var(--success);">R$ <span id="r_gasto_total">0,00</span></span></div>
                 </div>
             </div>
             
-            <button class="btn" style="background: var(--orange); width: 100%; padding: 12px; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; font-weight: 700; color: white;" onclick="adicionarAoCarrinho()">➕ Adicionar Item ao Carrinho</button>
+            <button class="btn" style="background: var(--orange); width: 100%; padding: 12px; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; font-weight: 700; color: white;" onclick="adicionarAoCarrinho()">â Adicionar Item ao Carrinho</button>
 
             <div id="carrinho_container" style="display: none; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px dashed var(--orange); margin-bottom: 10px;">
-                <h3 style="font-size: 0.75rem; color: var(--orange); margin-bottom: 8px; text-transform: uppercase;">🛒 Pedido Atual</h3>
+                <h3 style="font-size: 0.75rem; color: var(--orange); margin-bottom: 8px; text-transform: uppercase;">ð Pedido Atual</h3>
                 <div id="lista_itens_carrinho" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
                 <div style="border-top: 1px solid var(--border); padding-top: 8px; font-size: 0.7rem;">
-                    <div class="result-row"><span>Custo Peças:</span><span class="value" style="color: #fbbf24;">R$ <span id="cart_tot_custo">0,00</span></span></div>
+                    <div class="result-row"><span>Custo PeÃ§as:</span><span class="value" style="color: #fbbf24;">R$ <span id="cart_tot_custo">0,00</span></span></div>
                     <div class="result-row"><span>Soma Direta:</span><span class="value" style="color: var(--success);">R$ <span id="cart_tot_vd">0,00</span></span></div>
                     <div class="result-row"><span>Soma Shopee:</span><span class="value" style="color: var(--shopee);">R$ <span id="cart_tot_vs">0,00</span></span></div>
                     <div class="result-row" style="border:none;"><span>Soma ML:</span><span class="value" style="color: var(--meli);">R$ <span id="cart_tot_vm">0,00</span></span></div>
@@ -375,17 +398,17 @@
             </div>
             
             <div class="input-group" style="margin-top: 10px;">
-                <label style="color: var(--purple);">Opção de Salvar</label>
+                <label style="color: var(--purple);">OpÃ§Ã£o de Salvar</label>
                 <select id="canalVendaSelecionado" style="border-color: var(--purple); color: var(--purple);" onchange="mostrarValorPersonalizado()">
-                    <option value="Direta">Salvar Sugestão: Direta / Pix</option>
-                    <option value="Shopee">Salvar Sugestão: Shopee</option>
-                    <option value="Meli">Salvar Sugestão: Mercado Livre</option>
-                    <option value="Personalizado">Usar Valor Personalizado (Meu Preço)</option>
+                    <option value="Direta">Salvar SugestÃ£o: Direta / Pix</option>
+                    <option value="Shopee">Salvar SugestÃ£o: Shopee</option>
+                    <option value="Meli">Salvar SugestÃ£o: Mercado Livre</option>
+                    <option value="Personalizado">Usar Valor Personalizado (Meu PreÃ§o)</option>
                 </select>
             </div>
 
             <div id="divValorPersonalizado" style="display: none; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; border: 1px solid var(--purple);">
-                <div class="input-group"><label style="color: var(--sky);">Meu Preço Bruto (R$)</label><input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 99,98" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')"></div>
+                <div class="input-group"><label style="color: var(--sky);">Meu PreÃ§o Bruto (R$)</label><input type="text" inputmode="decimal" id="valorPersonalizado" placeholder="Ex: 99,98" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('valorPersonalizado')"></div>
                 <div class="input-group"><label style="color: var(--purple);">Qual Canal?</label>
                     <select id="canalPersonalizadoDestino">
                         <option value="Direta">Venda Direta / Pix</option>
@@ -395,19 +418,19 @@
                 </div>
             </div>
 
-            <button class="btn-save-hist" onclick="salvarHistorico()">💾 Salvar Venda</button>
+            <button class="btn-save-hist" onclick="salvarHistorico()">ð¾ Salvar Venda</button>
             <div class="share-grid">
                 <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
                 <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
                 <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
-                <button class="btn btn-orcamento" onclick="gerarOrcamentoCliente()">📄 Orçamento PDF</button>
+                <button class="btn btn-orcamento" onclick="gerarOrcamentoCliente()">ð OrÃ§amento PDF</button>
             </div>
-            <button class="btn-reset" onclick="resetarDados()">🗑️ Limpar Projeto</button>
+            <button class="btn-reset" onclick="resetarDados()">ðï¸ Limpar Projeto</button>
         </div>
 
         <div class="card" style="margin-top:12px;">
             <div class="section-title" style="color: #ef4444;">
-                <span>💸 Despesas / Compras</span>
+                <span>ð¸ Despesas / Compras</span>
                 <label class="switch"><input type="checkbox" id="toggle_despesas" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_despesas" style="display:none; padding-top: 5px;">
@@ -417,30 +440,30 @@
                 </div>
                 <div class="grid-2">
                     <div class="input-group"><label>Valor Total (R$)</label><input type="text" inputmode="decimal" id="desp_valor" placeholder="Ex: 25,00" oninput="aplicarMascara(this)"></div>
-                    <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">➕ Adicionar</button>
+                    <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">â Adicionar</button>
                 </div>
                 <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 150px;"></div>
             </div>
         </div>
 
         <div class="card" style="margin-top:12px;">
-            <h2 class="section-title">📂 Histórico de Vendas</h2>
+            <h2 class="section-title">ð HistÃ³rico de Vendas</h2>
             <div id="filtroHistorico" class="filter-container"></div>
             <div id="listaHistorico" class="history-list" style="margin-top: 0;"></div>
             
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÍQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÃQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
                 
-                <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fbbf24;">(-) CUSTO DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fbbf24;">(-) CUSTO DE PRODUÃÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: var(--orange);">(-) CUSTO LOG/FRETE:</span><b style="color: var(--orange); font-size: 1rem;">R$ <span id="tot_logistica">0,00</span></b></div>
 
-                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: #10b981; font-size: 0.9rem;">💰 LUCRO LÍQUIDO (OPERAÇÃO):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: #10b981; font-size: 0.9rem;">ð° LUCRO LÃQUIDO (OPERAÃÃO):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro">0,00</span></b></div>
                 
                 <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #ef4444;">(-) DESPESAS GERAIS:</span><b style="color: #ef4444; font-size: 1rem;">R$ <span id="tot_despesas">0,00</span></b></div>
                 
-                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: var(--sky); font-size: 0.85rem;">🏦 CAIXA REAL (LUCRO - DESPESAS):</span><b style="color: var(--sky); font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: var(--sky); font-size: 0.85rem;">ð¦ CAIXA REAL (LUCRO - DESPESAS):</span><b style="color: var(--sky); font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
 
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
@@ -448,10 +471,10 @@
             </div>
             
             <div class="report-grid">
-                <button class="btn-report" onclick="gerarPDF()">📄 PDF Geral</button>
-                <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel</button>
+                <button class="btn-report" onclick="gerarPDF()">ð PDF Geral</button>
+                <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">ð Excel</button>
             </div>
-            <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
+            <button class="btn-import" onclick="document.getElementById('importFile').click()">ð¥ Importar Backup XLS</button>
             <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
         </div>
     </div>
@@ -519,7 +542,7 @@
             localStorage.setItem('3d4y_despesas_dark', JSON.stringify(despesas));
         }).catch(function(error) {
             console.error("Erro na nuvem:", error);
-            showToast("❌ Erro ao Sincronizar Nuvem");
+            showToast("â Erro ao Sincronizar Nuvem");
         });
     }
 
@@ -587,7 +610,7 @@
                 if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } 
             } 
         }
-        var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
+        var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'NÃ£o informado';
 
         carrinho.push({
             id: Date.now() + Math.floor(Math.random() * 1000),
@@ -601,7 +624,7 @@
         });
 
         renderCarrinho();
-        showToast("🛒 Item adicionado ao Pedido!");
+        showToast("ð Item adicionado ao Pedido!");
         
         document.getElementById('nomeProjeto').value = "";
         document.getElementById('qtdPecasProjeto').value = "1";
@@ -635,7 +658,7 @@
                 <div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border);">
                     <button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer;">X</button>
                     <div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 15px;">${item.nome}</div>
-                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div>
+                    <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo PeÃ§a: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div>
                 </div>
             `;
         });
@@ -685,7 +708,7 @@
 
     function salvarNoCatalogo() {
         var nome = pegaTexto('nomeProjeto');
-        if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
+        if(!nome) { alert("DÃª um nome ao projeto antes de salvar no catÃ¡logo."); return; }
         var extras = [];
         var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) {
@@ -706,13 +729,13 @@
                 catalogo[idx] = { id: editCatalogoId, nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             }
             editCatalogoId = null;
-            document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo";
+            document.getElementById('btn_salvar_catalogo').textContent = "ð¾ Salvar Projeto Atual no CatÃ¡logo";
             document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
-            showToast("🏷️ Produto atualizado no catálogo!");
+            showToast("ð·ï¸ Produto atualizado no catÃ¡logo!");
         } else {
             var novoProduto = { id: Date.now(), nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto);
-            showToast("🏷️ Produto salvo no catálogo!");
+            showToast("ð·ï¸ Produto salvo no catÃ¡logo!");
         }
         syncNuvem();
     }
@@ -739,8 +762,8 @@
             var pesoStr = formatarMoeda(pesoTotal) + 'g';
             
             htmlLista += `<div class="history-item" style="padding: 8px 12px;">
-                <button class="btn-edit-item" onclick="editarDoCatalogo(${p.id})">✎</button>
-                <button class="btn-del-item" onclick="removerDoCatalogo(${p.id})">×</button>
+                <button class="btn-edit-item" onclick="editarDoCatalogo(${p.id})">â</button>
+                <button class="btn-del-item" onclick="removerDoCatalogo(${p.id})">Ã</button>
                 <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--orange);">${p.nome}</h4>
                 <div style="font-size: 0.65rem; color: var(--text-muted);">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}</div>
             </div>`;
@@ -753,15 +776,15 @@
         var id = document.getElementById('sel_catalogo').value;
         if(!id) return;
         aplicarDadosNoForm(id);
-        showToast("🏷️ Dados carregados!");
+        showToast("ð·ï¸ Dados carregados!");
     }
 
     function editarDoCatalogo(id) {
         aplicarDadosNoForm(id);
         editCatalogoId = id;
-        document.getElementById('btn_salvar_catalogo').textContent = "💾 Confirmar Alteração no Catálogo";
+        document.getElementById('btn_salvar_catalogo').textContent = "ð¾ Confirmar AlteraÃ§Ã£o no CatÃ¡logo";
         document.getElementById('btn_salvar_catalogo').style.background = "var(--purple)";
-        showToast("✏️ Editando produto...");
+        showToast("âï¸ Editando produto...");
     }
 
     function aplicarDadosNoForm(id) {
@@ -812,19 +835,19 @@
         calcular();
     }
 
-    function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
+    function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catÃ¡logo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
 
     function salvarItemEstoque() {
         var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value; 
-        if(!t || !p) { alert("Preencha pelo menos o Tipo e o Preço para salvar no estoque."); return; }
+        if(!t || !p) { alert("Preencha pelo menos o Tipo e o PreÃ§o para salvar no estoque."); return; }
         if (editEstoqueId) {
             var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
             if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; }
-            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
+            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "â Salvar / Atualizar";
         } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); }
         syncNuvem();
         document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = "";
-        showToast("📦 Estoque Atualizado!");
+        showToast("ð¦ Estoque Atualizado!");
     }
 
     function renderEstoque() {
@@ -834,7 +857,7 @@
         
         lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
         estoqueOrdenado.forEach(function(item) {
-            lista.innerHTML += '<div class="history-item" style="padding: 8px 12px;"><button class="btn-edit-item" onclick="editarItemEstoque('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItemEstoque('+item.id+')">×</button><h4 style="margin-bottom:0; font-size:0.75rem; color:var(--success);">' + item.tipo + ' ' + item.cor + ' <span style="color:#fff">(' + item.marca + ')</span></h4><div style="font-size: 0.7rem; color: var(--text-muted);">Preço: R$ ' + item.preco + '</div></div>';
+            lista.innerHTML += '<div class="history-item" style="padding: 8px 12px;"><button class="btn-edit-item" onclick="editarItemEstoque('+item.id+')">â</button><button class="btn-del-item" onclick="removerItemEstoque('+item.id+')">Ã</button><h4 style="margin-bottom:0; font-size:0.75rem; color:var(--success);">' + item.tipo + ' ' + item.cor + ' <span style="color:#fff">(' + item.marca + ')</span></h4><div style="font-size: 0.7rem; color: var(--text-muted);">PreÃ§o: R$ ' + item.preco + '</div></div>';
         });
         atualizarDropdownsEstoque();
     }
@@ -845,7 +868,7 @@
         var item = estoque.find(function(e) { return e.id === id; });
         if(item) {
             document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco;
-            editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição";
+            editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "ð¾ Confirmar EdiÃ§Ã£o";
             
             var tEst = document.getElementById('toggle_estoque');
             if(tEst && !tEst.checked) {
@@ -877,7 +900,7 @@
         if(det) det.style.display = 'block';
         var campoPeso = idx === 1 ? document.getElementById('pesoPeca') : document.getElementById('pesoPeca' + idx);
         if(campoPeso) { campoPeso.focus(); if(campoPeso.value === "0" || campoPeso.value === "0,00" || campoPeso.value === "") { campoPeso.select(); } }
-        calcular(); showToast("📦 " + item.tipo + " Carregado!");
+        calcular(); showToast("ð¦ " + item.tipo + " Carregado!");
     }
 
     function renderCoresExtras() {
@@ -896,9 +919,9 @@
                             <div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" readonly></div>
                             <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" readonly></div>
                         </div>
-                        <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" readonly></div>
+                        <div class="input-group"><label>PreÃ§o Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" readonly></div>
                     </div>
-                    <div class="input-group" style="margin-top: 10px;"><label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label><input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()"></div>
+                    <div class="input-group" style="margin-top: 10px;"><label style="color: var(--sky); font-weight: 800;">Peso da PeÃ§a (g)</label><input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()"></div>
                 </div>`;
             aplicarMascara(document.getElementById('pesoPeca'+i));
         }
@@ -941,7 +964,7 @@
         if(elM) elM.textContent = formatarMoeda(netMeli);
     }
 
-    // --- NOVA FUNÇÃO: DESPESAS GERAIS ---
+    // --- NOVA FUNÃÃO: DESPESAS GERAIS ---
     function salvarDespesa() {
         var qtd = parseInt(pegaValor('desp_qtd')) || 1;
         var nome = pegaTexto('desp_nome');
@@ -956,8 +979,8 @@
                 despesas[idx].valor = parseLocal(val);
             }
             editDespesaId = null;
-            document.querySelector('#secao_despesas button').textContent = "➕ Adicionar";
-            showToast("💸 Despesa Atualizada!");
+            document.querySelector('#secao_despesas button').textContent = "â Adicionar";
+            showToast("ð¸ Despesa Atualizada!");
         } else {
             despesas.unshift({ 
                 id: Date.now(), 
@@ -966,7 +989,7 @@
                 nome: nome, 
                 valor: parseLocal(val) 
             });
-            showToast("💸 Despesa Registrada!");
+            showToast("ð¸ Despesa Registrada!");
         }
         
         syncNuvem();
@@ -983,8 +1006,8 @@
             soma += d.valor;
             lista.innerHTML += `
                 <div class="history-item" style="padding: 8px 12px; border-color: rgba(239, 68, 68, 0.3);">
-                    <button class="btn-edit-item" onclick="editarDespesa(${d.id})">✎</button>
-                    <button class="btn-del-item" onclick="removerDespesa(${d.id})">×</button>
+                    <button class="btn-edit-item" onclick="editarDespesa(${d.id})">â</button>
+                    <button class="btn-del-item" onclick="removerDespesa(${d.id})">Ã</button>
                     <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--danger);">${d.qtd}x ${d.nome}</h4>
                     <div style="font-size: 0.7rem; color: var(--text-muted);">
                         Valor Total: R$ ${formatarMoeda(d.valor)} 
@@ -1013,7 +1036,7 @@
             document.getElementById('desp_nome').value = d.nome;
             document.getElementById('desp_valor').value = formatarMoeda(d.valor);
             editDespesaId = id;
-            document.querySelector('#secao_despesas button').textContent = "💾 Confirmar Edição";
+            document.querySelector('#secao_despesas button').textContent = "ð¾ Confirmar EdiÃ§Ã£o";
             
             var tDesp = document.getElementById('toggle_despesas');
             if(tDesp && !tDesp.checked) {
@@ -1240,7 +1263,7 @@
             totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
             if(totalQtd < 1) totalQtd = 1;
             
-            carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
+            carrinho.forEach(i => { if(i.materiais && i.materiais !== "NÃ£o informado") materiaisArray.push(i.materiais); });
 
             if (canal === "Personalizado") { 
                 valorBruto = pegaValor('valorPersonalizado'); 
@@ -1325,7 +1348,7 @@
 
         if(valorVendaFinal < 0) valorVendaFinal = 0;
 
-        var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
+        var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'NÃ£o informado';
         
         var cartToSave = [];
         if(isCart) {
@@ -1360,7 +1383,7 @@
             tempo: tempoFinal,
             cartItems: cartToSave,
             totalQtd: totalQtd,
-            status: "Orçamento", 
+            status: "OrÃ§amento", 
             data: new Date().toLocaleDateString('pt-BR') 
         };
         
@@ -1371,7 +1394,7 @@
                 historico[idx] = novo;
             }
             editHistoricoId = null;
-            document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda";
+            document.querySelector('.btn-save-hist').textContent = "ð¾ Salvar Venda";
             document.querySelector('.btn-save-hist').style.background = "var(--purple)";
         } else {
             historico.unshift(novo);
@@ -1380,7 +1403,7 @@
         syncNuvem();
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
-        resetarDados(); showToast("✅ Venda Registrada!");
+        resetarDados(); showToast("â Venda Registrada!");
     }
 
     function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
@@ -1452,10 +1475,10 @@
         calcular();
 
         editHistoricoId = id;
-        document.querySelector('.btn-save-hist').textContent = "💾 Confirmar Edição de Venda";
+        document.querySelector('.btn-save-hist').textContent = "ð¾ Confirmar EdiÃ§Ã£o de Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--sky)";
         
-        showToast("✏️ Editando Venda no Carrinho...");
+        showToast("âï¸ Editando Venda no Carrinho...");
         
         var dash = document.querySelector('.dashboard');
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1467,13 +1490,13 @@
 
         var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0;
         
-        var counts = { 'Todos': historico.length, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0 };
+        var counts = { 'Todos': historico.length, 'OrÃ§amento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0 };
 
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
 
-            if (st !== 'Orçamento') {
+            if (st !== 'OrÃ§amento') {
                 var custoItem = parseLocal(item.custo); 
                 var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
                 var canalStr = item.canal || "Direta";
@@ -1497,12 +1520,12 @@
 
         if (filtroDiv) {
             filtroDiv.innerHTML = `
-                <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">ð Todos (${counts['Todos']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'OrÃ§amento' ? 'active' : ''}" onclick="mudarFiltro('OrÃ§amento')">ð¡ OrÃ§. (${counts['OrÃ§amento']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">ðµ Fila (${counts['Na Fila']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">ð£ Impr. (${counts['Imprimindo']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">ð¢ Fin. (${counts['Finalizado']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">ð Env. (${counts['Enviado / Entregue']})</button>
             `;
         }
 
@@ -1523,12 +1546,12 @@
             
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
-            var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
-            var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
+            var colorClass = st === 'OrÃ§amento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
+            var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">ð¤ Cliente: ' + item.cliente + '</div>' : '';
             
-            var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
+            var txtVenda = (valBruto !== valLiq) ? `LÃ­q: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
-            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
+            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">â</button><button class="btn-del-item" onclick="removerItem('+item.id+')">Ã</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="OrÃ§amento" '+(st==='OrÃ§amento'?'selected':'')+'>ð¡ OrÃ§amento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>ðµ Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>ð£ Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>ð¢ Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>ð Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
         
         document.getElementById('tot_qtd').textContent = qtdValida; 
@@ -1544,7 +1567,7 @@
         atualizarLucroReal();
     }
 
-    function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
+    function removerItem(id) { if(confirm("Deseja apagar este projeto do histÃ³rico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
 
     function exportarExcel() {
         var wb = XLSX.utils.book_new();
@@ -1555,12 +1578,12 @@
                 var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
                 var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
                 var lucro = liquido - parseLocal(h.custo) - custoLog;
-                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido, "Lucro Líquido (R$)": lucro }; 
+                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "LogÃ­stica/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda LÃ­quida (R$)": liquido, "Lucro LÃ­quido (R$)": lucro }; 
             });
             var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
         }
         if(estoque.length > 0) {
-            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
+            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "PreÃ§o (R$)": parseLocal(e.preco) }));
             var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque); wsEstoque['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
         }
         if(catalogo.length > 0) {
@@ -1573,7 +1596,7 @@
             dadosDespesas.push({ "Data": "TOTAL", "Qtd": "", "Produto/Material": "", "Valor Total (R$)": totalDesp });
             var wsDespesas = XLSX.utils.json_to_sheet(dadosDespesas); wsDespesas['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 20 }]; XLSX.utils.book_append_sheet(wb, wsDespesas, "Despesas");
         }
-        if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
+        if(wb.SheetNames.length === 0) return alert("NÃ£o hÃ¡ dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
     }
 
     function importarExcel(input) {
@@ -1583,29 +1606,29 @@
             var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
             if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo" && nomeAbaVendas !== "Despesas") {
                 var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
-                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), frete: parseLocal(item["Logística/Frete (R$)"] || "0"), logistica: 0, valorVenda: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
+                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), frete: parseLocal(item["LogÃ­stica/Frete (R$)"] || "0"), logistica: 0, valorVenda: String(item["Venda LÃ­quida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda LÃ­quida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
                 if (novosItens.length > 0) { historico = novosItens; }
             }
             if (workbook.Sheets["Estoque"]) {
                 var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
-                estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }));
+                estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["PreÃ§o (R$)"] || 0) }));
             }
             if (workbook.Sheets["Despesas"]) {
                 var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
                 despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
                 despesas = despesas.filter(d => d.data !== "TOTAL");
             }
-            syncNuvem(); showToast("✅ Nuvem Atualizada!");
+            syncNuvem(); showToast("â Nuvem Atualizada!");
         }; reader.readAsArrayBuffer(file);
     }
 
     async function gerarPDF() {
-        if(historico.length === 0) return alert("Histórico vazio!");
+        if(historico.length === 0) return alert("HistÃ³rico vazio!");
         
         const doc = new window.jspdf.jsPDF();
         doc.setFontSize(18);
         doc.setTextColor(59, 130, 246);
-        doc.text("Relatório de Desempenho - 3D 4You", 14, 20);
+        doc.text("RelatÃ³rio de Desempenho - 3D 4You", 14, 20);
 
         var totalPeso = 0, totalCusto = 0, totalLog = 0, totalBruto = 0, totalLiquido = 0, totalLucro = 0;
         var qtdValidaPDF = 0;
@@ -1635,7 +1658,7 @@
             
             var st = h.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             
-            if (st !== 'Orçamento') {
+            if (st !== 'OrÃ§amento') {
                 totalPeso += pesoPeca;
                 totalCusto += custoFab;
                 totalLog += custoLog;
@@ -1645,7 +1668,7 @@
                 qtdValidaPDF++;
             }
 
-            var txtMat = h.materiais && h.materiais !== 'Não informado' ? h.materiais : '-';
+            var txtMat = h.materiais && h.materiais !== 'NÃ£o informado' ? h.materiais : '-';
 
             return [ 
                 h.data, 
@@ -1660,7 +1683,7 @@
         });
 
         doc.autoTable({ 
-            head: [['Data', 'Projeto', 'Canal', 'Materiais (g)', 'Custo Fab.', 'Venda Bruta', 'Líquido', 'Lucro']], 
+            head: [['Data', 'Projeto', 'Canal', 'Materiais (g)', 'Custo Fab.', 'Venda Bruta', 'LÃ­quido', 'Lucro']], 
             body: tableBody, 
             startY: 30, 
             theme: 'grid',
@@ -1676,7 +1699,7 @@
             if (finalY + 30 > pageHeight) { doc.addPage(); finalY = 20; }
             doc.setFontSize(14);
             doc.setTextColor(239, 68, 68); 
-            doc.text("Relatório de Despesas / Compras", 14, finalY);
+            doc.text("RelatÃ³rio de Despesas / Compras", 14, finalY);
             
             var tDesp = despesas.reduce((a,b)=>a+b.valor,0);
             var despBody = despesas.map(d => [d.data, d.qtd, d.nome, 'R$ ' + formatarMoeda(d.valor)]);
@@ -1710,7 +1733,7 @@
         
         doc.text(`Qtd. de Vendas Ativas: ${qtdValidaPDF}`, 14, yR);
         doc.text(`Material Usado: ${formatarMoeda(totalPeso)} g`, 14, yR + 6);
-        doc.text(`Custo de Produção: R$ ${formatarMoeda(totalCusto)}`, 14, yR + 12);
+        doc.text(`Custo de ProduÃ§Ã£o: R$ ${formatarMoeda(totalCusto)}`, 14, yR + 12);
         doc.text(`Custos Log/Frete: R$ ${formatarMoeda(totalLog)}`, 14, yR + 18);
         doc.setTextColor(239, 68, 68); 
         doc.text(`Despesas Gerais: R$ ${formatarMoeda(totalDespesas)}`, 14, yR + 24);
@@ -1719,9 +1742,9 @@
         doc.setTextColor(71, 85, 105);
         doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totalBruto)}`, 75, yR);
         doc.setTextColor(14, 165, 233);
-        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totalLiquido)}`, 75, yR + 6);
+        doc.text(`Faturamento LÃ­quido: R$ ${formatarMoeda(totalLiquido)}`, 75, yR + 6);
         doc.setTextColor(16, 185, 129);
-        doc.text(`Lucro Líquido Vendas: R$ ${formatarMoeda(totalLucro)}`, 75, yR + 12);
+        doc.text(`Lucro LÃ­quido Vendas: R$ ${formatarMoeda(totalLucro)}`, 75, yR + 12);
         
         let margem = totalLiquido > 0 ? (totalLucro / totalLiquido) * 100 : 0;
         doc.text(`Margem de Lucro (%): ${formatarMoeda(margem)}%`, 75, yR + 18);
@@ -1732,9 +1755,9 @@
         
         doc.setFont(undefined, 'normal');
 
-        let countDireta = historico.filter(h => h.canal === "Direta" && h.status !== "Orçamento").length;
-        let countShopee = historico.filter(h => h.canal === "Shopee" && h.status !== "Orçamento").length;
-        let countMeli = historico.filter(h => h.canal === "Meli" && h.status !== "Orçamento").length;
+        let countDireta = historico.filter(h => h.canal === "Direta" && h.status !== "OrÃ§amento").length;
+        let countShopee = historico.filter(h => h.canal === "Shopee" && h.status !== "OrÃ§amento").length;
+        let countMeli = historico.filter(h => h.canal === "Meli" && h.status !== "OrÃ§amento").length;
         let totalVendas = countDireta + countShopee + countMeli;
 
         const canvas = document.getElementById('chartCanvas');
@@ -1775,7 +1798,7 @@
 
     function gerarOrcamentoCliente() {
         var doc = new window.jspdf.jsPDF(); 
-        doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("Orçamento - 3D 4You", 14, 20);
+        doc.setFontSize(22); doc.setTextColor(59, 130, 246); doc.text("OrÃ§amento - 3D 4You", 14, 20);
         doc.setFontSize(14); doc.setTextColor(40, 40, 40); 
         
         var isCart = carrinho && carrinho.length > 0;
@@ -1797,7 +1820,7 @@
             vS = document.getElementById('cart_tot_vs').textContent;
             vM = document.getElementById('cart_tot_vm').textContent;
         } else {
-            var nomeProj = pegaTexto('nomeProjeto') || "Projeto Impressão 3D";
+            var nomeProj = pegaTexto('nomeProjeto') || "Projeto ImpressÃ£o 3D";
             var elQtd = document.getElementById('qtdPecasProjeto');
             var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
             
@@ -1825,7 +1848,7 @@
         doc.save("Orcamento_Cliente.pdf");
     }
 
-    function buscarCEP(valor, idTexto) { var cep = valor.replace(/\D/g, ''); if (cep.length === 8) { fetch('https://viacep.com.br/ws/' + cep + '/json/').then(res => res.json()).then(data => { var el = document.getElementById(idTexto); if(el) el.textContent = data.erro ? "CEP não encontrado" : (data.localidade + "-" + data.uf); }); } }
+    function buscarCEP(valor, idTexto) { var cep = valor.replace(/\D/g, ''); if (cep.length === 8) { fetch('https://viacep.com.br/ws/' + cep + '/json/').then(res => res.json()).then(data => { var el = document.getElementById(idTexto); if(el) el.textContent = data.erro ? "CEP nÃ£o encontrado" : (data.localidade + "-" + data.uf); }); } }
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
@@ -1848,11 +1871,11 @@
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
         
         editCatalogoId = null; 
-        document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo"; 
+        document.getElementById('btn_salvar_catalogo').textContent = "ð¾ Salvar Projeto Atual no CatÃ¡logo"; 
         document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
 
         editHistoricoId = null;
-        document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda";
+        document.querySelector('.btn-save-hist').textContent = "ð¾ Salvar Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--purple)";
 
         var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
@@ -1872,14 +1895,14 @@
         var elQtdCores = document.getElementById('qtdCoresExtras');
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
-        calcular(); showToast("✅ Projeto Resetado!");
+        calcular(); showToast("â Projeto Resetado!");
         
         var dash = document.querySelector('.dashboard');
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
-        var txt = "*Orçamento 3D 4You*\n\n";
+        var txt = "*OrÃ§amento 3D 4You*\n\n";
         var valF = 0;
         var isCart = carrinho && carrinho.length > 0;
         var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
@@ -1894,7 +1917,7 @@
             valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
         } else {
             var nProj = document.getElementById('nomeProjeto');
-            var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
+            var nome = nProj && nProj.value ? nProj.value : "PeÃ§a 3D";
             var elQtd = document.getElementById('qtdPecasProjeto');
             var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
             
