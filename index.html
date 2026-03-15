@@ -940,7 +940,6 @@
         if(elM) elM.textContent = formatarMoeda(netMeli);
     }
 
-    // --- NOVA FUNÇÃO: DESPESAS GERAIS ---
     function salvarDespesa() {
         var qtd = parseInt(pegaValor('desp_qtd')) || 1;
         var nome = pegaTexto('desp_nome');
@@ -1031,7 +1030,6 @@
         var elReal = document.getElementById('tot_lucro_real');
         if(elReal) elReal.textContent = formatarMoeda(real);
     }
-    // -------------------------------------
 
     window.onload = function() {
         ids.forEach(function(id) {
@@ -1589,13 +1587,41 @@
                 var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
                 estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }));
             }
+            if (workbook.Sheets["Catalogo"]) {
+                var jsonCatalogo = XLSX.utils.sheet_to_json(workbook.Sheets["Catalogo"]);
+                catalogo = jsonCatalogo.map((item, index) => {
+                    var mat = item["Material"] || "";
+                    var parts = mat.split(" ");
+                    var t = parts[0] || "-";
+                    var c = parts.slice(1).join(" ") || "-";
+                    return { 
+                        id: Date.now() + index + 30000, 
+                        nome: item["Produto"] || "Sem Nome", 
+                        tempo: String(item["Tempo (h)"] || "0").replace('.', ','), 
+                        peso1: String(item["Peso Principal (g)"] || "0").replace('.', ','), 
+                        tipo1: t, 
+                        cor1: c, 
+                        marca1: "-", 
+                        preco1: "120,00", 
+                        multi: false, 
+                        qtdCores: "0", 
+                        extras: [] 
+                    };
+                });
+            }
             if (workbook.Sheets["Despesas"]) {
                 var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
                 despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
-                // Remove the "TOTAL" row if it was imported back
                 despesas = despesas.filter(d => d.data !== "TOTAL");
             }
-            syncNuvem(); showToast("✅ Nuvem Atualizada!");
+            syncNuvem(); 
+            renderHistorico();
+            renderEstoque();
+            renderCatalogo();
+            renderDespesas();
+            atualizarDropdownsEstoque();
+            showToast("✅ Nuvem Atualizada!");
+            input.value = "";
         }; reader.readAsArrayBuffer(file);
     }
 
