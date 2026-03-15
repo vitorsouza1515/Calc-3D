@@ -7,7 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/3b82f6/FFFFFF?text=3D+4You">
+    <meta name="color-scheme" content="dark">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icon-192.svg">
     
     <title>3D 4You ERP</title>
     
@@ -39,19 +41,47 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        html, body { max-width:100%; overflow-x:hidden; }
-body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding: 12px; overflow-x: hidden; }
+        html { overflow-x: hidden; }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
 
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
         
         .nuvem-icon { font-size: 0.8rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        .dashboard { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding-bottom: 20px; }
+        .dashboard { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding-bottom: 20px; width: 100%; max-width: 100%; min-width: 0; }
         
         @media (min-width: 1024px) { 
-            .dashboard { grid-template-columns: 1fr 1fr minmax(300px,340px); overflow-y: hidden; }
-            .col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 5px; height: 100%; }
+            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(300px, 340px); overflow-y: hidden; }
+            .col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 5px; height: 100%; min-width: 0; }
+        }
+
+        @media (max-width: 767px) {
+            body { padding: 10px; }
+            .card, .results { padding: 14px; }
+            .grid-2, .grid-3, .share-grid, .report-grid { grid-template-columns: 1fr; }
+            .range-container { flex-direction: column; align-items: stretch; gap: 10px; }
+            .margem-box { min-width: 100%; width: 100%; }
+            .price-box .total { font-size: 1.45rem; }
+            .history-item .hist-vals { grid-template-columns: 1fr; }
+            .filter-container { padding-bottom: 2px; }
+            .result-row, .total-row { align-items: flex-start; }
         }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
@@ -59,12 +89,12 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
         
         .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; }
         
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; min-width: 0; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; min-width: 0; }
 
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
-        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
+        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; max-width: 100%; min-width: 0; }
 
         .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
 
@@ -102,7 +132,7 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
         #toggle_logistica:checked + .slider-switch { background-color: var(--primary); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
-        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; min-width: 0; }
         .result-row span:first-child { flex: 1; line-height: 1.2; }
         .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap; text-align: right; }
         
@@ -137,7 +167,7 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
         .filter-btn:active { transform: scale(0.95); }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; min-width: 0; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
@@ -160,6 +190,11 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
+
+        input, select, textarea, button, .card, .results, .col {
+            max-width: 100%;
+            min-width: 0;
+        }
     </style>
 </head>
 <body>
@@ -305,7 +340,7 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
                 <div class="grid-2">
                     <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="4,50" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                     <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="8,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                    <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
+                    <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" data-save="true" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option><option value="Manual">Manual</option></select></div>
                     <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" data-save="true" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
             </div>
@@ -471,6 +506,22 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.firestore();
+
+    try {
+        firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(function(err) {
+            console.warn('PersistÃªncia offline nÃ£o ativada:', err && err.code ? err.code : err);
+        });
+    } catch (e) {
+        console.warn('PersistÃªncia offline indisponÃ­vel:', e);
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('./sw.js').catch(function(err) {
+                console.warn('Service Worker nÃ£o registrado:', err);
+            });
+        });
+    }
     const nuvemRef = db.collection("3d4you_app").doc("banco_de_dados");
 
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
@@ -556,6 +607,10 @@ body { background-color: var(--bg-color); color: var(--text-main); min-height: 1
 
     function toggleFreteManual() {
         var tEnvio = document.getElementById('tipoEnvio');
+        var freteInput = document.getElementById('valorFreteManual');
+        if (!tEnvio || !freteInput) return;
+        freteInput.readOnly = false;
+        freteInput.style.opacity = '1';
     }
 
     function adicionarAoCarrinho() {
