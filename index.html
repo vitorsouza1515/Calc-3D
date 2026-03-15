@@ -7,10 +7,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
-    <meta name="color-scheme" content="dark">
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="apple-touch-icon" href="icon-192.svg">
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/3b82f6/FFFFFF?text=3D+4You">
     
+    <link rel="manifest" href="manifest.webmanifest">
     <title>3D 4You ERP</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -39,49 +38,22 @@
             --danger: #ef4444;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { max-width: 100%; overflow-x: hidden; }
 
-        html { overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji"; -webkit-tap-highlight-color: transparent; }
 
-        html, body {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
-            overflow-x: hidden;
-            overflow-y: hidden;
-        }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding: 12px; overflow-x: hidden; }
 
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
         
         .nuvem-icon { font-size: 0.8rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        .dashboard { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding-bottom: 20px; width: 100%; max-width: 100%; min-width: 0; }
+        .dashboard { flex: 1; display: grid; grid-template-columns: 1fr; gap: 12px; overflow-y: auto; padding-bottom: 20px; width: 100%; max-width: 100%; }
         
         @media (min-width: 1024px) { 
-            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(300px, 340px); overflow-y: hidden; }
-            .col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 5px; height: 100%; min-width: 0; }
-        }
-
-        @media (max-width: 767px) {
-            body { padding: 10px; }
-            .card, .results { padding: 14px; }
-            .grid-2, .grid-3, .share-grid, .report-grid { grid-template-columns: 1fr; }
-            .range-container { flex-direction: column; align-items: stretch; gap: 10px; }
-            .margem-box { min-width: 100%; width: 100%; }
-            .price-box .total { font-size: 1.45rem; }
-            .history-item .hist-vals { grid-template-columns: 1fr; }
-            .filter-container { padding-bottom: 2px; }
-            .result-row, .total-row { align-items: flex-start; }
+            .dashboard { grid-template-columns: 1fr 1fr minmax(300px, 340px); overflow-y: hidden; }
+            .col { display: flex; flex-direction: column; gap: 12px; overflow-y: auto; padding-right: 5px; height: 100%; }
         }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
@@ -89,12 +61,12 @@
         
         .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; }
         
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; min-width: 0; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; width: 100%; min-width: 0; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
-        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; max-width: 100%; min-width: 0; }
+        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; }
 
         .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
 
@@ -132,7 +104,7 @@
         #toggle_logistica:checked + .slider-switch { background-color: var(--primary); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
-        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; min-width: 0; }
+        .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
         .result-row span:first-child { flex: 1; line-height: 1.2; }
         .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap; text-align: right; }
         
@@ -167,7 +139,7 @@
         .filter-btn:active { transform: scale(0.95); }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; min-width: 0; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
@@ -191,9 +163,15 @@
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
 
-        input, select, textarea, button, .card, .results, .col {
-            max-width: 100%;
-            min-width: 0;
+        input, select, textarea { max-width: 100%; }
+
+        @media (max-width: 640px) {
+            .grid-2, .grid-3, .share-grid, .report-grid { grid-template-columns: 1fr; }
+            .range-container { flex-direction: column; align-items: stretch; gap: 10px; }
+            .margem-box { min-width: 100%; }
+            .price-box .total { font-size: 1.45rem; }
+            .history-item .hist-vals { grid-template-columns: 1fr; }
+            .total-row { align-items: flex-start; }
         }
     </style>
 </head>
@@ -205,13 +183,13 @@
     <div>
         <h1>3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">âï¸</span>
     </div>
-    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de PrecisÃ£o na Nuvem</p>
+    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de Precis&atilde;o na Nuvem</p>
 </header>
 
 <div class="dashboard">
     <div class="col">
         <div class="card">
-            <h2 class="section-title">ð¤ IdentificaÃ§Ã£o / CRM</h2>
+            <h2 class="section-title">Identifica&ccedil;&atilde;o / CRM</h2>
             <div class="input-group">
                 <label>Nome do Projeto / PeÃ§a</label>
                 <input type="text" id="nomeProjeto" placeholder="Ex: Vaso ArtÃ­stico v2" oninput="salvarDinamico('nomeProjeto')">
@@ -230,7 +208,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--orange);">
-                <span>ð·ï¸ CatÃ¡logo / Pre-sets</span>
+                <span>Cat&aacute;logo / Pre-sets</span>
                 <label class="switch"><input type="checkbox" id="toggle_catalogo" data-save="true"><span class="slider-switch"></span></label>
             </div>
             
@@ -244,7 +222,7 @@
             <div id="secao_catalogo" style="display:none; padding-top: 5px;">
                 <div style="border-top: 1px dashed var(--border); margin-top: 10px; padding-top: 10px;">
                     <p style="font-size: 0.6rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">AÃ§Ãµes do CatÃ¡logo:</p>
-                    <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">ð¾ Salvar Projeto Atual no CatÃ¡logo</button>
+                    <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">Salvar Projeto Atual no Cat&aacute;logo</button>
                 </div>
                 <div id="lista_catalogo" class="history-list" style="margin-top: 12px; max-height: 180px;"></div>
             </div>
@@ -252,7 +230,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title" style="color: var(--success);">
-                <span>ð§» Cadastrar / Escolher Filamento</span>
+                <span>Cadastrar / Escolher Filamento</span>
                 <label class="switch"><input type="checkbox" id="toggle_estoque" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_estoque" style="display:none; padding-top: 5px;">
@@ -270,9 +248,9 @@
         </div>
 
         <div class="card" style="margin-top: 12px;">
-            <h2 class="section-title">âï¸ Base Operacional</h2>
+            <h2 class="section-title">Base Operacional</h2>
             <div class="grid-2">
-                <div class="input-group"><label>MÃ¡quina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M&aacute;quina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Vida Ãtil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -281,7 +259,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title">
-                <span>ð¦ O Projeto</span>
+                <span>O Projeto</span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--text-muted)">MULTI-COR</span>
                     <label class="switch"><input type="checkbox" id="toggle_multi_mat" data-save="true"><span class="slider-switch"></span></label>
@@ -333,7 +311,7 @@
     <div class="col">
         <div class="card">
             <div class="section-title">
-                <span>ð LogÃ­stica</span>
+                <span>Log&iacute;stica</span>
                 <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_logistica">
@@ -348,7 +326,7 @@
 
         <div class="card" style="margin-top: 12px;">
             <div class="section-title">
-                <span>ð Taxas Marketplaces</span>
+                <span>Taxas Marketplaces</span>
                 <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_marketplaces">
@@ -361,7 +339,7 @@
             </div>
             
             <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none;">
-                <span style="font-size: 0.75rem;">ð§® SIMULADOR DE LUCRO</span>
+                <span style="font-size: 0.75rem;">SIMULADOR DE LUCRO</span>
                 <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_simulador" style="display:none; padding-top: 5px;">
@@ -376,7 +354,7 @@
 
     <div class="col">
         <div class="results">
-            <h2 class="section-title" style="border:none; margin-bottom: 5px; color: #fff">ð Resumo de Custos</h2>
+            <h2 class="section-title" style="border:none; margin-bottom: 5px; color: #fff">Resumo de Custos</h2>
             <div class="extrato">
                 <div class="result-row"><span>DepreciaÃ§Ã£o MÃ¡quina</span><span class="value">R$ <span id="r_dep">0,00</span></span></div>
                 <div class="result-row"><span>Energia ElÃ©trica</span><span class="value">R$ <span id="r_ene">0,00</span></span></div>
@@ -390,10 +368,10 @@
                 </div>
             </div>
             
-            <button class="btn" style="background: var(--orange); width: 100%; padding: 12px; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; font-weight: 700; color: white;" onclick="adicionarAoCarrinho()">â Adicionar Item ao Carrinho</button>
+            <button class="btn" style="background: var(--orange); width: 100%; padding: 12px; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; font-weight: 700; color: white;" onclick="adicionarAoCarrinho()">Adicionar Item ao Carrinho</button>
 
             <div id="carrinho_container" style="display: none; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px dashed var(--orange); margin-bottom: 10px;">
-                <h3 style="font-size: 0.75rem; color: var(--orange); margin-bottom: 8px; text-transform: uppercase;">ð Pedido Atual</h3>
+                <h3 style="font-size: 0.75rem; color: var(--orange); margin-bottom: 8px; text-transform: uppercase;">Pedido Atual</h3>
                 <div id="lista_itens_carrinho" style="display: flex; flex-direction: column; gap: 8px; max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
                 <div style="border-top: 1px solid var(--border); padding-top: 8px; font-size: 0.7rem;">
                     <div class="result-row"><span>Custo PeÃ§as:</span><span class="value" style="color: #fbbf24;">R$ <span id="cart_tot_custo">0,00</span></span></div>
@@ -410,11 +388,11 @@
             </div>
             
             <div class="input-group" style="margin-top: 10px;">
-                <label style="color: var(--purple);">OpÃ§Ã£o de Salvar</label>
+                <label style="color: var(--purple);">Op&ccedil;&atilde;o de Salvar</label>
                 <select id="canalVendaSelecionado" style="border-color: var(--purple); color: var(--purple);" onchange="mostrarValorPersonalizado()">
-                    <option value="Direta">Salvar SugestÃ£o: Direta / Pix</option>
-                    <option value="Shopee">Salvar SugestÃ£o: Shopee</option>
-                    <option value="Meli">Salvar SugestÃ£o: Mercado Livre</option>
+                    <option value="Direta">Salvar Sugest&atilde;o: Direta / Pix</option>
+                    <option value="Shopee">Salvar Sugest&atilde;o: Shopee</option>
+                    <option value="Meli">Salvar Sugest&atilde;o: Mercado Livre</option>
                     <option value="Personalizado">Usar Valor Personalizado (Meu PreÃ§o)</option>
                 </select>
             </div>
@@ -430,19 +408,19 @@
                 </div>
             </div>
 
-            <button class="btn-save-hist" onclick="salvarHistorico()">ð¾ Salvar Venda</button>
+            <button class="btn-save-hist" onclick="salvarHistorico()">Salvar Venda</button>
             <div class="share-grid">
                 <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
                 <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
                 <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
-                <button class="btn btn-orcamento" onclick="gerarOrcamentoCliente()">ð OrÃ§amento PDF</button>
+                <button class="btn btn-orcamento" onclick="gerarOrcamentoCliente()">Or&ccedil;amento PDF</button>
             </div>
-            <button class="btn-reset" onclick="resetarDados()">ðï¸ Limpar Projeto</button>
+            <button class="btn-reset" onclick="resetarDados()">Limpar Projeto</button>
         </div>
 
         <div class="card" style="margin-top:12px;">
             <div class="section-title" style="color: #ef4444;">
-                <span>ð¸ Despesas / Compras</span>
+                <span>Despesas / Compras</span>
                 <label class="switch"><input type="checkbox" id="toggle_despesas" data-save="true"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_despesas" style="display:none; padding-top: 5px;">
@@ -459,23 +437,23 @@
         </div>
 
         <div class="card" style="margin-top:12px;">
-            <h2 class="section-title">ð HistÃ³rico de Vendas</h2>
+            <h2 class="section-title">Hist&oacute;rico de Vendas</h2>
             <div id="filtroHistorico" class="filter-container"></div>
             <div id="listaHistorico" class="history-list" style="margin-top: 0;"></div>
             
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
-                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (LÃQUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
+                <div class="total-row"><span style="font-weight: bold; color: var(--sky);">FATURAMENTO TOTAL (L&Iacute;QUIDO):</span><b style="color: var(--sky); font-size: 1rem;">R$ <span id="tot_faturamento">0,00</span></b></div>
                 
-                <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fbbf24;">(-) CUSTO DE PRODUÃÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fbbf24;">(-) CUSTO DE PRODU&Ccedil;&Atilde;O:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
                 <div class="total-row"><span style="font-weight: bold; color: var(--orange);">(-) CUSTO LOG/FRETE:</span><b style="color: var(--orange); font-size: 1rem;">R$ <span id="tot_logistica">0,00</span></b></div>
 
-                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: #10b981; font-size: 0.9rem;">ð° LUCRO LÃQUIDO (OPERAÃÃO):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: #10b981; font-size: 0.9rem;">LUCRO L&Iacute;QUIDO (OPERA&Ccedil;&Atilde;O):</span><b style="color: #10b981; font-size: 1.2rem;">R$ <span id="tot_lucro">0,00</span></b></div>
                 
                 <div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #ef4444;">(-) DESPESAS GERAIS:</span><b style="color: #ef4444; font-size: 1rem;">R$ <span id="tot_despesas">0,00</span></b></div>
                 
-                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: var(--sky); font-size: 0.85rem;">ð¦ CAIXA REAL (LUCRO - DESPESAS):</span><b style="color: var(--sky); font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
+                <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.2);"><span style="font-weight: 900; color: var(--sky); font-size: 0.85rem;">CAIXA REAL (LUCRO - DESPESAS):</span><b style="color: var(--sky); font-size: 1.2rem;">R$ <span id="tot_lucro_real">0,00</span></b></div>
 
                 <div class="total-row" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.1);"><span>Total PIX / Direta (<span id="qtd_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_direta">0,00</span></b></div>
                 <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
@@ -483,10 +461,10 @@
             </div>
             
             <div class="report-grid">
-                <button class="btn-report" onclick="gerarPDF()">ð PDF Geral</button>
-                <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">ð Excel</button>
+                <button class="btn-report" onclick="gerarPDF()">PDF Geral</button>
+                <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">Excel</button>
             </div>
-            <button class="btn-import" onclick="document.getElementById('importFile').click()">ð¥ Importar Backup XLS</button>
+            <button class="btn-import" onclick="document.getElementById('importFile').click()">Importar Backup XLS</button>
             <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
         </div>
     </div>
@@ -506,23 +484,18 @@
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.firestore();
-
-    try {
-        firebase.firestore().enablePersistence({ synchronizeTabs: true }).catch(function(err) {
-            console.warn('PersistÃªncia offline nÃ£o ativada:', err && err.code ? err.code : err);
-        });
-    } catch (e) {
-        console.warn('PersistÃªncia offline indisponÃ­vel:', e);
+    if (window.location.protocol !== 'file:') {
+        db.enablePersistence({ synchronizeTabs: true }).catch(function(err) { console.warn('Persistencia offline indisponivel:', err && err.code ? err.code : err); });
     }
+    const nuvemRef = db.collection("3d4you_app").doc("banco_de_dados");
 
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('./sw.js').catch(function(err) {
-                console.warn('Service Worker nÃ£o registrado:', err);
+                console.warn('Falha ao registrar service worker:', err);
             });
         });
     }
-    const nuvemRef = db.collection("3d4you_app").doc("banco_de_dados");
 
     var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
     var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
@@ -607,10 +580,6 @@
 
     function toggleFreteManual() {
         var tEnvio = document.getElementById('tipoEnvio');
-        var freteInput = document.getElementById('valorFreteManual');
-        if (!tEnvio || !freteInput) return;
-        freteInput.readOnly = false;
-        freteInput.style.opacity = '1';
     }
 
     function adicionarAoCarrinho() {
@@ -656,7 +625,7 @@
         });
 
         renderCarrinho();
-        showToast("ð Item adicionado ao Pedido!");
+        showToast("Item adicionado ao pedido!");
         
         document.getElementById('nomeProjeto').value = "";
         document.getElementById('qtdPecasProjeto').value = "1";
@@ -761,13 +730,13 @@
                 catalogo[idx] = { id: editCatalogoId, nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             }
             editCatalogoId = null;
-            document.getElementById('btn_salvar_catalogo').textContent = "ð¾ Salvar Projeto Atual no CatÃ¡logo";
+            document.getElementById('btn_salvar_catalogo').textContent = "Salvar Projeto Atual no Cat&aacute;logo";
             document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
-            showToast("ð·ï¸ Produto atualizado no catÃ¡logo!");
+            showToast("Produto atualizado no catalogo!");
         } else {
             var novoProduto = { id: Date.now(), nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto);
-            showToast("ð·ï¸ Produto salvo no catÃ¡logo!");
+            showToast("Produto salvo no catalogo!");
         }
         syncNuvem();
     }
@@ -808,7 +777,7 @@
         var id = document.getElementById('sel_catalogo').value;
         if(!id) return;
         aplicarDadosNoForm(id);
-        showToast("ð·ï¸ Dados carregados!");
+        showToast("Dados carregados!");
     }
 
     function editarDoCatalogo(id) {
@@ -816,7 +785,7 @@
         editCatalogoId = id;
         document.getElementById('btn_salvar_catalogo').textContent = "ð¾ Confirmar AlteraÃ§Ã£o no CatÃ¡logo";
         document.getElementById('btn_salvar_catalogo').style.background = "var(--purple)";
-        showToast("âï¸ Editando produto...");
+        showToast("Editando produto...");
     }
 
     function aplicarDadosNoForm(id) {
@@ -879,7 +848,7 @@
         } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); }
         syncNuvem();
         document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = "";
-        showToast("ð¦ Estoque Atualizado!");
+        showToast("Estoque atualizado!");
     }
 
     function renderEstoque() {
@@ -932,7 +901,7 @@
         if(det) det.style.display = 'block';
         var campoPeso = idx === 1 ? document.getElementById('pesoPeca') : document.getElementById('pesoPeca' + idx);
         if(campoPeso) { campoPeso.focus(); if(campoPeso.value === "0" || campoPeso.value === "0,00" || campoPeso.value === "") { campoPeso.select(); } }
-        calcular(); showToast("ð¦ " + item.tipo + " Carregado!");
+        calcular(); showToast(item.tipo + " carregado!");
     }
 
     function renderCoresExtras() {
@@ -1012,7 +981,7 @@
             }
             editDespesaId = null;
             document.querySelector('#secao_despesas button').textContent = "â Adicionar";
-            showToast("ð¸ Despesa Atualizada!");
+            showToast("Despesa atualizada!");
         } else {
             despesas.unshift({ 
                 id: Date.now(), 
@@ -1021,7 +990,7 @@
                 nome: nome, 
                 valor: parseLocal(val) 
             });
-            showToast("ð¸ Despesa Registrada!");
+            showToast("Despesa registrada!");
         }
         
         syncNuvem();
@@ -1426,7 +1395,7 @@
                 historico[idx] = novo;
             }
             editHistoricoId = null;
-            document.querySelector('.btn-save-hist').textContent = "ð¾ Salvar Venda";
+            document.querySelector('.btn-save-hist').textContent = "Salvar Venda";
             document.querySelector('.btn-save-hist').style.background = "var(--purple)";
         } else {
             historico.unshift(novo);
@@ -1435,7 +1404,7 @@
         syncNuvem();
         var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
-        resetarDados(); showToast("â Venda Registrada!");
+        resetarDados(); showToast("Venda registrada!");
     }
 
     function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
@@ -1510,7 +1479,7 @@
         document.querySelector('.btn-save-hist').textContent = "ð¾ Confirmar EdiÃ§Ã£o de Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--sky)";
         
-        showToast("âï¸ Editando Venda no Carrinho...");
+        showToast("Editando venda no carrinho...");
         
         var dash = document.querySelector('.dashboard');
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1552,12 +1521,12 @@
 
         if (filtroDiv) {
             filtroDiv.innerHTML = `
-                <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">ð Todos (${counts['Todos']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'OrÃ§amento' ? 'active' : ''}" onclick="mudarFiltro('OrÃ§amento')">ð¡ OrÃ§. (${counts['OrÃ§amento']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">ðµ Fila (${counts['Na Fila']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">ð£ Impr. (${counts['Imprimindo']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">ð¢ Fin. (${counts['Finalizado']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">ð Env. (${counts['Enviado / Entregue']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">Todos (${counts['Todos']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'OrÃ§amento' ? 'active' : ''}" onclick="mudarFiltro('OrÃ§amento')">Orc. (${counts['OrÃ§amento']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">Fila (${counts['Na Fila']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">Impr. (${counts['Imprimindo']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">Fin. (${counts['Finalizado']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">Env. (${counts['Enviado / Entregue']})</button>
             `;
         }
 
@@ -1583,7 +1552,7 @@
             
             var txtVenda = (valBruto !== valLiq) ? `LÃ­q: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
 
-            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">â</button><button class="btn-del-item" onclick="removerItem('+item.id+')">Ã</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="OrÃ§amento" '+(st==='OrÃ§amento'?'selected':'')+'>ð¡ OrÃ§amento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>ðµ Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>ð£ Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>ð¢ Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>ð Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
+            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">â</button><button class="btn-del-item" onclick="removerItem('+item.id+')">Ã</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="OrÃ§amento" '+(st==='OrÃ§amento'?'selected':'')+'>Or&ccedil;amento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
         });
         
         document.getElementById('tot_qtd').textContent = qtdValida; 
@@ -1651,7 +1620,7 @@
                 // Remove the "TOTAL" row if it was imported back
                 despesas = despesas.filter(d => d.data !== "TOTAL");
             }
-            syncNuvem(); showToast("â Nuvem Atualizada!");
+            syncNuvem(); showToast("Nuvem atualizada!");
         }; reader.readAsArrayBuffer(file);
     }
 
@@ -1904,11 +1873,11 @@
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
         
         editCatalogoId = null; 
-        document.getElementById('btn_salvar_catalogo').textContent = "ð¾ Salvar Projeto Atual no CatÃ¡logo"; 
+        document.getElementById('btn_salvar_catalogo').textContent = "Salvar Projeto Atual no Cat&aacute;logo"; 
         document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
 
         editHistoricoId = null;
-        document.querySelector('.btn-save-hist').textContent = "ð¾ Salvar Venda";
+        document.querySelector('.btn-save-hist').textContent = "Salvar Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--purple)";
 
         var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
@@ -1928,7 +1897,7 @@
         var elQtdCores = document.getElementById('qtdCoresExtras');
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
-        calcular(); showToast("â Projeto Resetado!");
+        calcular(); showToast("Projeto limpo!");
         
         var dash = document.querySelector('.dashboard');
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
