@@ -39,7 +39,7 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height:100vh; display:flex; flex-direction:column; padding:12px; overflow-x:hidden; }
 
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
@@ -160,16 +160,14 @@
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
     
-/* ===== MOBILE + SCROLL FIX ===== */
-*{box-sizing:border-box;}
+/* ==== MOBILE SCROLL FIX ==== */
 html,body{max-width:100%;overflow-x:hidden;}
 .dashboard{width:100%;max-width:100%;}
 .card,button,input,select{max-width:100%;}
-
 @media(max-width:900px){
 .dashboard{grid-template-columns:1fr !important;}
 }
-/* ===== END FIX ===== */
+/* ==== END FIX ==== */
 
 </style>
 </head>
