@@ -128,7 +128,15 @@
         #toast.show { visibility: visible; animation: fadein 0.5s; }
 
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
-        .history-list { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
+        
+        /* ESTILO DO FILTRO DE VENDAS */
+        .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; }
+        .filter-btn:active { transform: scale(0.95); }
+        .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
@@ -290,7 +298,7 @@
         <div class="card">
             <div class="section-title">
                 <span>🚚 Logística</span>
-                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true"><span class="slider-switch"></span></label>
+                <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
             </div>
             <div id="secao_logistica">
                 <div class="grid-2">
@@ -416,7 +424,8 @@
 
         <div class="card" style="margin-top:12px;">
             <h2 class="section-title">📂 Histórico de Vendas</h2>
-            <div id="listaHistorico" class="history-list"></div>
+            <div id="filtroHistorico" class="filter-container"></div>
+            <div id="listaHistorico" class="history-list" style="margin-top: 0;"></div>
             <div class="total-summary">
                 <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                 <div class="total-row"><span style="font-weight: bold; color: #fbbf24;">CUSTO TOTAL DE PRODUÇÃO:</span><b style="color: #fbbf24; font-size: 1rem;">R$ <span id="tot_custo">0,00</span></b></div>
@@ -466,6 +475,7 @@
     var editCatalogoId = null; 
     var editHistoricoId = null; 
     var editDespesaId = null;
+    var filtroStatusAtual = 'Todos';
 
     nuvemRef.onSnapshot(function(doc) {
         if (doc.exists) {
@@ -1056,25 +1066,25 @@
         if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
         var tEst = document.getElementById('toggle_estoque'), sEst = document.getElementById('secao_estoque');
-        if(tEst && sEst) { tEst.addEventListener('change', () => { sEst.style.display = tEst.checked ? 'block' : 'none'; calcular(); }); sEst.style.display = tEst.checked ? 'block' : 'none'; }
+        if(tEst && sEst) { tEst.addEventListener('change', () => { sEst.style.display = tEst.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_estoque', tEst.checked); calcular(); }); sEst.style.display = tEst.checked ? 'block' : 'none'; }
         
         var tCat = document.getElementById('toggle_catalogo'), sCat = document.getElementById('secao_catalogo');
-        if(tCat && sCat) { tCat.addEventListener('change', () => { sCat.style.display = tCat.checked ? 'block' : 'none'; calcular(); }); sCat.style.display = tCat.checked ? 'block' : 'none'; }
+        if(tCat && sCat) { tCat.addEventListener('change', () => { sCat.style.display = tCat.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_catalogo', tCat.checked); calcular(); }); sCat.style.display = tCat.checked ? 'block' : 'none'; }
         
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
-        if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
+        if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
         var tLog = document.getElementById('toggle_logistica'), sLog = document.getElementById('secao_logistica');
-        if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.style.display = tLog.checked ? 'block' : 'none'; calcular(); }); sLog.style.display = tLog.checked ? 'block' : 'none'; }
+        if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.style.display = tLog.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_logistica', tLog.checked); calcular(); }); sLog.style.display = tLog.checked ? 'block' : 'none'; }
 
         var tMkt = document.getElementById('toggle_marketplaces'), sMkt = document.getElementById('secao_marketplaces');
-        if(tMkt && sMkt) { tMkt.addEventListener('change', () => { sMkt.style.display = tMkt.checked ? 'block' : 'none'; calcular(); }); sMkt.style.display = tMkt.checked ? 'block' : 'none'; }
+        if(tMkt && sMkt) { tMkt.addEventListener('change', () => { sMkt.style.display = tMkt.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_marketplaces', tMkt.checked); }); sMkt.style.display = tMkt.checked ? 'block' : 'none'; }
 
         var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
-        if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
+        if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_simulador', tSim.checked); var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
         
         var tDesp = document.getElementById('toggle_despesas'), sDesp = document.getElementById('secao_despesas');
-        if(tDesp && sDesp) { tDesp.addEventListener('change', () => { sDesp.style.display = tDesp.checked ? 'block' : 'none'; calcular(); }); sDesp.style.display = tDesp.checked ? 'block' : 'none'; }
+        if(tDesp && sDesp) { tDesp.addEventListener('change', () => { sDesp.style.display = tDesp.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_despesas', tDesp.checked); calcular(); }); sDesp.style.display = tDesp.checked ? 'block' : 'none'; }
 
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
@@ -1097,7 +1107,9 @@
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
 
-        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false;
+        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false, sLog = document.getElementById('section_logistica'); 
+        if(sLog && !logEnabled) { sLog.className = 'card-disabled'; } else if (sLog) { sLog.className = ''; }
+        
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         
         var tempoUnitario = pegaValor('tempoH');
@@ -1363,7 +1375,12 @@
         resetarDados(); showToast("✅ Venda Registrada!");
     }
 
-    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); } }
+    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
+
+    window.mudarFiltro = function(status) {
+        window.filtroStatusAtual = status;
+        renderHistorico();
+    };
 
     function editarItemHistorico(id) {
         var item = historico.find(h => h.id === id);
@@ -1437,9 +1454,13 @@
     }
 
     function renderHistorico() {
-        var lista = document.getElementById('listaHistorico'); if(!lista) return; lista.innerHTML = historico.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Vazio</p>' : '';
+        var lista = document.getElementById('listaHistorico'); if(!lista) return; 
+        var filtroDiv = document.getElementById('filtroHistorico');
+
         var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0;
         
+        var counts = { 'Todos': historico.length, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0 };
+
         historico.forEach(function(item) {
             var custoItem = parseLocal(item.custo); 
             var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
@@ -1458,6 +1479,36 @@
             if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } 
             else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } 
             else { somaDireta += valLiq; qtdDireta++; }
+
+            var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
+            counts[st] = (counts[st] || 0) + 1;
+        });
+
+        if (filtroDiv) {
+            filtroDiv.innerHTML = `
+                <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button>
+                <button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button>
+            `;
+        }
+
+        var itensFiltrados = historico.filter(function(item) {
+            var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
+            return window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual;
+        });
+
+        lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado neste status</p>' : '';
+        
+        itensFiltrados.forEach(function(item) {
+            var custoItem = parseLocal(item.custo); 
+            var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
+            var canalStr = item.canal || "Direta";
+            var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
+            var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
+            var lucroItem = valLiq - custoItem;
             
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
@@ -1564,7 +1615,7 @@
 
             var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             var custoFab = parseLocal(h.custo);
-            var lucro = liquido - custoFab - custoLog;
+            var lucro = liquido - custoFab - custoLog; // Dedução do Log
             var pesoPeca = parseLocal(h.peso);
             
             totalPeso += pesoPeca;
