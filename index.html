@@ -1268,6 +1268,34 @@
         });
         var dl = document.getElementById('listaClientes');
         if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
+
+        // Lógica para Drag to Scroll (Arrastar com o mouse) no Filtro
+        var sliderFiltro = document.getElementById('filtroHistorico');
+        var isDown = false, startX, scrollLeft;
+        if(sliderFiltro) {
+            sliderFiltro.style.cursor = 'grab'; // Adiciona o cursor de "mãozinha"
+            sliderFiltro.addEventListener('mousedown', (e) => {
+                isDown = true;
+                sliderFiltro.style.cursor = 'grabbing'; // Mãozinha fechada
+                startX = e.pageX - sliderFiltro.offsetLeft;
+                scrollLeft = sliderFiltro.scrollLeft;
+            });
+            sliderFiltro.addEventListener('mouseleave', () => {
+                isDown = false;
+                sliderFiltro.style.cursor = 'grab';
+            });
+            sliderFiltro.addEventListener('mouseup', () => {
+                isDown = false;
+                sliderFiltro.style.cursor = 'grab';
+            });
+            sliderFiltro.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault(); // Evita selecionar o texto dos botões
+                const x = e.pageX - sliderFiltro.offsetLeft;
+                const walk = (x - startX) * 2; // Velocidade do arrasto
+                sliderFiltro.scrollLeft = scrollLeft - walk;
+            });
+        }
     };
 
     function calcular() {
@@ -1703,7 +1731,6 @@
 
         let lucroReal = totLucro - despesasTotais;
 
-        // Bloco de Resumo Financeiro no Topo do PDF
         doc.setFillColor(240, 240, 240);
         doc.rect(14, 25, 268, 30, 'F');
         
@@ -1720,9 +1747,9 @@
         doc.setFont(undefined, 'bold');
         doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 48);
         doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 48);
-        doc.setTextColor(0, 150, 0); // Verde pro Lucro Real
+        doc.setTextColor(0, 150, 0);
         doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 48);
-        doc.setTextColor(0, 0, 0); // Volta pro Preto
+        doc.setTextColor(0, 0, 0);
 
         doc.autoTable({
             startY: 60,
@@ -1744,7 +1771,6 @@
         
         var wb = XLSX.utils.book_new();
 
-        // ABA 1: VENDAS
         if (historico.length > 0) {
             var dadosVendas = historico.map(h => ({ 
                 "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, 
@@ -1756,19 +1782,16 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
         }
 
-        // ABA 2: DESPESAS
         if (despesas.length > 0) {
             var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Quantidade": d.qtd, "Descrição": d.nome, "Valor Total (R$)": d.valor }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDespesas), "Despesas");
         }
 
-        // ABA 3: ESTOQUE
         if (estoque.length > 0) {
             var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço Pago (R$)": e.preco }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), "Estoque");
         }
 
-        // ABA 4: CATÁLOGO
         if (catalogo.length > 0) {
             var dadosCatalogo = catalogo.map(c => {
                 var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
