@@ -136,7 +136,7 @@
         .filter-btn:active { transform: scale(0.95); }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto; }
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
@@ -267,20 +267,21 @@
     </div>
 </div>
 
-<header>
-    <div>
-        <h1>3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span>
+<header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px;">
+    <div style="text-align: left; display: flex; flex-direction: column;">
+        <div>
+            <h1 style="font-size: 1.4rem;">3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span>
+        </div>
+        <span style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;">ERP na Nuvem</span>
     </div>
     
-    <div style="position:absolute; right:10px; top:5px; display:flex; gap:8px;">
-        <button onclick="document.getElementById('logisticaModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Logística">🚚</button>
-        <button onclick="document.getElementById('marketplacesModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Taxas e Marketplaces">🛒</button>
-        <button onclick="document.getElementById('estoqueModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Estoque de Filamentos">🧻</button>
-        <button onclick="document.getElementById('catalogoModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Catálogo de Pre-sets">🏷️</button>
-        <button onclick="document.getElementById('configModal').style.display='block'" style="background:none; border:none; font-size:1.4rem; cursor:pointer;" title="Configurações">⚙️</button>
+    <div style="display:flex; gap:6px; align-items: center;">
+        <button onclick="document.getElementById('logisticaModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Logística">🚚</button>
+        <button onclick="document.getElementById('marketplacesModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Taxas e Marketplaces">🛒</button>
+        <button onclick="document.getElementById('estoqueModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Estoque de Filamentos">🧻</button>
+        <button onclick="document.getElementById('catalogoModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Catálogo de Pre-sets">🏷️</button>
+        <button onclick="document.getElementById('configModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Configurações">⚙️</button>
     </div>
-    
-    <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">ERP de Precisão na Nuvem</p>
 </header>
 
 <div class="dashboard">
