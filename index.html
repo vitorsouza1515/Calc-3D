@@ -1268,34 +1268,6 @@
         });
         var dl = document.getElementById('listaClientes');
         if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
-
-        // Lógica para Drag to Scroll (Arrastar com o mouse) no Filtro
-        var sliderFiltro = document.getElementById('filtroHistorico');
-        var isDown = false, startX, scrollLeft;
-        if(sliderFiltro) {
-            sliderFiltro.style.cursor = 'grab'; // Adiciona o cursor de "mãozinha"
-            sliderFiltro.addEventListener('mousedown', (e) => {
-                isDown = true;
-                sliderFiltro.style.cursor = 'grabbing'; // Mãozinha fechada
-                startX = e.pageX - sliderFiltro.offsetLeft;
-                scrollLeft = sliderFiltro.scrollLeft;
-            });
-            sliderFiltro.addEventListener('mouseleave', () => {
-                isDown = false;
-                sliderFiltro.style.cursor = 'grab';
-            });
-            sliderFiltro.addEventListener('mouseup', () => {
-                isDown = false;
-                sliderFiltro.style.cursor = 'grab';
-            });
-            sliderFiltro.addEventListener('mousemove', (e) => {
-                if (!isDown) return;
-                e.preventDefault(); // Evita selecionar o texto dos botões
-                const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 2; // Velocidade do arrasto
-                sliderFiltro.scrollLeft = scrollLeft - walk;
-            });
-        }
     };
 
     function calcular() {
@@ -1528,14 +1500,19 @@
 
                 somaCusto += custoItem; somaLogistica += freteLogItem; somaBruto += valBruto; somaLiquido += valLiq; somaLucro += lucroItem; qtdValida++;
                 if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
-                
+            }
+            
+            // CONTA AS HORAS SÓ SE JÁ FOI OU ESTÁ SENDO IMPRESSO
+            if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
                 window.horasTotaisImpressasGlobal += (item.tempo || 0);
             }
         });
 
+        // ATUALIZANDO O ODÔMETRO (TOTAL HISTÓRICO)
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
 
+        // ATUALIZANDO A BARRA DE SAÚDE DA MÁQUINA (QA)
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
@@ -1708,12 +1685,18 @@
             let lucro = liquido - custo - freteLog;
             let horas = h.tempo || 0;
 
-            if (h.status !== 'Orçamento') {
+            let st = h.status || "Finalizado"; 
+            if (st === 'Enviado') st = 'Enviado / Entregue';
+
+            if (st !== 'Orçamento') {
                 totVendas += (h.totalQtd || 1);
                 totBruto += bruto;
                 totLiquido += liquido;
                 totCusto += custo;
                 totLucro += lucro;
+            }
+
+            if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
                 totHoras += horas;
             }
 
