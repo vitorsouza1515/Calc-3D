@@ -112,7 +112,9 @@
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         
-        .status-select { font-size: 0.6rem; font-weight: 800; border-radius: 6px; padding: 3px 6px; border: none; outline: none; cursor: pointer; appearance: none; text-align: center; text-transform: uppercase; }
+        /* CORREÇÃO DO SELETOR MOBILE: Área de clique maior e appearance auto */
+        .status-select { font-size: 0.7rem; font-weight: 800; border-radius: 6px; padding: 6px 10px; border: none; outline: none; cursor: pointer; appearance: auto; -webkit-appearance: auto; text-transform: uppercase; max-width: 100%; }
+        
         .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
         .status-fila { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
         .status-imprimindo { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4); }
@@ -308,7 +310,6 @@
 
                 <div class="grid-2">
                     <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" list="listaClientes" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente'); checarClienteAutoFill()"></div>
-                    
                     <div class="input-group"><label>WhatsApp (Opcional)</label><input type="tel" inputmode="tel" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
                 </div>
             </div>
@@ -1268,6 +1269,34 @@
         });
         var dl = document.getElementById('listaClientes');
         if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
+
+        // Lógica para Drag to Scroll (Arrastar com o mouse) no Filtro
+        var sliderFiltro = document.getElementById('filtroHistorico');
+        var isDown = false, startX, scrollLeft;
+        if(sliderFiltro) {
+            sliderFiltro.style.cursor = 'grab';
+            sliderFiltro.addEventListener('mousedown', (e) => {
+                isDown = true;
+                sliderFiltro.style.cursor = 'grabbing';
+                startX = e.pageX - sliderFiltro.offsetLeft;
+                scrollLeft = sliderFiltro.scrollLeft;
+            });
+            sliderFiltro.addEventListener('mouseleave', () => {
+                isDown = false;
+                sliderFiltro.style.cursor = 'grab';
+            });
+            sliderFiltro.addEventListener('mouseup', () => {
+                isDown = false;
+                sliderFiltro.style.cursor = 'grab';
+            });
+            sliderFiltro.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - sliderFiltro.offsetLeft;
+                const walk = (x - startX) * 2;
+                sliderFiltro.scrollLeft = scrollLeft - walk;
+            });
+        }
     };
 
     function calcular() {
@@ -1502,17 +1531,14 @@
                 if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
             }
             
-            // CONTA AS HORAS SÓ SE JÁ FOI OU ESTÁ SENDO IMPRESSO
             if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
                 window.horasTotaisImpressasGlobal += (item.tempo || 0);
             }
         });
 
-        // ATUALIZANDO O ODÔMETRO (TOTAL HISTÓRICO)
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
 
-        // ATUALIZANDO A BARRA DE SAÚDE DA MÁQUINA (QA)
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
