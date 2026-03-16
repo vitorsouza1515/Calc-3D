@@ -100,10 +100,6 @@
 
         /* Cores específicas para cada toggle */
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
-        #toggle_marketplaces:checked + .slider-switch { background-color: var(--primary); }
-        #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
-        #toggle_despesas:checked + .slider-switch { background-color: var(--danger); }
-        #toggle_logistica:checked + .slider-switch { background-color: var(--primary); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
@@ -134,7 +130,7 @@
 
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
         
-        /* ESTILO DO FILTRO DE VENDAS */
+        /* ESTILO DO FILTRO DE VENDAS COM TRAVA DE LARGURA */
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; }
@@ -194,7 +190,6 @@
         <span class="close-modal" onclick="document.getElementById('logisticaModal').style.display='none'">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--sky); cursor:default;">
             <span>🚚 Logística</span>
-            <label class="switch"><input type="checkbox" id="toggle_logistica" checked data-save="true" onchange="calcular()"><span class="slider-switch"></span></label>
         </div>
         <div id="secao_logistica">
             <div class="grid-2">
@@ -213,7 +208,6 @@
         <span class="close-modal" onclick="document.getElementById('marketplacesModal').style.display='none'">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--primary); cursor:default;">
             <span>🛒 Taxas Marketplaces</span>
-            <label class="switch"><input type="checkbox" id="toggle_marketplaces" checked data-save="true"><span class="slider-switch"></span></label>
         </div>
         <div id="secao_marketplaces">
             <div class="grid-2">
@@ -226,9 +220,8 @@
         
         <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none; cursor:default; padding-right: 40px;">
             <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
-            <label class="switch"><input type="checkbox" id="toggle_simulador" data-save="true"><span class="slider-switch"></span></label>
         </div>
-        <div id="secao_simulador" style="display:none; padding-top: 5px;">
+        <div id="secao_simulador" style="padding-top: 5px;">
             <div class="input-group"><label>Se eu vender o pedido por (R$):</label><input type="text" inputmode="decimal" id="simuladorVenda" placeholder="Ex: 70,00" style="border-color: var(--sky); background: rgba(14, 165, 233, 0.1);" oninput="aplicarMascara(this); calcularSimulador()"></div>
             <div class="grid-2" style="margin-top: 8px;">
                 <div style="background: rgba(249, 77, 48, 0.1); border: 1px solid rgba(249, 77, 48, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--shopee); display: block; margin-bottom: 2px;">VAI SOBRAR (SHP)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_shopee">0,00</span></span></div>
@@ -277,9 +270,8 @@
         <span class="close-modal" onclick="document.getElementById('despesasModal').style.display='none'">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: #ef4444; cursor:default;">
             <span>💸 Despesas / Compras</span>
-            <label class="switch"><input type="checkbox" id="toggle_despesas" data-save="true"><span class="slider-switch"></span></label>
         </div>
-        <div id="secao_despesas" style="display:none; padding-top: 5px;">
+        <div id="secao_despesas" style="padding-top: 5px;">
             <div class="grid-3">
                 <div class="input-group"><label>Qtd</label><input type="text" inputmode="numeric" id="desp_qtd" value="1" oninput="aplicarMascara(this)"></div>
                 <div class="input-group" style="grid-column: span 2;"><label>Produto/Material</label><input type="text" id="desp_nome" placeholder="Ex: Fita Kapton"></div>
@@ -410,7 +402,7 @@
                 <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0,00</span></span></div>
                 <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span><span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0,00</span></span></div>
                 
-                <div id="resumo_logistica" style="display:none; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+                <div id="resumo_logistica">
                     <div class="result-row" style="color: var(--sky);"><span>Logística (Emb+Desloc)</span><span class="value">R$ <span id="r_log_fixo">0,00</span></span></div>
                     <div class="result-row" style="color: var(--sky);"><span>Frete</span><span class="value">R$ <span id="r_log_frete">0,00</span></span></div>
                     <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: var(--success);">Custo Final (Prod+Log)</span><span class="value" style="color: var(--success);">R$ <span id="r_gasto_total">0,00</span></span></div>
@@ -507,6 +499,7 @@
                 </div>
                 <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
                 <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
+                <button onclick="document.querySelector('.dashboard').scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });" style="background: #334155; color: white; border: 1px solid var(--border); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; margin-top: 12px;">⬆️ Voltar ao Início</button>
             </div>
         </div>
     </div>
@@ -717,12 +710,8 @@
             `;
         });
 
-        var tLog = document.getElementById('toggle_logistica');
-        var cLog = 0, frete = 0;
-        if (tLog && tLog.checked) {
-            cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
-            frete = pegaValor('valorFreteManual');
-        }
+        var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+        var frete = pegaValor('valorFreteManual');
 
         var totD = totValorComLucro + cLog + frete;
         var vShopeeBase = totValorComLucro + cLog;
@@ -1085,12 +1074,6 @@
             document.getElementById('desp_valor').value = formatarMoeda(d.valor);
             editDespesaId = id;
             document.querySelector('#secao_despesas button').textContent = "💾 Confirmar Edição";
-            
-            var tDesp = document.getElementById('toggle_despesas');
-            if(tDesp && !tDesp.checked) {
-                tDesp.checked = true;
-                tDesp.dispatchEvent(new Event('change'));
-            }
             document.getElementById('despesasModal').style.display = 'block';
         }
     }
@@ -1145,18 +1128,6 @@
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
-        var tLog = document.getElementById('toggle_logistica'), sLog = document.getElementById('secao_logistica');
-        if(tLog && sLog) { tLog.addEventListener('change', () => { sLog.style.display = tLog.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_logistica', tLog.checked); calcular(); }); sLog.style.display = tLog.checked ? 'block' : 'none'; }
-
-        var tMkt = document.getElementById('toggle_marketplaces'), sMkt = document.getElementById('secao_marketplaces');
-        if(tMkt && sMkt) { tMkt.addEventListener('change', () => { sMkt.style.display = tMkt.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_marketplaces', tMkt.checked); }); sMkt.style.display = tMkt.checked ? 'block' : 'none'; }
-
-        var tSim = document.getElementById('toggle_simulador'), sSim = document.getElementById('secao_simulador');
-        if(tSim && sSim) { tSim.addEventListener('change', () => { sSim.style.display = tSim.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_simulador', tSim.checked); var simInput = document.getElementById('simuladorVenda'); if(simInput) { simInput.value = ''; calcularSimulador(); } calcular(); }); sSim.style.display = tSim.checked ? 'block' : 'none'; }
-        
-        var tDesp = document.getElementById('toggle_despesas'), sDesp = document.getElementById('secao_despesas');
-        if(tDesp && sDesp) { tDesp.addEventListener('change', () => { sDesp.style.display = tDesp.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_despesas', tDesp.checked); calcular(); }); sDesp.style.display = tDesp.checked ? 'block' : 'none'; }
-
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
         
@@ -1190,8 +1161,7 @@
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
 
-        var tLog = document.getElementById('toggle_logistica'), logEnabled = tLog ? tLog.checked : false, sLog = document.getElementById('section_logistica'); 
-        if(sLog && !logEnabled) { sLog.className = 'card-disabled'; } else if (sLog) { sLog.className = ''; }
+        var logEnabled = true;
         
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         
@@ -1328,11 +1298,8 @@
                 valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); 
             }
             
-            var tLog = document.getElementById('toggle_logistica');
-            if (tLog && tLog.checked) {
-                cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
-                freteCalculado = pegaValor('valorFreteManual');
-            }
+            cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+            freteCalculado = pegaValor('valorFreteManual');
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
             var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
@@ -1350,11 +1317,8 @@
                 for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); }
             }
 
-            var tLog = document.getElementById('toggle_logistica');
-            if (tLog && tLog.checked) {
-                cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
-                freteCalculado = pegaValor('valorFreteManual');
-            }
+            cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+            freteCalculado = pegaValor('valorFreteManual');
 
             var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
             if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); }
@@ -1520,9 +1484,7 @@
              document.getElementById('canalPersonalizadoDestino').value = canalReal;
         }
 
-        var tLog = document.getElementById('toggle_logistica');
         if (item.logistica > 0 || item.frete > 0) {
-            if(tLog && !tLog.checked) { tLog.checked = true; tLog.dispatchEvent(new Event('change')); }
             document.getElementById('custoEmbalagem').value = formatarMoeda(item.logistica || 0);
             document.getElementById('custoDeslocamento').value = "0,00";
             
@@ -1531,8 +1493,6 @@
             
             var vFrete = document.getElementById('valorFreteManual');
             if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
-        } else {
-            if(tLog && tLog.checked) { tLog.checked = false; tLog.dispatchEvent(new Event('change')); }
         }
 
         calcular();
@@ -1940,7 +1900,7 @@
         doc.save("Orcamento_Cliente.pdf");
     }
 
-    function buscarCEP(valor, idTexto) { var cep = valor.replace(/\D/g, ''); if (cep.length === 8) { fetch('https://viacep.com.br/ws/' + cep + '/json/').then(res => res.json()).then(data => { var el = document.getElementById(idTexto); if(el) el.textContent = data.erro ? "CEP não encontrado" : (data.localidade + "-" + data.uf); }); } }
+    function buscarCEP(valor, idTexto) { var cep = replace(/\D/g, ''); if (cep.length === 8) { fetch('https://viacep.com.br/ws/' + cep + '/json/').then(res => res.json()).then(data => { var el = document.getElementById(idTexto); if(el) el.textContent = data.erro ? "CEP não encontrado" : (data.localidade + "-" + data.uf); }); } }
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
@@ -1976,7 +1936,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
-        ['toggle_multi_mat', 'toggle_logistica', 'toggle_marketplaces', 'toggle_simulador', 'toggle_despesas'].forEach(id => {
+        ['toggle_multi_mat'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
                 t.checked = false;
