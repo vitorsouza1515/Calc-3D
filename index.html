@@ -107,9 +107,10 @@
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
         .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; transition: 0.3s; }
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
+        .history-item .hist-vals b { color: var(--text-main); }
         
         .status-select { font-size: 0.6rem; font-weight: 800; border-radius: 6px; padding: 3px 6px; border: none; outline: none; cursor: pointer; appearance: none; text-align: center; text-transform: uppercase; }
         .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
@@ -146,10 +147,20 @@
             <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
         </div>
+        
         <div class="input-group" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
-            <label style="color:var(--purple);">Marco de Manutenção (Avisar a cada X horas)</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                <label style="color:var(--purple); margin:0;">Aviso de Manutenção (a cada h):</label>
+                <button onclick="resetarQA()" style="background: var(--purple); border: none; color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer; font-weight:bold;">✅ ZERAR MANUTENÇÃO</button>
+            </div>
             <input type="text" inputmode="decimal" id="qa_aviso" value="400" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
+                <label style="color:var(--sky); margin:0;">Total Histórico (Odômetro):</label>
+                <span id="lbl_horas_totais_maquina" style="color:#fff; font-weight:bold; font-size:0.8rem;">0h</span>
+            </div>
         </div>
+        
         <button class="btn btn-direta" onclick="fecharConfigModal()" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
@@ -297,7 +308,8 @@
 
                 <div class="grid-2">
                     <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" list="listaClientes" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente'); checarClienteAutoFill()"></div>
-                    <div class="input-group"><label>WhatsApp (Opcional)</label><input type="text" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
+                    
+                    <div class="input-group"><label>WhatsApp (Opcional)</label><input type="tel" inputmode="tel" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
                 </div>
             </div>
         </div>
@@ -431,7 +443,7 @@
                 <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
                 <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
                 <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
-                <button class="btn btn-orcamento" onclick="gerarOrcamentoCliente()">📄 Orçamento PDF</button>
+                <button class="btn btn-orcamento" onclick="gerarPDF()">📄 Orçamento PDF</button>
             </div>
             <button class="btn-reset" onclick="resetarDados()">🗑️ Limpar Projeto</button>
         </div>
@@ -453,8 +465,7 @@
             <div id="wrap_hist_totals">
                 
                 <div class="total-summary" style="border-color: var(--purple); margin-bottom: 12px; position: relative;">
-                    <button onclick="resetarQA()" style="position: absolute; right: 12px; top: 12px; background: rgba(168, 85, 247, 0.2); border: 1px solid var(--purple); color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer;">✅ Fiz Manutenção</button>
-                    <div style="display:flex; justify-content: space-between; margin-bottom: 8px; padding-right: 90px;">
+                    <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
                         <span style="font-size: 0.75rem; font-weight: 800; color: var(--purple);">🔧 QA PREVENTIVO</span>
                         <span id="txt_vida_util" style="font-size: 0.75rem; font-weight: bold; color: #fff;">0h / 0h</span>
                     </div>
@@ -485,7 +496,7 @@
              
                 <div class="report-grid">
                     <button class="btn-report" onclick="gerarPDF()">📄 PDF Geral</button>
-                    <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel</button>
+                    <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel Completo</button>
                 </div>
                
                 <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
@@ -538,7 +549,6 @@
     var filtroStatusAtual = 'Todos';
     var clientesCadastrados = {};
     
-    // Variáveis Globais para as Novas Funções
     window.qaOffset = 0;
     window.horasTotaisImpressasGlobal = 0;
     window.oldBaseVals = {};
@@ -571,7 +581,7 @@
             estoque = data.estoque || [];
             catalogo = data.catalogo || [];
             despesas = data.despesas || [];
-            window.qaOffset = data.qaOffset || 0; // Puxa do firebase
+            window.qaOffset = data.qaOffset || 0; 
             renderHistorico();
             renderEstoque();
             renderCatalogo();
@@ -631,15 +641,12 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    // NOTA: Removi os campos de logística desta lista para não forçar o save deles!
     var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'qa_aviso', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
-    // === NOVAS FUNÇÕES DA BASE OPERACIONAL ===
     window.abrirConfigModal = function() {
-        // Grava na memória os valores "antigos" antes do usuário mexer
         window.oldBaseVals = {
             maq: pegaValor('maquina'),
             vid: pegaValor('vidaUtil'),
@@ -652,9 +659,7 @@
     window.fecharConfigModal = function() {
         var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
         
-        // Se houve mudança nos custos, avisa o usuário
         if (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh) {
-            
             var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n" +
                       "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo e ajusta os lucros do passado.\n" +
                       "[ CANCELAR ] O novo custo valerá apenas para as próximas vendas novas.";
@@ -664,7 +669,6 @@
                 var oldEne = (window.oldBaseVals.con / 1000) * window.oldBaseVals.kwh;
                 var newDep = nMaq / (nVid || 1);
                 var newEne = (nCon / 1000) * nKwh;
-                
                 var deltaPorHora = (newDep + newEne) - (oldDep + oldEne);
                 
                 historico.forEach(h => {
@@ -688,17 +692,15 @@
         document.getElementById('configModal').style.display='none';
     }
 
-    // === NOVA FUNÇÃO: RESET DA MANUTENÇÃO (QA) ===
     window.resetarQA = function() {
         if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) {
-            // Guarda na nuvem o ponto (horas impressas) onde você fez a limpeza
             window.qaOffset = window.horasTotaisImpressasGlobal;
             syncNuvem();
             renderHistorico();
+            document.getElementById('configModal').style.display='none';
             showToast("🔧 Manutenção Registrada e Zerada!");
         }
     }
-
 
     function descontarTaxas(valorBruto, qtdTotal) {
         var avgBruto = valorBruto / qtdTotal;
@@ -886,6 +888,7 @@
         else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
         else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
         else bestPAvg = pAvg4;
+        
         var totS = bestPAvg * totalQtd;
         
         var avgBaseML = vShopeeBase / totalQtd;
@@ -978,11 +981,25 @@
         var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
         var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>';
         var htmlLista = catalogoOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>' : '';
+        
         catalogoOrdenado.forEach(function(p) {
             htmlSel += `<option value="${p.id}">${p.nome}</option>`;
             var pesoTotal = parseLocal(p.peso1); if(p.multi && p.extras && p.extras.length > 0) { p.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
             var pesoStr = formatarMoeda(pesoTotal) + 'g';
-            htmlLista += `<div class="history-item" style="padding: 8px 12px;"><button class="btn-edit-item" onclick="editarDoCatalogo(${p.id})">✎</button><button class="btn-del-item" onclick="removerDoCatalogo(${p.id})">×</button><h4 style="margin-bottom:0; font-size:0.75rem; color:var(--orange);">${p.nome}</h4><div style="font-size: 0.65rem; color: var(--text-muted);">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}</div></div>`;
+            
+            htmlLista += `
+            <div class="history-item">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${p.nome}</h4>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <button onclick="editarDoCatalogo(${p.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button>
+                        <button onclick="removerDoCatalogo(${p.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>
+                    </div>
+                </div>
+            </div>`;
         });
         sel.innerHTML = htmlSel; lista.innerHTML = htmlLista;
     }
@@ -1038,7 +1055,22 @@
         var lista = document.getElementById('lista_estoque'); if(!lista) return;
         var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
-        estoqueOrdenado.forEach(function(item) { lista.innerHTML += '<div class="history-item" style="padding: 8px 12px;"><button class="btn-edit-item" onclick="editarItemEstoque('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItemEstoque('+item.id+')">×</button><h4 style="margin-bottom:0; font-size:0.75rem; color:var(--success);">' + item.tipo + ' ' + item.cor + ' <span style="color:#fff">(' + item.marca + ')</span></h4><div style="font-size: 0.7rem; color: var(--text-muted);">Preço: R$ ' + item.preco + '</div></div>'; });
+        
+        estoqueOrdenado.forEach(function(item) {
+            lista.innerHTML += `
+            <div class="history-item">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 style="margin:0; line-height: 1.3; color:var(--success); word-wrap: break-word;">${item.tipo} ${item.cor} <span style="color:#fff">(${item.marca})</span></h4>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Preço: R$ ${item.preco}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <button onclick="editarItemEstoque(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button>
+                        <button onclick="removerItemEstoque(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>
+                    </div>
+                </div>
+            </div>`;
+        });
         atualizarDropdownsEstoque();
     }
 
@@ -1137,14 +1169,20 @@
         despesas.forEach(function(d) {
             soma += d.valor;
             lista.innerHTML += `
-                <div class="history-item" style="padding: 8px 12px; border-color: rgba(239, 68, 68, 0.3);">
-                    <button class="btn-edit-item" onclick="editarDespesa(${d.id})">✎</button>
-                    <button class="btn-del-item" onclick="removerDespesa(${d.id})">×</button>
-                    <h4 style="margin-bottom:0; font-size:0.75rem; color:var(--danger);">${d.qtd}x ${d.nome}</h4>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">
-                        Valor Total: R$ ${formatarMoeda(d.valor)} <span style="float:right; opacity:0.5; font-size:0.6rem;">${d.data}</span>
+            <div class="history-item" style="border-color: rgba(239, 68, 68, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 style="margin:0; line-height: 1.3; color:var(--danger); word-wrap: break-word;">${d.qtd}x ${d.nome}</h4>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">
+                            Valor Total: R$ ${formatarMoeda(d.valor)} <span style="opacity:0.5; font-size:0.6rem; margin-left:10px;">${d.data}</span>
+                        </div>
                     </div>
-                </div>`;
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <button onclick="editarDespesa(${d.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button>
+                        <button onclick="removerDespesa(${d.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>
+                    </div>
+                </div>
+            </div>`;
         });
         var td = document.getElementById('tot_despesas'); if(td) td.textContent = formatarMoeda(soma);
         atualizarLucroReal();
@@ -1467,14 +1505,15 @@
             }
         });
 
-        // ATUALIZANDO A BARRA DE SAÚDE DA MÁQUINA (QA)
+        var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
+        if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
+
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
         
-        var qaAviso = pegaValor('qa_aviso'); if (qaAviso <= 0) qaAviso = 400; // Valor Padrão
+        var qaAviso = pegaValor('qa_aviso'); if (qaAviso <= 0) qaAviso = 400;
         
-        // Pega as horas totais e desconta de quando foi feita a última manutenção
         var hrsAtuais = window.horasTotaisImpressasGlobal - (window.qaOffset || 0);
         if (hrsAtuais < 0) hrsAtuais = 0;
         
@@ -1566,10 +1605,9 @@
         ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
         
-        // ZERANDO A LOGISTICA (SEM DATA-SAVE MAIS)
-        document.getElementById('custoEmbalagem').value = "0,00";
-        document.getElementById('custoDeslocamento').value = "0,00";
-        document.getElementById('valorFreteManual').value = "0,00";
+        var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = "0,00";
+        var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = "0,00";
+        var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
 
         ['tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         var elPreco1 = document.getElementById('precoFilamento'); if(elPreco1) { elPreco1.value = "120,00"; }
@@ -1591,8 +1629,11 @@
         ['toggle_multi_mat', 'toggle_urgente'].forEach(id => { var t = document.getElementById(id); if (t && t.checked) { t.checked = false; t.dispatchEvent(new Event('change')); } });
         var elQtdCores = document.getElementById('qtdCoresExtras'); if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
-        calcular(); showToast("✅ Projeto Resetado!");
+        calcular(); 
+        
+        setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100);
         var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
@@ -1613,11 +1654,130 @@
         window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
     }
 
+    window.gerarPDF = function() {
+        if (historico.length === 0) {
+            showToast("⚠️ Nenhum dado para exportar");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('landscape'); 
+
+        doc.setFontSize(16);
+        doc.text("Relatório Geral - 3D 4You", 14, 15);
+        doc.setFontSize(9);
+        doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
+
+        let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0;
+        
+        let despesasTotais = despesas.reduce((acc, d) => acc + d.valor, 0);
+
+        const tableData = historico.map(h => {
+            let bruto = h.valorBruto || (h.valorLiquido || h.valorVenda);
+            let liquido = h.valorLiquido || h.valorVenda;
+            let custo = h.custo;
+            let freteLog = (h.frete || 0) + (h.logistica || 0);
+            let lucro = liquido - custo - freteLog;
+            let horas = h.tempo || 0;
+
+            if (h.status !== 'Orçamento') {
+                totVendas += (h.totalQtd || 1);
+                totBruto += bruto;
+                totLiquido += liquido;
+                totCusto += custo;
+                totLucro += lucro;
+                totHoras += horas;
+            }
+
+            return [
+                h.data,
+                h.cliente || 'Balcão',
+                h.nome,
+                h.status,
+                h.canal,
+                "R$ " + formatarMoeda(liquido),
+                "R$ " + formatarMoeda(lucro),
+                formatarMoeda(horas) + "h"
+            ];
+        });
+
+        let lucroReal = totLucro - despesasTotais;
+
+        // Bloco de Resumo Financeiro no Topo do PDF
+        doc.setFillColor(240, 240, 240);
+        doc.rect(14, 25, 268, 30, 'F');
+        
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos):", 18, 32);
+        
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Faturamento Líq: R$ ${formatarMoeda(totLiquido)}`, 18, 40);
+        doc.text(`Custo Operacional: R$ ${formatarMoeda(totCusto)}`, 85, 40);
+        doc.text(`Despesas/Compras: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        
+        doc.setFont(undefined, 'bold');
+        doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 48);
+        doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 48);
+        doc.setTextColor(0, 150, 0); // Verde pro Lucro Real
+        doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 48);
+        doc.setTextColor(0, 0, 0); // Volta pro Preto
+
+        doc.autoTable({
+            startY: 60,
+            head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor (Líq)', 'Lucro', 'Tempo']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] },
+            styles: { fontSize: 8 }
+        });
+
+        doc.save("Relatorio_3D4You.pdf");
+        showToast("📄 PDF Gerado com sucesso!");
+    };
+
     window.exportarExcel = function() {
-        if(historico.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
-        var dadosPlanilha = historico.map(h => ({ "Data Venda": h.data, "Cliente": h.cliente || 'Balcão', "Projeto / Peças": h.nome, "Status": h.status, "Canal Venda": h.canal, "Faturamento Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Faturamento Líquido (R$)": h.valorLiquido || h.valorVenda, "Custo Produção (R$)": h.custo, "Frete + Logística (R$)": (h.frete || 0) + (h.logistica || 0), "Lucro Limpo (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), "Materiais Usados": h.materiais, "Horas Máquina": h.tempo, "Qtd. Vendida": h.totalQtd }));
-        var ws = XLSX.utils.json_to_sheet(dadosPlanilha); var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Historico"); XLSX.writeFile(wb, "3D4You_Backup_Vendas.xlsx");
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { 
+            showToast("⚠️ Nenhum dado para exportar"); return; 
+        }
+        
+        var wb = XLSX.utils.book_new();
+
+        // ABA 1: VENDAS
+        if (historico.length > 0) {
+            var dadosVendas = historico.map(h => ({ 
+                "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, 
+                "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, 
+                "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), 
+                "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), 
+                "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd 
+            }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
+        }
+
+        // ABA 2: DESPESAS
+        if (despesas.length > 0) {
+            var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Quantidade": d.qtd, "Descrição": d.nome, "Valor Total (R$)": d.valor }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDespesas), "Despesas");
+        }
+
+        // ABA 3: ESTOQUE
+        if (estoque.length > 0) {
+            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço Pago (R$)": e.preco }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), "Estoque");
+        }
+
+        // ABA 4: CATÁLOGO
+        if (catalogo.length > 0) {
+            var dadosCatalogo = catalogo.map(c => {
+                var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
+                return { "Nome do Projeto": c.nome, "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
+        }
+
+        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
         showToast("📊 Backup Excel baixado!");
     };
 </script>
