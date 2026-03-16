@@ -39,36 +39,38 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow-x: hidden; max-width: 100vw; }
 
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
         
         .nuvem-icon { font-size: 0.8rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        .dashboard { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-y: auto; overflow-x: hidden; padding-bottom: 20px; }
+        .dashboard { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-y: auto; overflow-x: hidden; padding-bottom: 20px; width: 100%; }
         
         .col-input { order: 1; }
         .col-results { order: 2; }
         .col-history { order: 3; }
 
         @media (min-width: 1024px) { 
-            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 360px; max-width: 1400px; margin: 0 auto; align-items: start; }
-            .col { display: flex; flex-direction: column; gap: 12px; overflow: visible; }
+            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 360px; max-width: 1400px; margin: 0 auto; overflow-y: auto; align-items: start; padding-right: 10px; }
+            .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
+            .col-history { order: 2; }
+            .col-results { order: 3; }
         }
 
-        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; overflow-x: hidden; }
         .card-disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
         
-        .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; }
+        .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; cursor: pointer; user-select: none; }
         .chevron { transition: transform 0.3s; display: inline-block; font-size: 0.7rem; margin-left: 8px; color: var(--text-muted); vertical-align: middle; }
-        
+
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
-        .input-group { display: flex; flex-direction: column; margin-bottom: 8px; }
+        .input-group { display: flex; flex-direction: column; margin-bottom: 8px; min-width: 0; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
-        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; height: 42px; }
+        .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; min-width: 0; }
 
         .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
 
@@ -82,14 +84,14 @@
         .range-area { margin-top: 15px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .range-container { display: flex; align-items: center; gap: 15px; }
         
-        input[type="range"] { flex: 1; height: 10px; background: #334155; border-radius: 8px; appearance: none; outline: none; }
+        input[type="range"] { flex: 1; height: 10px; background: #334155; border-radius: 8px; appearance: none; outline: none; min-width: 0; }
         input[type="range"]::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; border: 3px solid var(--primary); cursor: pointer; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
         
-        .margem-box { display: flex; align-items: center; background: #0f172a; border: 2px solid var(--primary); border-radius: 10px; padding: 0 12px; min-width: 120px; height: 45px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); }
-        .margem-box input { width: 100%; font-size: 1.3rem; font-weight: 900; color: var(--primary); text-align: right; background: transparent; border: none; outline: none; }
+        .margem-box { display: flex; align-items: center; background: #0f172a; border: 2px solid var(--primary); border-radius: 10px; padding: 0 12px; width: 100px; flex-shrink: 0; height: 45px; box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); }
+        .margem-box input { width: 100%; min-width: 0; font-size: 1.3rem; font-weight: 900; color: var(--primary); text-align: right; background: transparent; border: none; outline: none; }
         .margem-box span { color: var(--primary); font-weight: 900; font-size: 1.1rem; margin-left: 2px; }
 
-        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+        .switch { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
         .slider-switch:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
@@ -97,8 +99,6 @@
         input:checked + .slider-switch:before { transform: translateX(14px); }
 
         /* Cores específicas para cada toggle */
-        #toggle_catalogo:checked + .slider-switch { background-color: var(--orange); }
-        #toggle_estoque:checked + .slider-switch { background-color: var(--success); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
         #toggle_marketplaces:checked + .slider-switch { background-color: var(--primary); }
         #toggle_simulador:checked + .slider-switch { background-color: var(--sky); }
@@ -135,15 +135,15 @@
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
         
         /* ESTILO DO FILTRO DE VENDAS */
-        .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; }
+        .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; }
         .filter-btn:active { transform: scale(0.95); }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; }
-        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; max-width: 100%; word-break: break-word; }
+        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; padding-right: 25px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1.2rem; cursor: pointer; line-height: 1; }
@@ -1252,14 +1252,18 @@
         var pAvg4 = (avgBase + 26) / 0.86; 
 
         var bestPAvg, bestTx, bestFix;
-        if (pAvg1 <= 79.991) bestPAvg = pAvg1;
-        else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
-        else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
-        else bestPAvg = pAvg4;
+        if (pAvg1 <= 79.991) { bestPAvg = pAvg1; bestTx = 20; bestFix = 4; }
+        else if (pAvg2 <= 99.991) { bestPAvg = pAvg2; bestTx = 14; bestFix = 16; }
+        else if (pAvg3 <= 199.991) { bestPAvg = pAvg3; bestTx = 14; bestFix = 20; }
+        else { bestPAvg = pAvg4; bestTx = 14; bestFix = 26; }
 
-        var totS = bestPAvg * totalQtd;
+        var vs = bestPAvg * qtdPecas;
 
-        var avgBaseML = vShopeeBase / totalQtd;
+        var elTxS = document.getElementById('taxaShopee'), elFixS = document.getElementById('fixaShopee'); 
+        if(elTxS) elTxS.value = formatarMoeda(bestTx); 
+        if(elFixS) elFixS.value = formatarMoeda(bestFix * qtdPecas); 
+
+        var avgBaseML = vShopeeBase / qtdPecas;
         var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100));
         var pAvgML;
         var fixaMeliAplicada = pegaValor('fixaMeli');
