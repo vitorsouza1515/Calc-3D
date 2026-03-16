@@ -333,11 +333,12 @@
             <div class="section-title" style="color: var(--orange); border-bottom: none; padding-bottom: 0; margin-bottom: 8px; cursor: default;">
                 <span>🏷️ Catálogo Rápido</span>
             </div>
-            <div class="input-group" style="margin-bottom: 0;">
+            <div class="input-group" style="margin-bottom: 8px;">
                 <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
                     <option value="">-- Escolher produto cadastrado --</option>
                 </select>
             </div>
+            <button class="btn" id="btn_salvar_catalogo_main" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
         </div>
 
         <div class="card" style="margin-top: 12px;">
@@ -422,7 +423,7 @@
                 </div>
             </div>
 
-            <div class="price-box direta"><span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span><div class="total">R$ <span id="r_vendaD">0,00</span></div><div class="lucro-tag" id="tag_lucroD">Lucro: R$ 0,00</div></div>
+            <div class="price-box directa"><span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span><div class="total">R$ <span id="r_vendaD">0,00</span></div><div class="lucro-tag" id="tag_lucroD">Lucro: R$ 0,00</div></div>
             <div class="grid-2">
                 <div class="price-box shopee"><span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0,00</span></div><div class="lucro-tag" id="tag_lucroS">Lucro: R$ 0,00</div></div>
                 <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0,00</span></div><div class="lucro-tag" id="tag_lucroM">Lucro: R$ 0,00</div></div>
@@ -890,7 +891,9 @@
         if (alteracoes > 0) {
             syncNuvem();
             renderHistorico();
-            setTimeout(() => alert("✅ " + alteracoes + " venda(s) passada(s) deste produto foram atualizadas no histórico!"), 500);
+            setTimeout(() => alert("✅ " + alteracoes + " venda(s) passada(s) de '" + catItem.nome + "' foram corrigidas no histórico!"), 500);
+        } else {
+            setTimeout(() => alert("O projeto foi salvo, mas nenhuma venda antiga com esse nome exato foi encontrada."), 500);
         }
     }
 
@@ -916,13 +919,15 @@
             if(idx > -1) {
                 catalogo[idx] = { id: editCatalogoId, nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
                 
-                if(confirm("Deseja aplicar as novas configurações de material, peso e tempo nas vendas passadas deste produto no Histórico?")) {
+                if(confirm("Deseja atualizar as cores, pesos e tempo em todas as vendas passadas de '" + nome + "' no Histórico?")) {
                     retroUpdateHistory(catalogo[idx]);
                 }
             }
             editCatalogoId = null;
-            document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo";
-            document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+            var btnModal = document.getElementById('btn_salvar_catalogo');
+            if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
+            var btnMain = document.getElementById('btn_salvar_catalogo_main');
+            if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
             showToast("🏷️ Produto atualizado no catálogo!");
         } else {
             var novoProduto = { id: Date.now(), nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
@@ -974,10 +979,12 @@
     function editarDoCatalogo(id) {
         aplicarDadosNoForm(id);
         editCatalogoId = id;
-        document.getElementById('btn_salvar_catalogo').textContent = "💾 Confirmar Alteração no Catálogo";
-        document.getElementById('btn_salvar_catalogo').style.background = "var(--purple)";
+        var btnModal = document.getElementById('btn_salvar_catalogo');
+        if(btnModal) { btnModal.textContent = "💾 Confirmar Alteração no Catálogo"; btnModal.style.background = "var(--purple)"; }
+        var btnMain = document.getElementById('btn_salvar_catalogo_main');
+        if(btnMain) { btnMain.textContent = "💾 Confirmar Alteração no Catálogo"; btnMain.style.background = "var(--purple)"; }
         document.getElementById('catalogoModal').style.display = 'none';
-        showToast("✏️ Editando produto...");
+        showToast("✏️ Edite os dados e clique em Confirmar Alteração");
     }
 
     function aplicarDadosNoForm(id) {
@@ -1371,14 +1378,18 @@
         var pAvg4 = (avgBase + 26) / 0.86; 
 
         var bestPAvg, bestTx, bestFix;
-        if (pAvg1 <= 79.991) bestPAvg = pAvg1;
-        else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
-        else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
-        else bestPAvg = pAvg4;
+        if (pAvg1 <= 79.991) { bestPAvg = pAvg1; bestTx = 20; bestFix = 4; }
+        else if (pAvg2 <= 99.991) { bestPAvg = pAvg2; bestTx = 14; bestFix = 16; }
+        else if (pAvg3 <= 199.991) { bestPAvg = pAvg3; bestTx = 14; bestFix = 20; }
+        else { bestPAvg = pAvg4; bestTx = 14; bestFix = 26; }
 
-        var totS = bestPAvg * totalQtd;
+        var vs = bestPAvg * qtdPecas;
 
-        var avgBaseML = vShopeeBase / totalQtd;
+        var elTxS = document.getElementById('taxaShopee'), elFixS = document.getElementById('fixaShopee'); 
+        if(elTxS) elTxS.value = formatarMoeda(bestTx); 
+        if(elFixS) elFixS.value = formatarMoeda(bestFix * qtdPecas); 
+
+        var avgBaseML = vShopeeBase / qtdPecas;
         var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100));
         var pAvgML;
         var fixaMeliAplicada = pegaValor('fixaMeli');
@@ -1388,7 +1399,7 @@
         } else {
             pAvgML = (avgBaseML + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
         }
-        var vm = pAvgML * totalQtd;
+        var vm = pAvgML * qtdPecas;
 
         var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = formatarMoeda(vd); 
         var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = formatarMoeda(vs); 
@@ -1856,6 +1867,99 @@
         }; reader.readAsArrayBuffer(file);
     }
 
+    function retroUpdateHistory(catItem) {
+        var baseName = catItem.nome.toLowerCase().trim();
+        var alteracoes = 0;
+        
+        historico.forEach(h => {
+            var isModified = false;
+            
+            if (h.cartItems && h.cartItems.length > 0) {
+                h.cartItems.forEach(ci => {
+                    var match = ci.nome.match(/^(\d+)x\s(.*)/);
+                    var cName = match ? match[2].toLowerCase().trim() : ci.nome.toLowerCase().trim();
+                    var qtd = ci.qtd || (match ? parseInt(match[1]) : 1);
+                    
+                    if (cName === baseName) {
+                        var matStr = (catItem.tipo1 + " " + catItem.cor1).trim() + " (" + formatarMoeda(parseLocal(catItem.peso1)*qtd) + "g)";
+                        var pesoTot = parseLocal(catItem.peso1) * qtd;
+                        var matCost = (parseLocal(catItem.preco1)/1000) * pesoTot;
+                        
+                        if (catItem.multi && catItem.extras && catItem.extras.length > 0) {
+                            catItem.extras.forEach(ex => {
+                                var pEx = parseLocal(ex.peso) * qtd;
+                                pesoTot += pEx;
+                                matStr += " + " + (ex.tipo + " " + ex.cor).trim() + " (" + formatarMoeda(pEx) + "g)";
+                                matCost += (parseLocal(ex.preco)/1000) * pEx;
+                            });
+                        }
+                        
+                        var tTot = parseLocal(catItem.tempo) * qtd;
+                        var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tTot;
+                        var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tTot;
+                        var suc = pegaValor('taxaSucesso'); if(suc<=0) suc=100;
+                        var nCusto = (dep + ene + matCost) / (suc/100);
+                        
+                        ci.peso = pesoTot;
+                        ci.tempo = tTot;
+                        ci.materiais = matStr;
+                        ci.custo = nCusto;
+                        isModified = true;
+                    }
+                });
+                
+                if (isModified) {
+                    h.peso = h.cartItems.reduce((a,b)=>a+b.peso, 0);
+                    h.tempo = h.cartItems.reduce((a,b)=>a+b.tempo, 0);
+                    h.custo = h.cartItems.reduce((a,b)=>a+b.custo, 0);
+                    var matArray = [];
+                    h.cartItems.forEach(i => { if(i.materiais && i.materiais !== "Não informado") matArray.push(i.materiais); });
+                    h.materiais = matArray.length > 0 ? matArray.join(' + ') : 'Não informado';
+                    alteracoes++;
+                }
+            } else {
+                var match = h.nome.match(/^(\d+)x\s(.*)/);
+                var hName = match ? match[2].toLowerCase().trim() : h.nome.toLowerCase().trim();
+                var qtd = h.totalQtd || (match ? parseInt(match[1]) : 1);
+                
+                if (hName === baseName) {
+                    var matStr = (catItem.tipo1 + " " + catItem.cor1).trim() + " (" + formatarMoeda(parseLocal(catItem.peso1)*qtd) + "g)";
+                    var pesoTot = parseLocal(catItem.peso1) * qtd;
+                    var matCost = (parseLocal(catItem.preco1)/1000) * pesoTot;
+                    
+                    if (catItem.multi && catItem.extras && catItem.extras.length > 0) {
+                        catItem.extras.forEach(ex => {
+                            var pEx = parseLocal(ex.peso) * qtd;
+                            pesoTot += pEx;
+                            matStr += " + " + (ex.tipo + " " + ex.cor).trim() + " (" + formatarMoeda(pEx) + "g)";
+                            matCost += (parseLocal(ex.preco)/1000) * pEx;
+                        });
+                    }
+                    
+                    var tTot = parseLocal(catItem.tempo) * qtd;
+                    var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tTot;
+                    var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tTot;
+                    var suc = pegaValor('taxaSucesso'); if(suc<=0) suc=100;
+                    var nCusto = (dep + ene + matCost) / (suc/100);
+                    
+                    h.peso = pesoTot;
+                    h.tempo = tTot;
+                    h.materiais = matStr;
+                    h.custo = nCusto;
+                    alteracoes++;
+                }
+            }
+        });
+        
+        if (alteracoes > 0) {
+            syncNuvem();
+            renderHistorico();
+            setTimeout(() => alert("✅ " + alteracoes + " venda(s) passada(s) de '" + catItem.nome + "' foram corrigidas no histórico!"), 500);
+        } else {
+            setTimeout(() => alert("O projeto foi salvo, mas nenhuma venda antiga com esse nome exato foi encontrada."), 500);
+        }
+    }
+
     async function gerarPDF() {
         if(historico.length === 0) return alert("Histórico vazio!");
         
@@ -2105,8 +2209,10 @@
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
         
         editCatalogoId = null; 
-        document.getElementById('btn_salvar_catalogo').textContent = "💾 Salvar Projeto Atual no Catálogo"; 
-        document.getElementById('btn_salvar_catalogo').style.background = "var(--orange)";
+        var btnModal = document.getElementById('btn_salvar_catalogo');
+        if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
+        var btnMain = document.getElementById('btn_salvar_catalogo_main');
+        if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
 
         editHistoricoId = null;
         document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda";
