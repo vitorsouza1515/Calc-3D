@@ -1,0 +1,21 @@
+{
+  "name": "3D 4You ERP",
+  "short_name": "3D 4You",
+  "description": "ERP na nuvem para Impressão 3D",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/3b82f6/FFFFFF?text=3D",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/3b82f6/FFFFFF?text=3D",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
