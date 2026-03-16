@@ -55,8 +55,6 @@
         @media (min-width: 1024px) { 
             .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 360px; max-width: 1400px; margin: 0 auto; overflow-y: auto; align-items: start; padding-right: 10px; }
             .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
-            .col-history { order: 2; }
-            .col-results { order: 3; }
         }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; overflow-x: hidden; }
@@ -333,12 +331,11 @@
             <div class="section-title" style="color: var(--orange); border-bottom: none; padding-bottom: 0; margin-bottom: 8px; cursor: default;">
                 <span>🏷️ Catálogo Rápido</span>
             </div>
-            <div class="input-group" style="margin-bottom: 8px;">
+            <div class="input-group" style="margin-bottom: 0;">
                 <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
                     <option value="">-- Escolher produto cadastrado --</option>
                 </select>
             </div>
-            <button class="btn" id="btn_salvar_catalogo_main" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
         </div>
 
         <div class="card" style="margin-top: 12px;">
@@ -423,7 +420,7 @@
                 </div>
             </div>
 
-            <div class="price-box directa"><span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span><div class="total">R$ <span id="r_vendaD">0,00</span></div><div class="lucro-tag" id="tag_lucroD">Lucro: R$ 0,00</div></div>
+            <div class="price-box direta"><span style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase;">Venda Direta / PIX</span><div class="total">R$ <span id="r_vendaD">0,00</span></div><div class="lucro-tag" id="tag_lucroD">Lucro: R$ 0,00</div></div>
             <div class="grid-2">
                 <div class="price-box shopee"><span style="font-size: 0.6rem; font-weight: 800;">SHOPEE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaS">0,00</span></div><div class="lucro-tag" id="tag_lucroS">Lucro: R$ 0,00</div></div>
                 <div class="price-box meli"><span style="font-size: 0.6rem; font-weight: 800;">M. LIVRE</span><div class="total" style="font-size: 1.2rem;">R$ <span id="r_vendaM">0,00</span></div><div class="lucro-tag" id="tag_lucroM">Lucro: R$ 0,00</div></div>
@@ -506,7 +503,7 @@
     </div>
 </div>
 
-<canvas id="chartCanvas" width="400" height="400" style="display:none;"></canvas>
+<canvas id="chartCanvas" width="400" height="400" style="position: absolute; left: -9999px; visibility: hidden;"></canvas>
 
 <script>
     const firebaseConfig = {
@@ -765,14 +762,18 @@
             `;
         });
 
-        var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
-        var frete = pegaValor('valorFreteManual');
+        var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
+        if(totalQtd < 1) totalQtd = 1;
+
+        var tLog = document.getElementById('toggle_logistica');
+        var cLog = 0, frete = 0;
+        if (tLog && tLog.checked) {
+            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
+            frete = pegaValor('valorFreteManual');
+        }
 
         var totD = totValorComLucro + cLog + frete;
         var vShopeeBase = totValorComLucro + cLog;
-        
-        var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
-        if(totalQtd < 1) totalQtd = 1;
         
         var avgBase = vShopeeBase / totalQtd;
         var pAvg1 = (avgBase + 4) / 0.80; 
@@ -1351,9 +1352,18 @@
         
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
         
-        if (logEnabled) { 
-            cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+        var isCart = carrinho && carrinho.length > 0;
+        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : qtdPecas;
+        if(totalQtd < 1) totalQtd = 1;
+
+        var tLog = document.getElementById('toggle_logistica');
+        if (tLog && tLog.checked) {
+            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
             frete = pegaValor('valorFreteManual');
+        } else {
+            cLog = 0;
+            frete = 0;
+            logEnabled = false;
         }
         
         var divResumoLog = document.getElementById('resumo_logistica');
@@ -1454,8 +1464,14 @@
                 valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); 
             }
             
-            cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
-            freteCalculado = pegaValor('valorFreteManual');
+            var tLog = document.getElementById('toggle_logistica');
+            if (tLog && tLog.checked) {
+                cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
+                freteCalculado = pegaValor('valorFreteManual');
+            } else {
+                cLog = 0;
+                freteCalculado = 0;
+            }
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
             var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
@@ -1473,8 +1489,14 @@
                 for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); }
             }
 
-            cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
-            freteCalculado = pegaValor('valorFreteManual');
+            var tLog = document.getElementById('toggle_logistica');
+            if (tLog && tLog.checked) {
+                cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+                freteCalculado = pegaValor('valorFreteManual');
+            } else {
+                cLog = 0;
+                freteCalculado = 0;
+            }
 
             var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
             if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); }
@@ -1865,99 +1887,6 @@
             showToast("✅ Nuvem Atualizada!");
             input.value = "";
         }; reader.readAsArrayBuffer(file);
-    }
-
-    function retroUpdateHistory(catItem) {
-        var baseName = catItem.nome.toLowerCase().trim();
-        var alteracoes = 0;
-        
-        historico.forEach(h => {
-            var isModified = false;
-            
-            if (h.cartItems && h.cartItems.length > 0) {
-                h.cartItems.forEach(ci => {
-                    var match = ci.nome.match(/^(\d+)x\s(.*)/);
-                    var cName = match ? match[2].toLowerCase().trim() : ci.nome.toLowerCase().trim();
-                    var qtd = ci.qtd || (match ? parseInt(match[1]) : 1);
-                    
-                    if (cName === baseName) {
-                        var matStr = (catItem.tipo1 + " " + catItem.cor1).trim() + " (" + formatarMoeda(parseLocal(catItem.peso1)*qtd) + "g)";
-                        var pesoTot = parseLocal(catItem.peso1) * qtd;
-                        var matCost = (parseLocal(catItem.preco1)/1000) * pesoTot;
-                        
-                        if (catItem.multi && catItem.extras && catItem.extras.length > 0) {
-                            catItem.extras.forEach(ex => {
-                                var pEx = parseLocal(ex.peso) * qtd;
-                                pesoTot += pEx;
-                                matStr += " + " + (ex.tipo + " " + ex.cor).trim() + " (" + formatarMoeda(pEx) + "g)";
-                                matCost += (parseLocal(ex.preco)/1000) * pEx;
-                            });
-                        }
-                        
-                        var tTot = parseLocal(catItem.tempo) * qtd;
-                        var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tTot;
-                        var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tTot;
-                        var suc = pegaValor('taxaSucesso'); if(suc<=0) suc=100;
-                        var nCusto = (dep + ene + matCost) / (suc/100);
-                        
-                        ci.peso = pesoTot;
-                        ci.tempo = tTot;
-                        ci.materiais = matStr;
-                        ci.custo = nCusto;
-                        isModified = true;
-                    }
-                });
-                
-                if (isModified) {
-                    h.peso = h.cartItems.reduce((a,b)=>a+b.peso, 0);
-                    h.tempo = h.cartItems.reduce((a,b)=>a+b.tempo, 0);
-                    h.custo = h.cartItems.reduce((a,b)=>a+b.custo, 0);
-                    var matArray = [];
-                    h.cartItems.forEach(i => { if(i.materiais && i.materiais !== "Não informado") matArray.push(i.materiais); });
-                    h.materiais = matArray.length > 0 ? matArray.join(' + ') : 'Não informado';
-                    alteracoes++;
-                }
-            } else {
-                var match = h.nome.match(/^(\d+)x\s(.*)/);
-                var hName = match ? match[2].toLowerCase().trim() : h.nome.toLowerCase().trim();
-                var qtd = h.totalQtd || (match ? parseInt(match[1]) : 1);
-                
-                if (hName === baseName) {
-                    var matStr = (catItem.tipo1 + " " + catItem.cor1).trim() + " (" + formatarMoeda(parseLocal(catItem.peso1)*qtd) + "g)";
-                    var pesoTot = parseLocal(catItem.peso1) * qtd;
-                    var matCost = (parseLocal(catItem.preco1)/1000) * pesoTot;
-                    
-                    if (catItem.multi && catItem.extras && catItem.extras.length > 0) {
-                        catItem.extras.forEach(ex => {
-                            var pEx = parseLocal(ex.peso) * qtd;
-                            pesoTot += pEx;
-                            matStr += " + " + (ex.tipo + " " + ex.cor).trim() + " (" + formatarMoeda(pEx) + "g)";
-                            matCost += (parseLocal(ex.preco)/1000) * pEx;
-                        });
-                    }
-                    
-                    var tTot = parseLocal(catItem.tempo) * qtd;
-                    var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tTot;
-                    var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tTot;
-                    var suc = pegaValor('taxaSucesso'); if(suc<=0) suc=100;
-                    var nCusto = (dep + ene + matCost) / (suc/100);
-                    
-                    h.peso = pesoTot;
-                    h.tempo = tTot;
-                    h.materiais = matStr;
-                    h.custo = nCusto;
-                    alteracoes++;
-                }
-            }
-        });
-        
-        if (alteracoes > 0) {
-            syncNuvem();
-            renderHistorico();
-            setTimeout(() => alert("✅ " + alteracoes + " venda(s) passada(s) de '" + catItem.nome + "' foram corrigidas no histórico!"), 500);
-        } else {
-            setTimeout(() => alert("O projeto foi salvo, mas nenhuma venda antiga com esse nome exato foi encontrada."), 500);
-        }
     }
 
     async function gerarPDF() {
