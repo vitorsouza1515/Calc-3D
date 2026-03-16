@@ -108,7 +108,7 @@
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
         .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; }
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border-color: rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
@@ -140,13 +140,13 @@
 
 <div id="configModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="fecharConfigModal()">&times;</span>
+        <span class="close-modal" onclick="salvarConfigsNuvemEFechar('configModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; cursor:default;">⚙️ Base Operacional</h2>
         <div class="grid-2">
-            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="1.500,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="5.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="250" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="0,90" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" oninput="aplicarMascara(this); calcular()"></div>
         </div>
         
         <div class="input-group" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
@@ -154,7 +154,7 @@
                 <label style="color:var(--purple); margin:0;">Aviso de Manutenção (a cada h):</label>
                 <button onclick="resetarQA()" style="background: var(--purple); border: none; color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer; font-weight:bold;">✅ ZERAR MANUTENÇÃO</button>
             </div>
-            <input type="text" inputmode="decimal" id="qa_aviso" value="400" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
+            <input type="text" inputmode="decimal" id="qa_aviso" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
                 <label style="color:var(--sky); margin:0;">Total Histórico (Odômetro):</label>
@@ -173,31 +173,31 @@
             <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px; text-align: right; font-weight: bold;" id="msg_vida_util">...</div>
         </div>
         
-        <button class="btn btn-direta" onclick="fecharConfigModal()" style="width: 100%; margin-top: 15px;">Concluído</button>
+        <button class="btn btn-direta" onclick="salvarConfigsNuvemEFechar('configModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
 <div id="logisticaModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('logisticaModal').style.display='none'">&times;</span>
+        <span class="close-modal" onclick="salvarConfigsNuvemEFechar('logisticaModal')">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--sky); cursor:default;">
             <span>🚚 Logística</span>
         </div>
         <div id="secao_logistica">
             <div class="grid-2">
-                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="0,00" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="0,00" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
                 <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
-        <button class="btn btn-direta" onclick="document.getElementById('logisticaModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
+        <button class="btn btn-direta" onclick="salvarConfigsNuvemEFechar('logisticaModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
 <div id="marketplacesModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('marketplacesModal').style.display='none'">&times;</span>
+        <span class="close-modal" onclick="salvarConfigsNuvemEFechar('marketplacesModal')">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--primary); cursor:default;">
             <span>🛒 Taxas Marketplaces</span>
         </div>
@@ -205,9 +205,8 @@
             <div class="grid-2">
                 <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
                 <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
-                
-                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
         
@@ -221,7 +220,7 @@
                 <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
             </div>
         </div>
-        <button class="btn btn-direta" onclick="document.getElementById('marketplacesModal').style.display='none'" style="width: 100%; margin-top: 15px;">Concluído</button>
+        <button class="btn btn-direta" onclick="salvarConfigsNuvemEFechar('marketplacesModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
@@ -304,7 +303,7 @@
                 <span style="display:flex; align-items:center;">👤 Identificação / CRM <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--danger)">URGENTE</span>
-                    <label class="switch"><input type="checkbox" id="toggle_urgente" data-save="true"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_urgente"><span class="slider-switch"></span></label>
                 </div>
             </h2>
             <div id="cc_crm">
@@ -321,7 +320,6 @@
 
                 <div class="grid-2">
                     <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" list="listaClientes" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente'); checarClienteAutoFill()"></div>
-                    
                     <div class="input-group"><label>WhatsApp (Opcional)</label><input type="tel" inputmode="tel" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
                 </div>
             </div>
@@ -344,7 +342,7 @@
                 <span style="display:flex; align-items:center;">📦 O Projeto <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--text-muted)">MULTI-COR</span>
-                    <label class="switch"><input type="checkbox" id="toggle_multi_mat" data-save="true"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_multi_mat"><span class="slider-switch"></span></label>
                 </div>
             </div>
             
@@ -359,11 +357,11 @@
                     
                     <div id="detalhes_1" class="detalhes-material">
                         <div class="grid-3">
-                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" data-save="true" readonly></div>
-                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" data-save="true" readonly></div>
-                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" data-save="true" readonly></div>
+                            <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" readonly></div>
+                            <div class="input-group"><label>Cor</label><input type="text" id="corFilamento1" placeholder="Ex: Preto" readonly></div>
+                            <div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento1" placeholder="Ex: Voolt" readonly></div>
                         </div>
-                        <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" data-save="true" readonly></div>
+                        <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" readonly></div>
                     </div>
 
                     <div class="input-group" style="margin-top: 10px;">
@@ -373,19 +371,19 @@
                 </div>
 
                 <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
-                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
+                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
                     <div id="container_cores_extras"></div>
                 </div>
 
                 <div class="grid-2" style="margin-top: 8px;">
                     <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
-                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
                 <div class="range-area">
                     <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
                     <div class="range-container">
-                        <input type="range" id="margemSlider" min="0" max="1000" value="100" data-save="true">
-                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="100" data-save="true" oninput="aplicarMascara(this)"><span>%</span></div>
+                        <input type="range" id="margemSlider" min="0" max="1000" value="100">
+                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="100" oninput="aplicarMascara(this)"><span>%</span></div>
                     </div>
                 </div>
             </div>
@@ -553,7 +551,11 @@
     
     window.qaOffset = 0;
     window.horasTotaisImpressasGlobal = 0;
-    window.oldBaseVals = {};
+    
+    window.configGlobais = { 
+        maquina: "3.275", vidaUtil: "3.000", consumoW: "350", precoKwh: "1,20", qa_aviso: "100",
+        custoEmbalagem: "0,00", custoDeslocamento: "0,00", taxaMeli: "17", fixaMeli: "6,75" 
+    };
 
     window.toggleCard = function(id, el, event) {
         if(event && (event.target.tagName === 'INPUT' || event.target.classList.contains('slider-switch') || event.target.classList.contains('switch') || event.target.tagName === 'BUTTON')) return;
@@ -584,27 +586,53 @@
             catalogo = data.catalogo || [];
             despesas = data.despesas || [];
             window.qaOffset = data.qaOffset || 0; 
+            window.configGlobais = data.configGlobais || window.configGlobais;
+
+            document.getElementById('maquina').value = window.configGlobais.maquina;
+            document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil;
+            document.getElementById('consumoW').value = window.configGlobais.consumoW;
+            document.getElementById('precoKwh').value = window.configGlobais.precoKwh;
+            document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso;
+            document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem;
+            document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento;
+            document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli;
+            document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli;
+
             renderHistorico();
             renderEstoque();
             renderCatalogo();
             renderDespesas();
             atualizarDropdownsEstoque(); 
+            calcular(); 
         } else {
             if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0 || despesas.length > 0) {
                 syncNuvem();
             } else {
-                nuvemRef.set({ historico: [], estoque: [], catalogo: [], despesas: [], qaOffset: 0 });
+                nuvemRef.set({ historico: [], estoque: [], catalogo: [], despesas: [], qaOffset: 0, configGlobais: window.configGlobais });
             }
         }
     });
 
     function syncNuvem() {
+        window.configGlobais = {
+            maquina: pegaTexto('maquina') || "3.275",
+            vidaUtil: pegaTexto('vidaUtil') || "3.000",
+            consumoW: pegaTexto('consumoW') || "350",
+            precoKwh: pegaTexto('precoKwh') || "1,20",
+            qa_aviso: pegaTexto('qa_aviso') || "100",
+            custoEmbalagem: pegaTexto('custoEmbalagem') || "0,00",
+            custoDeslocamento: pegaTexto('custoDeslocamento') || "0,00",
+            taxaMeli: pegaTexto('taxaMeli') || "17",
+            fixaMeli: pegaTexto('fixaMeli') || "6,75"
+        };
+
         nuvemRef.set({
             historico: historico,
             estoque: estoque,
             catalogo: catalogo,
             despesas: despesas,
-            qaOffset: window.qaOffset || 0
+            qaOffset: window.qaOffset || 0,
+            configGlobais: window.configGlobais
         }).then(function() {
             localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
             localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
@@ -643,7 +671,6 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'qa_aviso', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
@@ -658,40 +685,41 @@
         document.getElementById('configModal').style.display='block';
     }
 
-    window.fecharConfigModal = function() {
-        var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
-        
-        if (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh) {
-            var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n" +
-                      "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo e ajusta os lucros do passado.\n" +
-                      "[ CANCELAR ] O novo custo valerá apenas para as próximas vendas novas.";
-                      
-            if(confirm(msg)) {
-                var oldDep = window.oldBaseVals.maq / (window.oldBaseVals.vid || 1);
-                var oldEne = (window.oldBaseVals.con / 1000) * window.oldBaseVals.kwh;
-                var newDep = nMaq / (nVid || 1);
-                var newEne = (nCon / 1000) * nKwh;
-                var deltaPorHora = (newDep + newEne) - (oldDep + oldEne);
-                
-                historico.forEach(h => {
-                    var hTempo = parseLocal(h.tempo) || 0;
-                    h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo);
-                    if(h.custo < 0) h.custo = 0;
+    window.salvarConfigsNuvemEFechar = function(modalId) {
+        if (modalId === 'configModal') {
+            var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
+            if (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh) {
+                var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n" +
+                          "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo e ajusta os lucros do passado.\n" +
+                          "[ CANCELAR ] O novo custo valerá apenas para as próximas vendas novas.";
+                          
+                if(confirm(msg)) {
+                    var oldDep = window.oldBaseVals.maq / (window.oldBaseVals.vid || 1);
+                    var oldEne = (window.oldBaseVals.con / 1000) * window.oldBaseVals.kwh;
+                    var newDep = nMaq / (nVid || 1);
+                    var newEne = (nCon / 1000) * nKwh;
+                    var deltaPorHora = (newDep + newEne) - (oldDep + oldEne);
                     
-                    if(h.cartItems) {
-                        h.cartItems.forEach(ci => {
-                            var ciTempo = parseLocal(ci.tempo) || 0;
-                            ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo);
-                            if(ci.custo < 0) ci.custo = 0;
-                        });
-                    }
-                });
-                syncNuvem();
-                renderHistorico();
-                showToast("✅ Passado Atualizado com Sucesso!");
+                    historico.forEach(h => {
+                        var hTempo = parseLocal(h.tempo) || 0;
+                        h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo);
+                        if(h.custo < 0) h.custo = 0;
+                        if(h.cartItems) {
+                            h.cartItems.forEach(ci => {
+                                var ciTempo = parseLocal(ci.tempo) || 0;
+                                ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo);
+                                if(ci.custo < 0) ci.custo = 0;
+                            });
+                        }
+                    });
+                    showToast("✅ Passado Atualizado com Sucesso!");
+                }
             }
         }
-        document.getElementById('configModal').style.display='none';
+        syncNuvem();
+        renderHistorico();
+        calcular();
+        document.getElementById(modalId).style.display='none';
     }
 
     window.resetarQA = function() {
@@ -1555,7 +1583,7 @@
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
         
-        var qaAviso = pegaValor('qa_aviso'); if (qaAviso <= 0) qaAviso = 400;
+        var qaAviso = pegaValor('qa_aviso'); if (qaAviso <= 0) qaAviso = 100;
         
         var hrsAtuais = window.horasTotaisImpressasGlobal - (window.qaOffset || 0);
         if (hrsAtuais < 0) hrsAtuais = 0;
@@ -1712,26 +1740,29 @@
         doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
 
         let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0;
+        let somaLogistica = 0;
         
         let despesasTotais = despesas.reduce((acc, d) => acc + d.valor, 0);
 
         const tableData = historico.map(h => {
-            let bruto = h.valorBruto || (h.valorLiquido || h.valorVenda);
-            let liquido = h.valorLiquido || h.valorVenda;
-            let custo = h.custo;
-            let freteLog = (h.frete || 0) + (h.logistica || 0);
-            let lucro = liquido - custo - freteLog;
-            let horas = h.tempo || 0;
-
             let st = h.status || "Finalizado"; 
             if (st === 'Enviado') st = 'Enviado / Entregue';
 
+            let custoItem = parseLocal(h.custo);
+            let freteLogItem = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
+            let canalStr = h.canal || "Direta";
+            let valLiq = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
+            let valBruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : valLiq;
+            let lucroItem = valLiq - custoItem - freteLogItem;
+            let horas = parseLocal(h.tempo || 0);
+
             if (st !== 'Orçamento') {
                 totVendas += (h.totalQtd || 1);
-                totBruto += bruto;
-                totLiquido += liquido;
-                totCusto += custo;
-                totLucro += lucro;
+                totBruto += valBruto;
+                totLiquido += valLiq;
+                totCusto += custoItem;
+                somaLogistica += freteLogItem;
+                totLucro += lucroItem;
             }
 
             if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
@@ -1742,10 +1773,10 @@
                 h.data,
                 h.cliente || 'Balcão',
                 h.nome,
-                h.status,
-                h.canal,
-                "R$ " + formatarMoeda(liquido),
-                "R$ " + formatarMoeda(lucro),
+                st,
+                canalStr,
+                "R$ " + formatarMoeda(valLiq),
+                "R$ " + formatarMoeda(lucroItem),
                 formatarMoeda(horas) + "h"
             ];
         });
@@ -1761,16 +1792,19 @@
         
         doc.setFontSize(9);
         doc.setFont(undefined, 'normal');
-        doc.text(`Faturamento Líq: R$ ${formatarMoeda(totLiquido)}`, 18, 40);
-        doc.text(`Custo Operacional: R$ ${formatarMoeda(totCusto)}`, 85, 40);
-        doc.text(`Despesas/Compras: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        
+        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 40);
+        doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40);
+        doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
         
         doc.setFont(undefined, 'bold');
         doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 48);
-        doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 48);
+        doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 48);
         doc.setTextColor(0, 150, 0);
         doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 48);
         doc.setTextColor(0, 0, 0);
+
+        doc.text(`Tempo de Máquina (Impresso): ${formatarMoeda(totHoras)}h`, 220, 48);
 
         doc.autoTable({
             startY: 60,
