@@ -112,9 +112,7 @@
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         
-        /* CORREÇÃO DO SELETOR MOBILE: Área de clique maior e appearance auto */
         .status-select { font-size: 0.7rem; font-weight: 800; border-radius: 6px; padding: 6px 10px; border: none; outline: none; cursor: pointer; appearance: auto; -webkit-appearance: auto; text-transform: uppercase; max-width: 100%; }
-        
         .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
         .status-fila { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
         .status-imprimindo { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4); }
@@ -310,6 +308,7 @@
 
                 <div class="grid-2">
                     <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" list="listaClientes" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente'); checarClienteAutoFill()"></div>
+                    
                     <div class="input-group"><label>WhatsApp (Opcional)</label><input type="tel" inputmode="tel" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
                 </div>
             </div>
@@ -1218,6 +1217,14 @@
         syncNuvem(); renderHistorico();
     };
 
+    // === FUNÇÃO RE-INSERIDA PARA CORRIGIR OS FILTROS ===
+    window.isDraggingFiltro = false;
+    window.mudarFiltro = function(status) {
+        if (window.isDraggingFiltro) return; 
+        window.filtroStatusAtual = status;
+        renderHistorico();
+    };
+
     window.onload = function() {
         ids.forEach(function(id) {
             var el = document.getElementById(id);
@@ -1270,13 +1277,14 @@
         var dl = document.getElementById('listaClientes');
         if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
 
-        // Lógica para Drag to Scroll (Arrastar com o mouse) no Filtro
+        // Lógica de "Drag-to-Scroll" ajustada com segurança para cliques
         var sliderFiltro = document.getElementById('filtroHistorico');
         var isDown = false, startX, scrollLeft;
         if(sliderFiltro) {
             sliderFiltro.style.cursor = 'grab';
             sliderFiltro.addEventListener('mousedown', (e) => {
                 isDown = true;
+                window.isDraggingFiltro = false; 
                 sliderFiltro.style.cursor = 'grabbing';
                 startX = e.pageX - sliderFiltro.offsetLeft;
                 scrollLeft = sliderFiltro.scrollLeft;
@@ -1288,12 +1296,14 @@
             sliderFiltro.addEventListener('mouseup', () => {
                 isDown = false;
                 sliderFiltro.style.cursor = 'grab';
+                setTimeout(() => window.isDraggingFiltro = false, 50); 
             });
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 e.preventDefault();
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 2;
+                const walk = (x - startX); 
+                if (Math.abs(walk) > 5) window.isDraggingFiltro = true; 
                 sliderFiltro.scrollLeft = scrollLeft - walk;
             });
         }
