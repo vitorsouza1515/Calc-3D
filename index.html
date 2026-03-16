@@ -333,11 +333,12 @@
             <div class="section-title" style="color: var(--orange); border-bottom: none; padding-bottom: 0; margin-bottom: 8px; cursor: default;">
                 <span>🏷️ Catálogo Rápido</span>
             </div>
-            <div class="input-group" style="margin-bottom: 0;">
+            <div class="input-group" style="margin-bottom: 8px;">
                 <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
                     <option value="">-- Escolher produto cadastrado --</option>
                 </select>
             </div>
+            <button class="btn" id="btn_salvar_catalogo_main" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
         </div>
 
         <div class="card" style="margin-top: 12px;">
@@ -402,7 +403,7 @@
                 <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0,00</span></span></div>
                 <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span><span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0,00</span></span></div>
                 
-                <div id="resumo_logistica">
+                <div id="resumo_logistica" style="display:none; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
                     <div class="result-row" style="color: var(--sky);"><span>Logística (Emb+Desloc)</span><span class="value">R$ <span id="r_log_fixo">0,00</span></span></div>
                     <div class="result-row" style="color: var(--sky);"><span>Frete</span><span class="value">R$ <span id="r_log_frete">0,00</span></span></div>
                     <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: var(--success);">Custo Final (Prod+Log)</span><span class="value" style="color: var(--success);">R$ <span id="r_gasto_total">0,00</span></span></div>
@@ -702,6 +703,10 @@
         
         document.getElementById('nomeProjeto').value = "";
         document.getElementById('qtdPecasProjeto').value = "1";
+        
+        localStorage.removeItem('3d4y_dark_nomeProjeto');
+        salvarDinamico('qtdPecasProjeto');
+        calcular();
     }
 
     function cancelarEdicaoCarrinho() {
@@ -1391,13 +1396,9 @@
         
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
         
-        var isCart = carrinho && carrinho.length > 0;
-        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : qtdPecas;
-        if(totalQtd < 1) totalQtd = 1;
-
         var tLog = document.getElementById('toggle_logistica');
         if (tLog && tLog.checked) {
-            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
+            cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
             frete = pegaValor('valorFreteManual');
         } else {
             cLog = 0;
@@ -1419,30 +1420,36 @@
         
         var vd = valorComLucro + cLog + frete, vShopeeBase = valorComLucro + cLog;
         
-        var avgBase = vShopeeBase / totalQtd;
+        var avgBase = vShopeeBase / qtdPecas;
+
         var pAvg1 = (avgBase + 4) / 0.80; 
         var pAvg2 = (avgBase + 16) / 0.86; 
         var pAvg3 = (avgBase + 20) / 0.86; 
         var pAvg4 = (avgBase + 26) / 0.86; 
 
-        var bestPAvg;
-        if (pAvg1 <= 79.991) bestPAvg = pAvg1;
-        else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
-        else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
-        else bestPAvg = pAvg4;
+        var bestPAvg, bestTx, bestFix;
+        if (pAvg1 <= 79.991) { bestPAvg = pAvg1; bestTx = 20; bestFix = 4; }
+        else if (pAvg2 <= 99.991) { bestPAvg = pAvg2; bestTx = 14; bestFix = 16; }
+        else if (pAvg3 <= 199.991) { bestPAvg = pAvg3; bestTx = 14; bestFix = 20; }
+        else { bestPAvg = pAvg4; bestTx = 14; bestFix = 26; }
 
-        var totS = bestPAvg * totalQtd;
+        var vs = bestPAvg * qtdPecas;
 
-        var avgBaseML = vShopeeBase / totalQtd;
+        var elTxS = document.getElementById('taxaShopee'), elFixS = document.getElementById('fixaShopee'); 
+        if(elTxS) elTxS.value = formatarMoeda(bestTx); 
+        if(elFixS) elFixS.value = formatarMoeda(bestFix * qtdPecas); 
+
+        var avgBaseML = vShopeeBase / qtdPecas;
         var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100));
         var pAvgML;
+        var fixaMeliAplicada = pegaValor('fixaMeli');
         if (pAvgML_noFix >= 79.99) {
             pAvgML = pAvgML_noFix;
             fixaMeliAplicada = 0;
         } else {
             pAvgML = (avgBaseML + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
         }
-        var vm = pAvgML * totalQtd;
+        var vm = pAvgML * qtdPecas;
 
         var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = formatarMoeda(vd); 
         var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = formatarMoeda(vs); 
@@ -1451,9 +1458,9 @@
         var tLucroD = document.getElementById('tag_lucroD'), tLucroS = document.getElementById('tag_lucroS'), tLucroM = document.getElementById('tag_lucroM');
         
         var lD = vd - custoProducao - cLog - frete;
-        var taxaRealShopee = (vs * (bestTx / 100)) + (bestFix * totalQtd);
+        var taxaRealShopee = (vs * (bestTx / 100)) + (bestFix * qtdPecas);
         var lS = vs - taxaRealShopee - custoProducao - cLog;
-        var taxaRealMeli = (vm * (pegaValor('taxaMeli')/100)) + (fixaMeliAplicada * totalQtd);
+        var taxaRealMeli = (vm * (pegaValor('taxaMeli')/100)) + (fixaMeliAplicada * qtdPecas);
         var lM = vm - taxaRealMeli - custoProducao - cLog;
         
         if(tLucroD) tLucroD.textContent = "Lucro: R$ " + formatarMoeda(lD > 0 ? lD : 0); 
@@ -1921,6 +1928,8 @@
             input.value = "";
         }; reader.readAsArrayBuffer(file);
     }
+
+    function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
         carrinho = [];
