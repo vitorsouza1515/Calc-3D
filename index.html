@@ -140,7 +140,7 @@
 
 <div id="configModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="fecharConfigModal()">&times;</span>
+        <span class="close-modal" onclick="fecharModal('configModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; cursor:default;">⚙️ Base Operacional</h2>
         <div class="grid-2">
             <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -173,13 +173,13 @@
             <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px; text-align: right; font-weight: bold;" id="msg_vida_util">...</div>
         </div>
         
-        <button class="btn btn-direta" onclick="fecharConfigModal()" style="width: 100%; margin-top: 15px;">Concluído</button>
+        <button class="btn btn-direta" onclick="fecharModal('configModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
 <div id="logisticaModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('logisticaModal').style.display='none'; syncNuvem(); calcular();">&times;</span>
+        <span class="close-modal" onclick="fecharModal('logisticaModal')">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--sky); cursor:default;">
             <span>🚚 Logística</span>
         </div>
@@ -191,13 +191,13 @@
                 <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
-        <button class="btn btn-direta" onclick="document.getElementById('logisticaModal').style.display='none'; syncNuvem(); calcular();" style="width: 100%; margin-top: 15px;">Concluído</button>
+        <button class="btn btn-direta" onclick="fecharModal('logisticaModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
 <div id="marketplacesModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('marketplacesModal').style.display='none'; syncNuvem(); calcular();">&times;</span>
+        <span class="close-modal" onclick="fecharModal('marketplacesModal')">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--primary); cursor:default;">
             <span>🛒 Taxas Marketplaces</span>
         </div>
@@ -220,18 +220,16 @@
                 <div style="background: rgba(250, 204, 21, 0.1); border: 1px solid rgba(250, 204, 21, 0.3); border-radius: 10px; padding: 10px; text-align: center;"><span style="font-size: 0.55rem; font-weight: 800; color: var(--meli); display: block; margin-bottom: 2px;">VAI SOBRAR (ML)</span><span style="font-size: 1.1rem; font-weight: 900; color: #fff;">R$ <span id="sim_meli">0,00</span></span></div>
             </div>
         </div>
-        <button class="btn btn-direta" onclick="document.getElementById('marketplacesModal').style.display='none'; syncNuvem(); calcular();" style="width: 100%; margin-top: 15px;">Concluído</button>
+        <button class="btn btn-direta" onclick="fecharModal('marketplacesModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
 
 <div id="catalogoModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('catalogoModal').style.display='none'">&times;</span>
+        <span class="close-modal" onclick="fecharModal('catalogoModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--orange); cursor:default;">🏷️ Gerenciar Catálogo</h2>
-        
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Salvar Projeto Atual:</p>
         <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); margin-bottom: 15px;">💾 Salvar no Catálogo</button>
-        
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; border-top: 1px dashed var(--border); padding-top: 10px;">Produtos Salvos:</p>
         <div id="lista_catalogo" class="history-list" style="max-height: 250px; overflow-y: auto;"></div>
     </div>
@@ -239,7 +237,7 @@
 
 <div id="estoqueModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('estoqueModal').style.display='none'">&times;</span>
+        <span class="close-modal" onclick="fecharModal('estoqueModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--success); cursor:default;">🧻 Gerenciar Estoque</h2>
         <div class="grid-3">
             <div class="input-group"><label>Tipo</label><input type="text" id="est_tipo" placeholder="Ex: PLA"></div>
@@ -259,7 +257,7 @@
 
 <div id="despesasModal" class="modal">
     <div class="modal-content">
-        <span class="close-modal" onclick="document.getElementById('despesasModal').style.display='none'">&times;</span>
+        <span class="close-modal" onclick="fecharModal('despesasModal')">&times;</span>
         <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: #ef4444; cursor:default;">
             <span>💸 Despesas / Compras</span>
         </div>
@@ -274,7 +272,7 @@
             </div>
             <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 150px; overflow-y: auto;"></div>
         </div>
-        <button class="btn btn-direta" onclick="document.getElementById('despesasModal').style.display='none'" style="width: 100%; margin-top: 15px; background: #ef4444;">Concluído</button>
+        <button class="btn btn-direta" onclick="fecharModal('despesasModal')" style="width: 100%; margin-top: 15px; background: #ef4444;">Concluído</button>
     </div>
 </div>
 
@@ -292,7 +290,7 @@
         <button onclick="document.getElementById('marketplacesModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Taxas e Marketplaces">🛒</button>
         <button onclick="document.getElementById('estoqueModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Estoque de Filamentos">🧻</button>
         <button onclick="document.getElementById('catalogoModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Catálogo de Pre-sets">🏷️</button>
-        <button onclick="window.abrirConfigModal()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Configurações">⚙️</button>
+        <button onclick="abrirConfigModal()" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Configurações">⚙️</button>
     </div>
 </header>
 
@@ -516,9 +514,10 @@
         });
     }
 
+    // Fecha os modais se clicar fora
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
-            event.target.style.display = "none";
+            window.fecharModal(event.target.id);
         }
     };
 
@@ -551,6 +550,7 @@
     
     window.qaOffset = 0;
     window.horasTotaisImpressasGlobal = 0;
+    window.oldBaseVals = {};
     
     window.configGlobais = { 
         maquina: "3.275", vidaUtil: "3.000", consumoW: "350", precoKwh: "1,20", qa_aviso: "100",
@@ -598,6 +598,7 @@
             document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli;
             document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli;
 
+            // Script de Resgate do Custo de Produção (Roda Inivisível)
             let precisaSalvarNuven = false;
             historico.forEach(h => {
                 if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento') {
@@ -691,19 +692,13 @@
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
-    window.abrirConfigModal = function() {
-        window.oldBaseVals = {
-            maq: pegaValor('maquina'),
-            vid: pegaValor('vidaUtil'),
-            con: pegaValor('consumoW'),
-            kwh: pegaValor('precoKwh')
-        };
-        document.getElementById('configModal').style.display='block';
-    }
-
-    window.salvarConfigsNuvemEFechar = function(modalId) {
-        if (modalId === 'configModal') {
+    // FUNÇÃO BLINDADA PARA FECHAR O MODAL ANTES DE SALVAR (Evita o travamento)
+    window.fecharModal = function(idModal) {
+        document.getElementById(idModal).style.display = 'none';
+        
+        if (idModal === 'configModal') {
             var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
+            
             if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) {
                 var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n" +
                           "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo.\n" +
@@ -735,10 +730,10 @@
                 }
             }
         }
+
         syncNuvem();
         renderHistorico();
         calcular();
-        document.getElementById(modalId).style.display='none';
     }
 
     window.resetarQA = function() {
@@ -1065,7 +1060,7 @@
     function aplicarDadosNoForm(id) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
         document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
-        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('precoFilamento').value = p.preco1; document.getElementById('tempoH').value = p.tempo;
+        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('precoFilamento').value = p.preco1 || "120,00"; document.getElementById('tempoH').value = p.tempo;
         
         var match1 = estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1 && e.marca === p.marca1); var sel1 = document.getElementById('sel_est_1'); if(sel1) { sel1.value = match1 ? match1.id : ""; }
         var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = p.multi; tMulti.dispatchEvent(new Event('change')); }
