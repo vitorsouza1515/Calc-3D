@@ -100,6 +100,7 @@
 
         /* Cores específicas para cada toggle */
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
+        #toggle_urgente:checked + .slider-switch { background-color: var(--danger); }
 
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
@@ -138,8 +139,8 @@
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
         .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; max-width: 100%; word-break: break-word; }
-        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; padding-right: 25px; }
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; }
+        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1.2rem; cursor: pointer; line-height: 1; }
@@ -309,6 +310,10 @@
         <div class="card">
             <h2 class="section-title" onclick="toggleCard('cc_crm', this, event)">
                 <span style="display:flex; align-items:center;">👤 Identificação / CRM <span class="chevron">▼</span></span>
+                <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
+                    <span style="color:var(--danger)">URGENTE</span>
+                    <label class="switch"><input type="checkbox" id="toggle_urgente" data-save="true"><span class="slider-switch"></span></label>
+                </div>
             </h2>
             <div id="cc_crm">
                 <datalist id="listaClientes"></datalist>
@@ -403,7 +408,7 @@
                 <div class="result-row"><span>Material Usado</span><span class="value">R$ <span id="r_mat">0,00</span></span></div>
                 <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: #fbbf24;">Custo Total Prod.</span><span class="value" style="color: #fbbf24;">R$ <span id="r_gasto">0,00</span></span></div>
                 
-                <div id="resumo_logistica" style="display:none; border-top: 1px dashed rgba(255,255,255,0.1); margin-top: 5px; padding-top: 5px;">
+                <div id="resumo_logistica">
                     <div class="result-row" style="color: var(--sky);"><span>Logística (Emb+Desloc)</span><span class="value">R$ <span id="r_log_fixo">0,00</span></span></div>
                     <div class="result-row" style="color: var(--sky);"><span>Frete</span><span class="value">R$ <span id="r_log_frete">0,00</span></span></div>
                     <div class="result-row" style="border:none; margin-top:5px; padding-top: 5px; border-top: 1px solid var(--border)"><span style="font-weight: 800; color: var(--success);">Custo Final (Prod+Log)</span><span class="value" style="color: var(--success);">R$ <span id="r_gasto_total">0,00</span></span></div>
@@ -631,8 +636,8 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'valorFreteManual', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor'];
-    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
+    var ids = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'custoEmbalagem', 'custoDeslocamento', 'tipoEnvio', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
+    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'valorFreteManual'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
@@ -1287,6 +1292,39 @@
         if(elReal) elReal.textContent = formatarMoeda(real);
     }
 
+    window.moverFila = function(id, direcao) {
+        var filaItems = historico.filter(h => h.status === 'Na Fila').sort((a, b) => {
+            if (a.urgente && !b.urgente) return -1;
+            if (!a.urgente && b.urgente) return 1;
+            var posA = a.posicaoFila || a.id;
+            var posB = b.posicaoFila || b.id;
+            return posA - posB;
+        });
+        
+        var index = filaItems.findIndex(h => h.id === id);
+        if (index < 0) return;
+        
+        var swapIndex = index + direcao;
+        if (swapIndex < 0 || swapIndex >= filaItems.length) return;
+        
+        var itemAtual = filaItems[index];
+        var itemTroca = filaItems[swapIndex];
+        
+        if (itemAtual.urgente !== itemTroca.urgente) {
+            showToast("⚠️ Marque como Urgente para passar na frente!");
+            return;
+        }
+        
+        var posAtual = itemAtual.posicaoFila || itemAtual.id;
+        var posTroca = itemTroca.posicaoFila || itemTroca.id;
+        
+        itemAtual.posicaoFila = posTroca;
+        itemTroca.posicaoFila = posAtual;
+        
+        syncNuvem();
+        renderHistorico();
+    };
+
     window.onload = function() {
         ids.forEach(function(id) {
             var el = document.getElementById(id);
@@ -1396,9 +1434,13 @@
         
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
         
+        var isCart = carrinho && carrinho.length > 0;
+        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : qtdPecas;
+        if(totalQtd < 1) totalQtd = 1;
+
         var tLog = document.getElementById('toggle_logistica');
         if (tLog && tLog.checked) {
-            cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
             frete = pegaValor('valorFreteManual');
         } else {
             cLog = 0;
@@ -1420,57 +1462,41 @@
         
         var vd = valorComLucro + cLog + frete, vShopeeBase = valorComLucro + cLog;
         
-        var avgBase = vShopeeBase / qtdPecas;
-
+        var avgBase = vShopeeBase / totalQtd;
         var pAvg1 = (avgBase + 4) / 0.80; 
         var pAvg2 = (avgBase + 16) / 0.86; 
         var pAvg3 = (avgBase + 20) / 0.86; 
         var pAvg4 = (avgBase + 26) / 0.86; 
 
-        var bestPAvg, bestTx, bestFix;
-        if (pAvg1 <= 79.991) { bestPAvg = pAvg1; bestTx = 20; bestFix = 4; }
-        else if (pAvg2 <= 99.991) { bestPAvg = pAvg2; bestTx = 14; bestFix = 16; }
-        else if (pAvg3 <= 199.991) { bestPAvg = pAvg3; bestTx = 14; bestFix = 20; }
-        else { bestPAvg = pAvg4; bestTx = 14; bestFix = 26; }
+        var bestPAvg;
+        if (pAvg1 <= 79.991) bestPAvg = pAvg1;
+        else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
+        else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
+        else bestPAvg = pAvg4;
 
-        var vs = bestPAvg * qtdPecas;
+        var totS = bestPAvg * totalQtd;
 
-        var elTxS = document.getElementById('taxaShopee'), elFixS = document.getElementById('fixaShopee'); 
-        if(elTxS) elTxS.value = formatarMoeda(bestTx); 
-        if(elFixS) elFixS.value = formatarMoeda(bestFix * qtdPecas); 
-
-        var avgBaseML = vShopeeBase / qtdPecas;
+        var avgBaseML = vShopeeBase / totalQtd;
         var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100));
         var pAvgML;
-        var fixaMeliAplicada = pegaValor('fixaMeli');
         if (pAvgML_noFix >= 79.99) {
             pAvgML = pAvgML_noFix;
             fixaMeliAplicada = 0;
         } else {
             pAvgML = (avgBaseML + fixaMeliAplicada) / (1 - (pegaValor('taxaMeli')/100));
         }
-        var vm = pAvgML * qtdPecas;
+        var totM = pAvgML * totalQtd;
 
-        var elVd = document.getElementById('r_vendaD'); if(elVd) elVd.textContent = formatarMoeda(vd); 
-        var elVs = document.getElementById('r_vendaS'); if(elVs) elVs.textContent = formatarMoeda(vs); 
-        var elVm = document.getElementById('r_vendaM'); if(elVm) elVm.textContent = formatarMoeda(vm);
-        
-        var tLucroD = document.getElementById('tag_lucroD'), tLucroS = document.getElementById('tag_lucroS'), tLucroM = document.getElementById('tag_lucroM');
-        
-        var lD = vd - custoProducao - cLog - frete;
-        var taxaRealShopee = (vs * (bestTx / 100)) + (bestFix * qtdPecas);
-        var lS = vs - taxaRealShopee - custoProducao - cLog;
-        var taxaRealMeli = (vm * (pegaValor('taxaMeli')/100)) + (fixaMeliAplicada * qtdPecas);
-        var lM = vm - taxaRealMeli - custoProducao - cLog;
-        
-        if(tLucroD) tLucroD.textContent = "Lucro: R$ " + formatarMoeda(lD > 0 ? lD : 0); 
-        if(tLucroS) tLucroS.textContent = "Lucro: R$ " + formatarMoeda(lS > 0 ? lS : 0); 
-        if(tLucroM) tLucroM.textContent = "Lucro: R$ " + formatarMoeda(lM > 0 ? lM : 0);
+        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto);
+        document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD);
+        document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS);
+        document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
     }
 
     function salvarHistorico() {
         var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "";
         var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
+        var isUrgente = document.getElementById('toggle_urgente').checked;
         
         var isCart = carrinho && carrinho.length > 0;
         var nomeFinal = "";
@@ -1531,7 +1557,7 @@
 
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
-                cLog = (pegaValor('custoEmbalagem') * qtdPecas) + pegaValor('custoDeslocamento'); 
+                cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento'); 
                 freteCalculado = pegaValor('valorFreteManual');
             } else {
                 cLog = 0;
@@ -1599,9 +1625,15 @@
                 materiais: stringMateriais
             });
         }
+        
+        var posFila = Date.now();
+        if (editHistoricoId) {
+            var oldItem = historico.find(h => h.id === editHistoricoId);
+            if(oldItem && oldItem.posicaoFila) posFila = oldItem.posicaoFila;
+        }
 
         var novo = { 
-            id: Date.now(), 
+            id: editHistoricoId ? editHistoricoId : Date.now(), 
             nome: nomeFinal, 
             cliente: cliNome, 
             telefone: cliTel, 
@@ -1617,6 +1649,8 @@
             tempo: tempoFinal,
             cartItems: cartToSave,
             totalQtd: totalQtd,
+            urgente: isUrgente,
+            posicaoFila: posFila,
             status: "Orçamento", 
             data: new Date().toLocaleDateString('pt-BR') 
         };
@@ -1624,7 +1658,6 @@
         if (editHistoricoId) {
             var idx = historico.findIndex(h => h.id === editHistoricoId);
             if (idx > -1) {
-                novo.id = editHistoricoId;
                 historico[idx] = novo;
             }
             editHistoricoId = null;
@@ -1650,8 +1683,6 @@
         
         resetarDados(); showToast("✅ Venda Registrada!");
     }
-
-    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
 
     window.mudarFiltro = function(status) {
         window.filtroStatusAtual = status;
@@ -1689,6 +1720,12 @@
 
         document.getElementById('nomeCliente').value = item.cliente || "";
         document.getElementById('telefoneCliente').value = item.telefone || "";
+        
+        var tUrgente = document.getElementById('toggle_urgente');
+        if (tUrgente) {
+            tUrgente.checked = !!item.urgente;
+            tUrgente.dispatchEvent(new Event('change'));
+        }
         
         var seletorCanal = document.getElementById('canalVendaSelecionado');
         seletorCanal.value = "Personalizado";
@@ -1728,6 +1765,8 @@
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
 
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico'); if(!lista) return; 
@@ -1778,10 +1817,22 @@
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             return window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual;
         });
+        
+        var isFila = window.filtroStatusAtual === 'Na Fila';
+        
+        if (isFila) {
+            itensFiltrados.sort((a, b) => {
+                if (a.urgente && !b.urgente) return -1;
+                if (!a.urgente && b.urgente) return 1;
+                var posA = a.posicaoFila || a.id;
+                var posB = b.posicaoFila || b.id;
+                return posA - posB; 
+            });
+        }
 
         lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado neste status</p>' : '';
         
-        itensFiltrados.forEach(function(item) {
+        itensFiltrados.forEach(function(item, index) {
             var custoItem = parseLocal(item.custo); 
             var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
             var canalStr = item.canal || "Direta";
@@ -1795,8 +1846,44 @@
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
+            
+            var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '';
+            var bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);';
+            var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
+            
+            var botoesHTML = `
+                <button class="btn-del-item" onclick="removerItem(${item.id})">×</button>
+                <button class="btn-edit-item" onclick="editarItemHistorico(${item.id})">✎</button>
+            `;
+            if (isFila) {
+                botoesHTML += `
+                    <button onclick="moverFila(${item.id}, 1)" style="position: absolute; top: 10px; right: 65px; background: none; border: none; font-size: 1rem; cursor: pointer;" title="Descer na Fila">⬇️</button>
+                    <button onclick="moverFila(${item.id}, -1)" style="position: absolute; top: 10px; right: 90px; background: none; border: none; font-size: 1rem; cursor: pointer;" title="Subir na Fila">⬆️</button>
+                `;
+            }
 
-            lista.innerHTML += '<div class="history-item"><button class="btn-edit-item" onclick="editarItemHistorico('+item.id+')">✎</button><button class="btn-del-item" onclick="removerItem('+item.id+')">×</button><div style="display: flex; justify-content: space-between; padding-right: 40px; align-items: center; margin-bottom: 4px;"><h4 style="margin:0;">'+item.nome+' <span style="font-size:0.6rem; color:#000; background:'+corTag+'; padding:2px 5px; border-radius:4px; margin-left:5px;">'+tagCanal+'</span></h4><select class="status-select '+colorClass+'" onchange="mudarStatus('+item.id+', this.value)"><option value="Orçamento" '+(st==='Orçamento'?'selected':'')+'>🟡 Orçamento</option><option value="Na Fila" '+(st==='Na Fila'?'selected':'')+'>🔵 Na Fila</option><option value="Imprimindo" '+(st==='Imprimindo'?'selected':'')+'>🟣 Imprimindo</option><option value="Finalizado" '+(st==='Finalizado'?'selected':'')+'>🟢 Finalizado</option><option value="Enviado / Entregue" '+(st==='Enviado / Entregue'?'selected':'')+'>🚚 Enviado / Entregue</option></select></div>'+crmHtml+'<div class="hist-vals"><span style="grid-column: span 2;">Venda: <b style="color:#fff">'+txtVenda+'</b></span><span>Custo Fab: R$ '+formatarMoeda(custoItem)+'</span><span>Frete/Log: R$ '+formatarMoeda(freteLogItem)+'</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ '+formatarMoeda(lucroItem)+'</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: '+item.data+'</span></div></div>';
+            lista.innerHTML += `
+                <div class="history-item" style="${bordaUrgente}">
+                    ${botoesHTML}
+                    <div style="display: flex; justify-content: space-between; padding-right: ${isFila ? '115px' : '40px'}; align-items: center; margin-bottom: 4px;">
+                        <h4 style="margin:0;">${prefixoFila}${item.nome} <span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-left:5px;">${tagCanal}</span>${tagUrgente}</h4>
+                        <select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)">
+                            <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
+                            <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
+                            <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
+                            <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
+                            <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
+                        </select>
+                    </div>
+                    ${crmHtml}
+                    <div class="hist-vals">
+                        <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
+                        <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
+                        <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
+                        <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                        <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
+                    </div>
+                </div>`;
         });
         
         document.getElementById('tot_qtd').textContent = qtdValida; 
@@ -1814,134 +1901,22 @@
 
     function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
 
-    function exportarExcel() {
-        var wb = XLSX.utils.book_new();
-        if(historico.length > 0) {
-            var dados = historico.map(h => { 
-                var canalAmigavel = h.canal === "Direta" ? "PIX" : h.canal === "Shopee" ? "Shopee" : "Mercado Livre"; 
-                var liquido = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
-                var bruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : liquido;
-                var custoLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
-                var lucro = liquido - parseLocal(h.custo) - custoLog;
-                return { "Data": h.data, "Cliente": h.cliente || "-", "WhatsApp": h.telefone || "-", "Projeto": h.nome, "Canal": canalAmigavel, "Status": h.status || "Finalizado", "Materiais Usados": h.materiais || "-", "Peso (g)": parseLocal(h.peso), "Tempo (h)": parseLocal(h.tempo), "Custo Prod. (R$)": parseLocal(h.custo), "Logística/Frete (R$)": custoLog, "Venda Bruta (R$)": bruto, "Venda Líquida (R$)": liquido, "Lucro Líquido (R$)": lucro }; 
-            });
-            var wsVendas = XLSX.utils.json_to_sheet(dados); wsVendas['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 15 }, { wch: 25 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
-        }
-        if(estoque.length > 0) {
-            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço (R$)": parseLocal(e.preco) }));
-            var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque); wsEstoque['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }]; XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
-        }
-        if(catalogo.length > 0) {
-            var dadosCat = catalogo.map(p => {
-                let pesoTot = parseLocal(p.peso1);
-                let matStr = p.tipo1 + " " + p.cor1 + " (" + p.peso1 + "g)";
-                if(p.multi && p.extras && p.extras.length > 0) {
-                    p.extras.forEach(ex => {
-                        pesoTot += parseLocal(ex.peso);
-                        matStr += " + " + ex.tipo + " " + ex.cor + " (" + ex.peso + "g)";
-                    });
-                }
-                return { 
-                    "Produto": p.nome, 
-                    "Tempo (h)": p.tempo, 
-                    "Peso Total (g)": formatarMoeda(pesoTot),
-                    "Materiais Detalhados": matStr,
-                    "Peso Principal (g)": p.peso1, 
-                    "Material": p.tipo1 + " " + p.cor1,
-                    "Multi": p.multi ? "SIM" : "NÃO",
-                    "JSON Extras": p.multi ? JSON.stringify({qtd: p.qtdCores, ex: p.extras}) : ""
-                };
-            });
-            var wsCat = XLSX.utils.json_to_sheet(dadosCat); 
-            wsCat['!cols'] = [{ wch: 25 }, { wch: 10 }, { wch: 15 }, { wch: 40 }, { hidden: true }, { hidden: true }, { hidden: true }, { hidden: true }];
-            XLSX.utils.book_append_sheet(wb, wsCat, "Catalogo");
-        }
-        if(despesas.length > 0) {
-            var totalDesp = despesas.reduce((sum, d) => sum + d.valor, 0);
-            var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Qtd": d.qtd, "Produto/Material": d.nome, "Valor Total (R$)": d.valor }));
-            dadosDespesas.push({ "Data": "TOTAL", "Qtd": "", "Produto/Material": "", "Valor Total (R$)": totalDesp });
-            var wsDespesas = XLSX.utils.json_to_sheet(dadosDespesas); wsDespesas['!cols'] = [{ wch: 12 }, { wch: 10 }, { wch: 40 }, { wch: 20 }]; XLSX.utils.book_append_sheet(wb, wsDespesas, "Despesas");
-        }
-        if(wb.SheetNames.length === 0) return alert("Não há dados para exportar!"); XLSX.writeFile(wb, "Relatorio_3D4You_" + Date.now() + ".xlsx");
-    }
-
-    function importarExcel(input) {
-        var file = input.files[0], reader = new FileReader();
-        reader.onload = function(e) {
-            var data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'});
-            var nomeAbaVendas = workbook.Sheets["Vendas"] ? "Vendas" : workbook.SheetNames[0];
-            if (workbook.Sheets[nomeAbaVendas] && nomeAbaVendas !== "Estoque" && nomeAbaVendas !== "Catalogo" && nomeAbaVendas !== "Despesas") {
-                var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets[nomeAbaVendas]);
-                var novosItens = jsonVendas.map((item, index) => { var canalEncontrado = item["Canal"] || "Direta"; if(canalEncontrado === "PIX") canalEncontrado = "Direta"; if(canalEncontrado === "Mercado Livre") canalEncontrado = "Meli"; return { id: Date.now() + index, nome: item["Projeto"] || "Sem Nome", cliente: item["Cliente"] || "", telefone: item["WhatsApp"] || "", canal: canalEncontrado, status: item["Status"] || "Finalizado", materiais: item["Materiais Usados"] || "-", peso: String(item["Peso (g)"] || "0"), tempo: String(item["Tempo (h)"] || "0"), custo: String(item["Custo Prod. (R$)"] || "0.00"), frete: parseLocal(item["Logística/Frete (R$)"] || "0"), logistica: 0, valorVenda: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorBruto: String(item["Venda Bruta (R$)"] || item["Venda Realizada (R$)"] || "0.00"), valorLiquido: String(item["Venda Líquida (R$)"] || item["Venda Realizada (R$)"] || "0.00"), data: item["Data"] || new Date().toLocaleDateString('pt-BR') }; });
-                if (novosItens.length > 0) { historico = novosItens; }
-            }
-            if (workbook.Sheets["Estoque"]) {
-                var jsonEstoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]);
-                estoque = jsonEstoque.map((item, index) => ({ id: Date.now() + index + 10000, tipo: item["Tipo"] || "-", cor: item["Cor"] || "-", marca: item["Marca"] || "-", preco: formatarMoeda(item["Preço (R$)"] || 0) }));
-            }
-            if (workbook.Sheets["Catalogo"]) {
-                var jsonCatalogo = XLSX.utils.sheet_to_json(workbook.Sheets["Catalogo"]);
-                catalogo = jsonCatalogo.map((item, index) => {
-                    var mat = item["Material"] || "";
-                    var parts = mat.split(" ");
-                    var t = parts[0] || "-";
-                    var c = parts.slice(1).join(" ") || "-";
-                    
-                    var isMulti = item["Multi"] === "SIM";
-                    var qCores = "0";
-                    var ext = [];
-                    if(isMulti && item["JSON Extras"]) {
-                        try {
-                            var pData = JSON.parse(item["JSON Extras"]);
-                            qCores = pData.qtd;
-                            ext = pData.ex;
-                        }catch(e){}
-                    }
-
-                    return { 
-                        id: Date.now() + index + 30000, 
-                        nome: item["Produto"] || "Sem Nome", 
-                        tempo: String(item["Tempo (h)"] || "0").replace('.', ','), 
-                        peso1: String(item["Peso Principal (g)"] || item["Peso Total (g)"] || "0").replace('.', ','), 
-                        tipo1: t, 
-                        cor1: c, 
-                        marca1: "-", 
-                        preco1: "120,00", 
-                        multi: isMulti, 
-                        qtdCores: qCores, 
-                        extras: ext 
-                    };
-                });
-            }
-            if (workbook.Sheets["Despesas"]) {
-                var jsonDespesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]);
-                despesas = jsonDespesas.map((item, index) => ({ id: Date.now() + index + 20000, data: item["Data"] || new Date().toLocaleDateString('pt-BR'), qtd: item["Qtd"] || 1, nome: item["Produto/Material"] || "-", valor: parseLocal(item["Valor Total (R$)"] || 0) }));
-                despesas = despesas.filter(d => d.data !== "TOTAL");
-            }
-            syncNuvem(); 
-            renderHistorico();
-            renderEstoque();
-            renderCatalogo();
-            renderDespesas();
-            atualizarDropdownsEstoque();
-            showToast("✅ Nuvem Atualizada!");
-            input.value = "";
-        }; reader.readAsArrayBuffer(file);
-    }
-
     function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
         carrinho = [];
         renderCarrinho();
         
-        ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'valorFreteManual'].forEach(id => { 
+        ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { 
             var el = document.getElementById(id); 
             if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
         });
         
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+        
+        var elFrete = document.getElementById('valorFreteManual');
+        if(elFrete) { elFrete.value = "0,00"; salvarDinamico('valorFreteManual'); }
 
         ['tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         var elPreco1 = document.getElementById('precoFilamento'); if(elPreco1) { elPreco1.value = "120,00"; }
@@ -1975,7 +1950,7 @@
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
-        ['toggle_multi_mat'].forEach(id => {
+        ['toggle_multi_mat', 'toggle_urgente'].forEach(id => {
             var t = document.getElementById(id);
             if (t && t.checked) {
                 t.checked = false;
