@@ -21,7 +21,7 @@
     
     <style>
         :root {
-            --bg-color: #0f172a; 
+            --bg-color: #0f172a;
             --card-bg: #1e293b; 
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -53,7 +53,16 @@
         .col-history { order: 3; }
 
         @media (min-width: 1024px) { 
-            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 360px; max-width: 1400px; margin: 0 auto; overflow-y: auto; align-items: start; padding-right: 10px; }
+            .dashboard { 
+                /* ALTERADO AQUI: Permite 100% da tela sem trava de 1400px */
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); 
+                max-width: 100%; 
+                width: 100%;
+                margin: 0; 
+                overflow-y: auto; 
+                align-items: start; 
+                padding-right: 10px; 
+            }
             .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
             .col-history { order: 2; }
             .col-results { order: 3; }
@@ -131,7 +140,6 @@
 
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
         
-        /* ESTILO DO FILTRO DE VENDAS COM TRAVA DE LARGURA */
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; }
@@ -139,10 +147,12 @@
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
         .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; }
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; transition: 0.3s; }
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
+        
+        /* ATENÇÃO: As classes abaixo continuam existindo para outras modais, mas não afetam mais a Fila de forma negativa */
         .btn-del-item { position: absolute; top: 10px; right: 10px; color: #ef4444; background: none; border: none; font-size: 1.2rem; cursor: pointer; line-height: 1; }
         .btn-edit-item { position: absolute; top: 10px; right: 35px; color: var(--sky); background: none; border: none; font-size: 0.9rem; cursor: pointer; }
         
@@ -166,6 +176,7 @@
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
         .modal-content { background-color: var(--card-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
+
     </style>
 </head>
 <body>
@@ -501,11 +512,12 @@
                     <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
                     <div class="total-row"><span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b></div>
                 </div>
-                
+             
                 <div class="report-grid">
                     <button class="btn-report" onclick="gerarPDF()">📄 PDF Geral</button>
                     <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel</button>
                 </div>
+               
                 <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
                 <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
                 <button onclick="document.querySelector('.dashboard').scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });" style="background: #334155; color: white; border: 1px solid var(--border); width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; margin-top: 12px;">⬆️ Voltar ao Início</button>
@@ -544,7 +556,7 @@
     
     var carrinho = []; 
     var editEstoqueId = null;
-    var editCatalogoId = null; 
+    var editCatalogoId = null;
     var editHistoricoId = null; 
     var editDespesaId = null;
     var editandoCarrinhoId = null;
@@ -619,7 +631,8 @@
         var intPart = parts[0];
         if (intPart) { if (intPart.length > 1 && intPart.charAt(0) === '0') { intPart = parseInt(intPart, 10).toString(); } intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
         var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
-        if (el.value !== newVal) { el.value = newVal; var newStart = start + (newVal.length - oldVal.length); if (newStart < 0) newStart = 0; try { el.setSelectionRange(newStart, newStart); } catch(e) {} }
+        if (el.value !== newVal) { el.value = newVal;
+        var newStart = start + (newVal.length - oldVal.length); if (newStart < 0) newStart = 0; try { el.setSelectionRange(newStart, newStart); } catch(e) {} }
     }
 
     function mascaraTelefone(el) {
@@ -669,8 +682,8 @@
         if (multiOn) { 
             var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
             for(var i = 2; i <= qtdExtras + 1; i++) { 
-                var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); 
-                if (nomeMatI === '') nomeMatI = 'Filamento ' + i; 
+                var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
+                if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
                 if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } 
             } 
         }
@@ -708,7 +721,6 @@
         
         document.getElementById('nomeProjeto').value = "";
         document.getElementById('qtdPecasProjeto').value = "1";
-        
         localStorage.removeItem('3d4y_dark_nomeProjeto');
         salvarDinamico('qtdPecasProjeto');
         calcular();
@@ -794,7 +806,6 @@
 
         container.style.display = 'block';
         lista.innerHTML = '';
-        
         var totCusto = 0, totValorComLucro = 0;
 
         carrinho.forEach(item => {
@@ -825,9 +836,9 @@
         var vShopeeBase = totValorComLucro + cLog;
         
         var avgBase = vShopeeBase / totalQtd;
-        var pAvg1 = (avgBase + 4) / 0.80; 
+        var pAvg1 = (avgBase + 4) / 0.80;
         var pAvg2 = (avgBase + 16) / 0.86; 
-        var pAvg3 = (avgBase + 20) / 0.86; 
+        var pAvg3 = (avgBase + 20) / 0.86;
         var pAvg4 = (avgBase + 26) / 0.86; 
 
         var bestPAvg;
@@ -835,7 +846,6 @@
         else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
         else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
         else bestPAvg = pAvg4;
-
         var totS = bestPAvg * totalQtd;
 
         var avgBaseML = vShopeeBase / totalQtd;
@@ -894,7 +904,6 @@
                         isModified = true;
                     }
                 });
-                
                 if (isModified) {
                     h.peso = h.cartItems.reduce((a,b)=>a+b.peso, 0);
                     h.tempo = h.cartItems.reduce((a,b)=>a+b.tempo, 0);
@@ -908,12 +917,10 @@
                 var match = h.nome.match(/^(\d+)x\s(.*)/);
                 var hName = match ? match[2].toLowerCase().trim() : h.nome.toLowerCase().trim();
                 var qtd = h.totalQtd || (match ? parseInt(match[1]) : 1);
-                
                 if (hName === baseName) {
                     var matStr = (catItem.tipo1 + " " + catItem.cor1).trim() + " (" + formatarMoeda(parseLocal(catItem.peso1)*qtd) + "g)";
                     var pesoTot = parseLocal(catItem.peso1) * qtd;
                     var matCost = (parseLocal(catItem.preco1)/1000) * pesoTot;
-                    
                     if (catItem.multi && catItem.extras && catItem.extras.length > 0) {
                         catItem.extras.forEach(ex => {
                             var pEx = parseLocal(ex.peso) * qtd;
@@ -937,7 +944,6 @@
                 }
             }
         });
-        
         if (alteracoes > 0) {
             syncNuvem();
             renderHistorico();
@@ -993,7 +999,6 @@
         if(!sel || !lista) return;
         
         var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
-
         var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>';
         var htmlLista = catalogoOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>' : '';
         
@@ -1075,7 +1080,8 @@
                         var selI = document.getElementById('sel_est_'+i);
                         if(selI) { selI.value = matchI ? matchI.id : ""; }
 
-                        salvarDinamico('tipoFilamento'+i); salvarDinamico('corFilamento'+i); salvarDinamico('marcaFilamento'+i); salvarDinamico('precoFilamento'+i); salvarDinamico('pesoPeca'+i);
+                        salvarDinamico('tipoFilamento'+i); salvarDinamico('corFilamento'+i); salvarDinamico('marcaFilamento'+i);
+                        salvarDinamico('precoFilamento'+i); salvarDinamico('pesoPeca'+i);
                     }
                 }, 50);
             });
@@ -1088,20 +1094,23 @@
     function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
 
     function salvarItemEstoque() {
-        var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value; 
+        var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value;
         if(!t || !p) { alert("Preencha pelo menos o Tipo e o Preço para salvar no estoque."); return; }
         if (editEstoqueId) {
             var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
             if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; }
-            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
+            editEstoqueId = null;
+            document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
         } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); }
         syncNuvem();
-        document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = "";
+        document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = "";
+        document.getElementById('est_preco').value = "";
         showToast("📦 Estoque Atualizado!");
     }
 
     function renderEstoque() {
-        var lista = document.getElementById('lista_estoque'); if(!lista) return;
+        var lista = document.getElementById('lista_estoque');
+        if(!lista) return;
         
         var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         
@@ -1117,7 +1126,8 @@
     function editarItemEstoque(id) {
         var item = estoque.find(function(e) { return e.id === id; });
         if(item) {
-            document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco;
+            document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor;
+            document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco;
             editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição";
         }
     }
@@ -1148,11 +1158,13 @@
     }
 
     function renderCoresExtras() {
-        var qtdInput = document.getElementById('qtdCoresExtras'); if (!qtdInput) return;
-        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1, container = document.getElementById('container_cores_extras'); if (!container) return; container.innerHTML = ''; 
+        var qtdInput = document.getElementById('qtdCoresExtras');
+        if (!qtdInput) return;
+        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1, container = document.getElementById('container_cores_extras'); if (!container) return; container.innerHTML = '';
         for(var i = 2; i <= qtd + 1; i++) {
             var sTipo = localStorage.getItem('3d4y_dark_tipoFilamento' + i) || '', sCor = localStorage.getItem('3d4y_dark_corFilamento' + i) || '', sMarca = localStorage.getItem('3d4y_dark_marcaFilamento' + i) || '', sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '120,00', sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || '';
-            if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ','); if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
+            if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ',');
+            if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ',');
             container.innerHTML += `
                 <div class="filament-box" style="margin-top:10px;">
                     <span class="filament-box-title">Filamento ${i}</span>
@@ -1186,22 +1198,19 @@
         var isCart = carrinho && carrinho.length > 0;
         var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
         if (totalQtd < 1) totalQtd = 1;
-
         var avgBruto = vVenda / totalQtd;
 
         var feeShopeeUnit = 0;
-        if (avgBruto <= 79.991) feeShopeeUnit = (avgBruto * 0.20) + 4; 
-        else if (avgBruto <= 99.991) feeShopeeUnit = (avgBruto * 0.14) + 16; 
+        if (avgBruto <= 79.991) feeShopeeUnit = (avgBruto * 0.20) + 4;
+        else if (avgBruto <= 99.991) feeShopeeUnit = (avgBruto * 0.14) + 16;
         else if (avgBruto <= 199.991) feeShopeeUnit = (avgBruto * 0.14) + 20; 
         else feeShopeeUnit = (avgBruto * 0.14) + 26;
-        
         var netShopee = vVenda - (feeShopeeUnit * totalQtd); 
         if (netShopee < 0) netShopee = 0;
-
         var tMeli = pegaValor('taxaMeli') / 100;
         var fMeli = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
         var feeMeliUnit = (avgBruto * tMeli) + fMeli;
-        var netMeli = vVenda - (feeMeliUnit * totalQtd); 
+        var netMeli = vVenda - (feeMeliUnit * totalQtd);
         if (netMeli < 0) netMeli = 0;
 
         if(elS) elS.textContent = formatarMoeda(netShopee); 
@@ -1242,7 +1251,8 @@
     }
 
     function renderDespesas() {
-        var lista = document.getElementById('lista_despesas'); if(!lista) return;
+        var lista = document.getElementById('lista_despesas');
+        if(!lista) return;
         lista.innerHTML = despesas.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhuma despesa registrada</p>' : '';
         var soma = 0;
         despesas.forEach(function(d) {
@@ -1258,7 +1268,6 @@
                     </div>
                 </div>`;
         });
-        
         var td = document.getElementById('tot_despesas'); 
         if(td) td.textContent = formatarMoeda(soma);
         
@@ -1267,7 +1276,7 @@
 
     function removerDespesa(id) { 
         if(confirm("Deseja apagar esta despesa?")) { 
-            despesas = despesas.filter(d => d.id !== id); 
+            despesas = despesas.filter(d => d.id !== id);
             syncNuvem(); 
         } 
     }
@@ -1300,7 +1309,6 @@
             var posB = b.posicaoFila || b.id;
             return posA - posB;
         });
-        
         var index = filaItems.findIndex(h => h.id === id);
         if (index < 0) return;
         
@@ -1309,7 +1317,6 @@
         
         var itemAtual = filaItems[index];
         var itemTroca = filaItems[swapIndex];
-        
         if (itemAtual.urgente !== itemTroca.urgente) {
             showToast("⚠️ Marque como Urgente para passar na frente!");
             return;
@@ -1348,6 +1355,7 @@
                 });
             }
         });
+
         dynIds.forEach(function(id) {
             var el = document.getElementById(id);
             if(el) {
@@ -1360,23 +1368,23 @@
                 }
             }
         });
-        
+
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
-        var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
+        var qCores = document.getElementById('qtdCoresExtras');
+        if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
         
         renderCoresExtras(); 
         updateSliderProgress(document.getElementById('margemSlider')); 
         toggleFreteManual();
-        calcular(); 
+        calcular();
         mostrarValorPersonalizado();
         
-        // Popula as opções de auto-complete
         clientesCadastrados = {};
         historico.forEach(function(item) {
             if (item.cliente && item.cliente.trim() !== '') {
@@ -1396,20 +1404,16 @@
 
     function calcular() {
         ids.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { localStorage.setItem('3d4y_dark_' + id, el.type === 'checkbox' ? el.checked : el.value); } });
-        
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
 
         var logEnabled = true;
-        
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         
         var tempoUnitario = pegaValor('tempoH');
         var pesoUnitarioMatPrincipal = pegaValor('pesoPeca');
-        
         var tempoTotal = tempoUnitario * qtdPecas;
         var pesoTotalPrincipal = pesoUnitarioMatPrincipal * qtdPecas;
-
         var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoTotal;
         var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoTotal;
         var matTotal = (pegaValor('precoFilamento') / 1000) * pesoTotalPrincipal;
@@ -1420,20 +1424,19 @@
                 var pPreco = pegaValor('precoFilamento' + i);
                 var pPesoUnitario = pegaValor('pesoPeca' + i);
                 var pPesoTotal = pPesoUnitario * qtdPecas; 
-                matTotal += (pPreco / 1000) * pPesoTotal; 
+                matTotal += (pPreco / 1000) * pPesoTotal;
             } 
         }
 
-        var suc = pegaValor('taxaSucesso'); if (suc <= 0) suc = 100; 
+        var suc = pegaValor('taxaSucesso');
+        if (suc <= 0) suc = 100; 
         var custoProducao = (dep + ene + matTotal) / (suc / 100);
-        
         var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = formatarMoeda(dep); 
         var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene); 
-        var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal); 
+        var rMat = document.getElementById('r_mat');
+        if(rMat) rMat.textContent = formatarMoeda(matTotal); 
         var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
-        
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado, cLog = 0, frete = 0;
-        
         var isCart = carrinho && carrinho.length > 0;
         var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : qtdPecas;
         if(totalQtd < 1) totalQtd = 1;
@@ -1454,18 +1457,18 @@
                 divResumoLog.style.display = 'block';
                 var rLogFixo = document.getElementById('r_log_fixo'); if(rLogFixo) rLogFixo.textContent = formatarMoeda(cLog);
                 var rLogFrete = document.getElementById('r_log_frete'); if(rLogFrete) rLogFrete.textContent = formatarMoeda(frete);
-                var rGastoTotal = document.getElementById('r_gasto_total'); if(rGastoTotal) rGastoTotal.textContent = formatarMoeda(custoProducao + cLog + frete);
+                var rGastoTotal = document.getElementById('r_gasto_total');
+                if(rGastoTotal) rGastoTotal.textContent = formatarMoeda(custoProducao + cLog + frete);
             } else {
                 divResumoLog.style.display = 'none';
             }
         }
         
         var vd = valorComLucro + cLog + frete, vShopeeBase = valorComLucro + cLog;
-        
         var avgBase = vShopeeBase / totalQtd;
-        var pAvg1 = (avgBase + 4) / 0.80; 
+        var pAvg1 = (avgBase + 4) / 0.80;
         var pAvg2 = (avgBase + 16) / 0.86; 
-        var pAvg3 = (avgBase + 20) / 0.86; 
+        var pAvg3 = (avgBase + 20) / 0.86;
         var pAvg4 = (avgBase + 26) / 0.86; 
 
         var bestPAvg;
@@ -1473,7 +1476,6 @@
         else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
         else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
         else bestPAvg = pAvg4;
-
         var totS = bestPAvg * totalQtd;
 
         var avgBaseML = vShopeeBase / totalQtd;
@@ -1518,16 +1520,15 @@
             if(totalQtd < 1) totalQtd = 1;
             
             carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
-
             if (canal === "Personalizado") { 
-                valorBruto = pegaValor('valorPersonalizado'); 
+                valorBruto = pegaValor('valorPersonalizado');
                 canal = document.getElementById('canalPersonalizadoDestino').value; 
             } else if(canal === "Direta") { 
-                valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent);
             } else if(canal === "Shopee") { 
-                valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent);
             } else { 
-                valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); 
+                valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent);
             }
             
             var tLog = document.getElementById('toggle_logistica');
@@ -1557,7 +1558,7 @@
 
             var tLog = document.getElementById('toggle_logistica');
             if (tLog && tLog.checked) {
-                cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento'); 
+                cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
                 freteCalculado = pegaValor('valorFreteManual');
             } else {
                 cLog = 0;
@@ -1569,31 +1570,31 @@
             if (multiOn) { 
                 var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
                 for(var i = 2; i <= qtdExtras + 1; i++) { 
-                    var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); 
-                    if (nomeMatI === '') nomeMatI = 'Filamento ' + i; 
+                    var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
+                    if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
                     if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } 
                 } 
             }
 
             if (canal === "Personalizado") { 
-                valorBruto = pegaValor('valorPersonalizado'); 
+                valorBruto = pegaValor('valorPersonalizado');
                 canal = document.getElementById('canalPersonalizadoDestino').value; 
             } else if(canal === "Direta") { 
-                valorBruto = parseLocal(document.getElementById('r_vendaD').textContent); 
+                valorBruto = parseLocal(document.getElementById('r_vendaD').textContent);
             } else if(canal === "Shopee") { 
-                valorBruto = parseLocal(document.getElementById('r_vendaS').textContent); 
+                valorBruto = parseLocal(document.getElementById('r_vendaS').textContent);
             } else { 
-                valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); 
+                valorBruto = parseLocal(document.getElementById('r_vendaM').textContent);
             }
         }
 
-        var valorVendaFinal = 0; 
+        var valorVendaFinal = 0;
         var avgBruto = valorBruto / totalQtd;
 
         if(canal === "Shopee") {
             var feeShpUnit = 0;
-            if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4; 
-            else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16; 
+            if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4;
+            else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16;
             else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20; 
             else feeShpUnit = (avgBruto * 0.14) + 26;
             valorVendaFinal = valorBruto - (feeShpUnit * totalQtd) - freteCalculado - cLog;
@@ -1603,11 +1604,10 @@
             var feeMlUnit = (avgBruto * txMl) + fixMl;
             valorVendaFinal = valorBruto - (feeMlUnit * totalQtd) - freteCalculado - cLog;
         } else { 
-            valorVendaFinal = valorBruto - freteCalculado - cLog; 
+            valorVendaFinal = valorBruto - freteCalculado - cLog;
         }
 
         if(valorVendaFinal < 0) valorVendaFinal = 0;
-
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
         
         var cartToSave = [];
@@ -1654,7 +1654,6 @@
             status: "Orçamento", 
             data: new Date().toLocaleDateString('pt-BR') 
         };
-        
         if (editHistoricoId) {
             var idx = historico.findIndex(h => h.id === editHistoricoId);
             if (idx > -1) {
@@ -1679,7 +1678,8 @@
             }
         }
         
-        var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
+        var elPerso = document.getElementById('valorPersonalizado');
+        if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
         
         resetarDados(); showToast("✅ Venda Registrada!");
     }
@@ -1734,7 +1734,6 @@
         var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
         document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar);
         salvarDinamico('valorPersonalizado');
-        
         var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
         if(canalReal !== "Direta" && canalReal !== "Shopee" && canalReal !== "Meli") {
              document.getElementById('canalPersonalizadoDestino').value = item.canal;
@@ -1760,22 +1759,22 @@
         document.querySelector('.btn-save-hist').style.background = "var(--sky)";
         
         showToast("✏️ Venda carregada! Edite os itens no carrinho.");
-        
         var dash = document.querySelector('.dashboard');
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
+    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id);
+        if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } 
+    }
 
     function renderHistorico() {
-        var lista = document.getElementById('listaHistorico'); if(!lista) return; 
+        var lista = document.getElementById('listaHistorico');
+        if(!lista) return; 
         var filtroDiv = document.getElementById('filtroHistorico');
 
         var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0;
-        
         var counts = { 'Todos': historico.length, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0 };
-
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
@@ -1795,13 +1794,11 @@
                 somaLiquido += valLiq;
                 somaLucro += lucroItem;
                 qtdValida++;
-
                 if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } 
                 else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } 
                 else { somaDireta += valLiq; qtdDireta++; }
             }
         });
-
         if (filtroDiv) {
             filtroDiv.innerHTML = `
                 <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button>
@@ -1817,7 +1814,6 @@
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             return window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual;
         });
-        
         var isFila = window.filtroStatusAtual === 'Na Fila';
         
         if (isFila) {
@@ -1832,6 +1828,7 @@
 
         lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado neste status</p>' : '';
         
+        /* ALTERADO AQUI: Uso de Flexbox para resolver o esmagamento do texto no Mobile */
         itensFiltrados.forEach(function(item, index) {
             var custoItem = parseLocal(item.custo); 
             var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
@@ -1843,40 +1840,47 @@
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : 'status-finalizado';
+            
             var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
-            
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
-            
             var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '';
             var bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);';
             var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
             
             var botoesHTML = `
-                <button class="btn-del-item" onclick="removerItem(${item.id})">×</button>
-                <button class="btn-edit-item" onclick="editarItemHistorico(${item.id})">✎</button>
+                ${isFila ? `
+                <button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button>
+                <button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>
+                ` : ''}
+                <button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button>
+                <button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>
             `;
-            if (isFila) {
-                botoesHTML += `
-                    <button onclick="moverFila(${item.id}, 1)" style="position: absolute; top: 10px; right: 65px; background: none; border: none; font-size: 1rem; cursor: pointer;" title="Descer na Fila">⬇️</button>
-                    <button onclick="moverFila(${item.id}, -1)" style="position: absolute; top: 10px; right: 90px; background: none; border: none; font-size: 1rem; cursor: pointer;" title="Subir na Fila">⬆️</button>
-                `;
-            }
 
             lista.innerHTML += `
                 <div class="history-item" style="${bordaUrgente}">
-                    ${botoesHTML}
-                    <div style="display: flex; justify-content: space-between; padding-right: ${isFila ? '115px' : '40px'}; align-items: center; margin-bottom: 4px;">
-                        <h4 style="margin:0;">${prefixoFila}${item.nome} <span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-left:5px;">${tagCanal}</span>${tagUrgente}</h4>
-                        <select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)">
-                            <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
-                            <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
-                            <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
-                            <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
-                            <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
-                        </select>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+                        <div style="flex: 1; min-width: 0;">
+                            <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">
+                                ${prefixoFila}${item.nome} 
+                                <span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-left:5px; vertical-align: middle; display: inline-block;">${tagCanal}</span>
+                                ${tagUrgente}
+                            </h4>
+                            <div style="margin-top: 6px;">
+                                <select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)">
+                                    <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
+                                    <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
+                                    <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
+                                    <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
+                                    <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            ${botoesHTML}
+                        </div>
                     </div>
                     ${crmHtml}
-                    <div class="hist-vals">
+                    <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
                         <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                         <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
                         <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
@@ -1894,7 +1898,8 @@
         document.getElementById('tot_lucro').textContent = formatarMoeda(somaLucro); 
         document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
         document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
-        document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
+        document.getElementById('qtd_meli').textContent = qtdMeli;
+        document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
         
         atualizarLucroReal();
     }
@@ -1911,7 +1916,6 @@
             var el = document.getElementById(id); 
             if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } 
         });
-        
         var elQtd = document.getElementById('qtdPecasProjeto');
         if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
         
@@ -1925,7 +1929,7 @@
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
         
-        editCatalogoId = null; 
+        editCatalogoId = null;
         var btnModal = document.getElementById('btn_salvar_catalogo');
         if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
         var btnMain = document.getElementById('btn_salvar_catalogo_main');
@@ -1934,7 +1938,6 @@
         editHistoricoId = null;
         document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda";
         document.querySelector('.btn-save-hist').style.background = "var(--purple)";
-        
         editandoCarrinhoId = null;
         var btnAdd = document.getElementById('btn_add_carrinho');
         var btnCancel = document.getElementById('btn_cancelar_edicao');
@@ -1946,7 +1949,8 @@
 
         var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
         for(var i = 2; i <= qtdExtras + 1; i++) {
-            var selExtra = document.getElementById('sel_est_' + i); if(selExtra) selExtra.value = "";
+            var selExtra = document.getElementById('sel_est_' + i);
+            if(selExtra) selExtra.value = "";
             ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i));
         }
 
@@ -1957,11 +1961,11 @@
                 t.dispatchEvent(new Event('change'));
             }
         });
-        
         var elQtdCores = document.getElementById('qtdCoresExtras');
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
-        calcular(); showToast("✅ Projeto Resetado!");
+        calcular();
+        showToast("✅ Projeto Resetado!");
         
         var dash = document.querySelector('.dashboard');
         if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1979,14 +1983,12 @@
             carrinho.forEach(i => {
                 txt += "- " + i.nome + "\n";
             });
-            
             valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
         } else {
             var nProj = document.getElementById('nomeProjeto');
             var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
             var elQtd = document.getElementById('qtdPecasProjeto');
             var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
-            
             txt += "*Projeto:* " + qtd + nome + "\n";
             valF = tipo === 'direta' ? document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
         }
