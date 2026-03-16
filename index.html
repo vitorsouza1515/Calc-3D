@@ -9,56 +9,36 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="./logo.png">
-    
     <title>3D 4You ERP</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     
     <style>
-        :root {
-            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
-            --border: #334155; --primary: #3b82f6; --success: #10b981; --shopee: #f94d30;
-            --meli: #facc15; --sky: #0ea5e9; --purple: #8b5cf6; --orange: #f97316; --danger: #ef4444;
-        }
-
+        :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8; --border: #334155; --primary: #3b82f6; --success: #10b981; --shopee: #f94d30; --meli: #facc15; --sky: #0ea5e9; --purple: #8b5cf6; --orange: #f97316; --danger: #ef4444; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow-x: hidden; max-width: 100vw; }
-        
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
         .nuvem-icon { font-size: 0.8rem; margin-left: 5px; vertical-align: super; color: var(--success); }
-
         .dashboard { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-y: auto; overflow-x: hidden; padding-bottom: 20px; width: 100%; }
         .col-input { order: 1; } .col-results { order: 2; } .col-history { order: 3; }
-
-        @media (min-width: 1024px) { 
-            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); max-width: 100%; width: 100%; margin: 0; overflow-y: auto; align-items: start; padding-right: 10px; }
-            .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
-            .col-history { order: 2; } .col-results { order: 3; }
-        }
-
+        @media (min-width: 1024px) { .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); max-width: 100%; width: 100%; margin: 0; overflow-y: auto; align-items: start; padding-right: 10px; } .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; } .col-history { order: 2; } .col-results { order: 3; } }
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; overflow-x: hidden; }
         .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; cursor: pointer; user-select: none; }
         .chevron { transition: transform 0.3s; display: inline-block; font-size: 0.7rem; margin-left: 8px; color: var(--text-muted); vertical-align: middle; }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; min-width: 0; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
         .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; min-width: 0; }
         .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
-
         .peso-destaque { border: 2px solid var(--sky) !important; background: rgba(14, 165, 233, 0.1) !important; font-size: 1.1rem !important; color: #fff !important; }
         .filament-box { background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
         .filament-box-title { font-size: 0.7rem; color: var(--sky); font-weight: 800; margin-bottom: 10px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
         .detalhes-material { display: none; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
-
         .range-area { margin-top: 15px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .range-container { display: flex; align-items: center; gap: 15px; }
         input[type="range"] { flex: 1; height: 10px; background: #334155; border-radius: 8px; appearance: none; outline: none; min-width: 0; }
@@ -66,7 +46,6 @@
         .margem-box { display: flex; align-items: center; background: #0f172a; border: 2px solid var(--primary); border-radius: 10px; padding: 0 12px; width: 100px; flex-shrink: 0; height: 45px; }
         .margem-box input { width: 100%; min-width: 0; font-size: 1.3rem; font-weight: 900; color: var(--primary); text-align: right; background: transparent; border: none; outline: none; }
         .margem-box span { color: var(--primary); font-weight: 900; font-size: 1.1rem; margin-left: 2px; }
-
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
@@ -75,60 +54,47 @@
         input:checked + .slider-switch:before { transform: translateX(14px); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
         #toggle_urgente:checked + .slider-switch { background-color: var(--danger); }
-
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
         .result-row span:first-child { flex: 1; line-height: 1.2; }
         .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap; text-align: right; }
-        
         .price-box { border-radius: 12px; padding: 12px; text-align: center; border-left: 4px solid transparent; background: rgba(0,0,0,0.2); position: relative; }
         .price-box .total { font-size: 1.7rem; font-weight: 900; }
         .price-box.direta { border-color: var(--success); color: #34d399; }
         .price-box.shopee { border-color: var(--shopee); color: #ff8b73; }
         .price-box.meli { border-color: var(--meli); color: var(--meli); }
         .lucro-tag { font-size: 0.65rem; color: #10b981; font-weight: 700; margin-top: 4px; background: rgba(16, 185, 129, 0.1); display: inline-block; padding: 2px 8px; border-radius: 10px; }
-
         .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
         .btn { padding: 14px 5px; border: none; border-radius: 12px; font-size: 0.75rem; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .btn:active { transform: scale(0.95); }
-        .btn-direta { background: var(--success); }
-        .btn-shopee { background: var(--shopee); }
-        .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; }
+        .btn-direta { background: var(--success); } .btn-shopee { background: var(--shopee); } .btn-meli { background: #ca8a04; } .btn-orcamento { background: #4f46e5; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
-
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 1000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
-        
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; cursor: grab; }
         .filter-container:active { cursor: grabbing; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
-
         .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border-color: rgba(255,255,255,0.05);}
+        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
-        
         .status-select { font-size: 0.7rem; font-weight: 800; border-radius: 6px; padding: 6px 10px; border: none; outline: none; cursor: pointer; appearance: auto; -webkit-appearance: auto; text-transform: uppercase; max-width: 100%; }
         .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
         .status-fila { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
         .status-imprimindo { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4); }
         .status-finalizado { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
         .status-enviado { background: rgba(14, 165, 233, 0.15); color: var(--sky); border: 1px solid rgba(14, 165, 233, 0.4); }
-
         .total-summary { background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 12px; margin-top: 10px; }
         .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; margin-bottom: 5px; gap: 10px; }
         .total-row span:first-child { flex: 1; line-height: 1.2; }
         .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
-
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
-
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
         .modal-content { background-color: var(--card-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
@@ -151,7 +117,7 @@
         
         <div class="input-group" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-                <label style="color:var(--purple); margin:0;">Aviso de Manutenção (a cada h):</label>
+                <label style="color:var(--purple); margin:0;">Aviso de Manutenção (h):</label>
                 <button onclick="resetarQA()" style="background: var(--purple); border: none; color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer; font-weight:bold;">✅ ZERAR MANUTENÇÃO</button>
             </div>
             <input type="text" inputmode="decimal" id="qa_aviso" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
@@ -228,10 +194,8 @@
     <div class="modal-content">
         <span class="close-modal" onclick="document.getElementById('catalogoModal').style.display='none'">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--orange); cursor:default;">🏷️ Gerenciar Catálogo</h2>
-        
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Salvar Projeto Atual:</p>
         <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); margin-bottom: 15px;">💾 Salvar no Catálogo</button>
-        
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; border-top: 1px dashed var(--border); padding-top: 10px;">Produtos Salvos:</p>
         <div id="lista_catalogo" class="history-list" style="max-height: 250px; overflow-y: auto;"></div>
     </div>
@@ -280,12 +244,9 @@
 
 <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px;">
     <div style="text-align: left; display: flex; flex-direction: column;">
-        <div>
-            <h1 style="font-size: 1.4rem;">3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span>
-        </div>
+        <div><h1 style="font-size: 1.4rem;">3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span></div>
         <span style="font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;">ERP na Nuvem</span>
     </div>
-    
     <div style="display:flex; gap:6px; align-items: center;">
         <button onclick="document.getElementById('despesasModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Despesas">💸</button>
         <button onclick="document.getElementById('logisticaModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Logística">🚚</button>
@@ -598,6 +559,22 @@
             document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli;
             document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli;
 
+            let precisaSalvarNuven = false;
+            historico.forEach(h => {
+                if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento') {
+                    let hrs = parseLocal(h.tempo) || 0;
+                    let grm = parseLocal(h.peso) || 0;
+                    if (hrs > 0 || grm > 0) {
+                        let dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * hrs;
+                        let ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * hrs;
+                        let mat = (120 / 1000) * grm; 
+                        h.custo = dep + ene + mat;
+                        precisaSalvarNuven = true;
+                    }
+                }
+            });
+            if(precisaSalvarNuven) syncNuvem();
+
             renderHistorico();
             renderEstoque();
             renderCatalogo();
@@ -688,9 +665,9 @@
     window.salvarConfigsNuvemEFechar = function(modalId) {
         if (modalId === 'configModal') {
             var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
-            if (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh) {
+            if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) {
                 var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n" +
-                          "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo e ajusta os lucros do passado.\n" +
+                          "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo.\n" +
                           "[ CANCELAR ] O novo custo valerá apenas para as próximas vendas novas.";
                           
                 if(confirm(msg)) {
@@ -700,19 +677,22 @@
                     var newEne = (nCon / 1000) * nKwh;
                     var deltaPorHora = (newDep + newEne) - (oldDep + oldEne);
                     
-                    historico.forEach(h => {
-                        var hTempo = parseLocal(h.tempo) || 0;
-                        h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo);
-                        if(h.custo < 0) h.custo = 0;
-                        if(h.cartItems) {
-                            h.cartItems.forEach(ci => {
-                                var ciTempo = parseLocal(ci.tempo) || 0;
-                                ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo);
-                                if(ci.custo < 0) ci.custo = 0;
-                            });
-                        }
-                    });
-                    showToast("✅ Passado Atualizado com Sucesso!");
+                    if (!isNaN(deltaPorHora) && isFinite(deltaPorHora)) {
+                        historico.forEach(h => {
+                            var hTempo = parseLocal(h.tempo) || 0;
+                            h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo);
+                            if(h.custo < 0) h.custo = 0;
+                            
+                            if(h.cartItems) {
+                                h.cartItems.forEach(ci => {
+                                    var ciTempo = parseLocal(ci.tempo) || 0;
+                                    ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo);
+                                    if(ci.custo < 0) ci.custo = 0;
+                                });
+                            }
+                        });
+                        showToast("✅ Passado Atualizado com Sucesso!");
+                    }
                 }
             }
         }
@@ -1349,11 +1329,16 @@
         var pesoTotalPrincipal = pegaValor('pesoPeca') * qtdPecas;
         var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoTotal;
         var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoTotal;
-        var matTotal = (pegaValor('precoFilamento') / 1000) * pesoTotalPrincipal;
+        
+        var precoMat = pegaValor('precoFilamento'); if(precoMat === 0) precoMat = 120;
+        var matTotal = (precoMat / 1000) * pesoTotalPrincipal;
 
         if (multiMatEnabled) { 
             var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 1; 
-            for(var i = 2; i <= qtdExtras + 1; i++) { matTotal += (pegaValor('precoFilamento' + i) / 1000) * (pegaValor('pesoPeca' + i) * qtdPecas); } 
+            for(var i = 2; i <= qtdExtras + 1; i++) { 
+                var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120;
+                matTotal += (precoE / 1000) * (pegaValor('pesoPeca' + i) * qtdPecas); 
+            } 
         }
 
         var suc = pegaValor('taxaSucesso'); if (suc <= 0) suc = 100; 
@@ -1594,17 +1579,9 @@
         if (txtVida && barVida && msgVida) {
             txtVida.textContent = formatarMoeda(hrsAtuais) + "h / " + qaAviso + "h";
             barVida.style.width = pctQA + "%";
-            
-            if (pctQA < 50) { 
-                msgVida.textContent = "🟢 Saudável. A máquina está 100% livre!"; 
-                barVida.style.background = "var(--success)"; 
-            } else if (pctQA < 85) { 
-                msgVida.textContent = "🟡 Requer Atenção: Agende uma manutenção/lubrificação em breve."; 
-                barVida.style.background = "#facc15"; 
-            } else { 
-                msgVida.textContent = "🔴 CUIDADO: Risco iminente de quebra ou perda de qualidade."; 
-                barVida.style.background = "var(--danger)"; 
-            }
+            if (pctQA < 50) { msgVida.textContent = "🟢 Saudável. A máquina está 100% livre!"; barVida.style.background = "var(--success)"; } 
+            else if (pctQA < 85) { msgVida.textContent = "🟡 Requer Atenção: Agende uma manutenção/lubrificação em breve."; barVida.style.background = "#facc15"; } 
+            else { msgVida.textContent = "🔴 CUIDADO: Risco iminente de quebra ou perda de qualidade."; barVida.style.background = "var(--danger)"; }
         }
 
         if (filtroDiv) {
@@ -1675,7 +1652,6 @@
         carrinho = []; renderCarrinho();
         ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
-        
         var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = "0,00";
         var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = "0,00";
         var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
@@ -1700,9 +1676,7 @@
         ['toggle_multi_mat', 'toggle_urgente'].forEach(id => { var t = document.getElementById(id); if (t && t.checked) { t.checked = false; t.dispatchEvent(new Event('change')); } });
         var elQtdCores = document.getElementById('qtdCoresExtras'); if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
-        calcular(); 
-        
-        setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100);
+        calcular(); setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100);
         var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1726,28 +1700,17 @@
     }
 
     window.gerarPDF = function() {
-        if (historico.length === 0) {
-            showToast("⚠️ Nenhum dado para exportar");
-            return;
-        }
+        if (historico.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
+        const { jsPDF } = window.jspdf; const doc = new jsPDF('landscape'); 
+        doc.setFontSize(16); doc.text("Relatório Geral - 3D 4You", 14, 15);
+        doc.setFontSize(9); doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
 
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape'); 
-
-        doc.setFontSize(16);
-        doc.text("Relatório Geral - 3D 4You", 14, 15);
-        doc.setFontSize(9);
-        doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
-
-        let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0;
-        let somaLogistica = 0;
-        
+        let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0, somaLogistica = 0;
+        let qtdDireta = 0, somaDireta = 0, qtdShopee = 0, somaShopee = 0, qtdMeli = 0, somaMeli = 0;
         let despesasTotais = despesas.reduce((acc, d) => acc + d.valor, 0);
 
         const tableData = historico.map(h => {
-            let st = h.status || "Finalizado"; 
-            if (st === 'Enviado') st = 'Enviado / Entregue';
-
+            let st = h.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             let custoItem = parseLocal(h.custo);
             let freteLogItem = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             let canalStr = h.canal || "Direta";
@@ -1757,96 +1720,48 @@
             let horas = parseLocal(h.tempo || 0);
 
             if (st !== 'Orçamento') {
-                totVendas += (h.totalQtd || 1);
-                totBruto += valBruto;
-                totLiquido += valLiq;
-                totCusto += custoItem;
-                somaLogistica += freteLogItem;
-                totLucro += lucroItem;
+                totVendas += (h.totalQtd || 1); totBruto += valBruto; totLiquido += valLiq; totCusto += custoItem; somaLogistica += freteLogItem; totLucro += lucroItem;
+                if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
             }
-
-            if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
-                totHoras += horas;
-            }
-
-            return [
-                h.data,
-                h.cliente || 'Balcão',
-                h.nome,
-                st,
-                canalStr,
-                "R$ " + formatarMoeda(valLiq),
-                "R$ " + formatarMoeda(lucroItem),
-                formatarMoeda(horas) + "h"
-            ];
+            if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') { totHoras += horas; }
+            return [ h.data, h.cliente || 'Balcão', h.nome, st, canalStr, "R$ " + formatarMoeda(valLiq), "R$ " + formatarMoeda(lucroItem), formatarMoeda(horas) + "h" ];
         });
 
         let lucroReal = totLucro - despesasTotais;
-
-        doc.setFillColor(240, 240, 240);
-        doc.rect(14, 25, 268, 30, 'F');
+        doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 48, 'F');
         
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'bold');
-        doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos):", 18, 32);
+        doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos):", 18, 32);
         
-        doc.setFontSize(9);
-        doc.setFont(undefined, 'normal');
-        
-        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 40);
-        doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40);
-        doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        doc.setFontSize(9); doc.setFont(undefined, 'normal');
+        doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totBruto)}`, 18, 40); doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 46); doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46);
         
         doc.setFont(undefined, 'bold');
-        doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 48);
-        doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 48);
-        doc.setTextColor(0, 150, 0);
-        doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 48);
-        doc.setTextColor(0, 0, 0);
+        doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54); doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 54);
+        doc.setTextColor(0, 150, 0); doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 54); doc.setTextColor(0, 0, 0);
 
-        doc.text(`Tempo de Máquina (Impresso): ${formatarMoeda(totHoras)}h`, 220, 48);
+        doc.setFontSize(8); doc.setFont(undefined, 'normal');
+        doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64); doc.text(`Total M. Livre: R$ ${formatarMoeda(somaMeli)}`, 160, 64);
 
-        doc.autoTable({
-            startY: 60,
-            head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor (Líq)', 'Lucro', 'Tempo']],
-            body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [59, 130, 246] },
-            styles: { fontSize: 8 }
-        });
-
-        doc.save("Relatorio_3D4You.pdf");
-        showToast("📄 PDF Gerado com sucesso!");
+        doc.autoTable({ startY: 76, head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor (Líq)', 'Lucro', 'Tempo']], body: tableData, theme: 'grid', headStyles: { fillColor: [59, 130, 246] }, styles: { fontSize: 8 } });
+        doc.save("Relatorio_3D4You.pdf"); showToast("📄 PDF Gerado com sucesso!");
     };
 
     window.exportarExcel = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { 
-            showToast("⚠️ Nenhum dado para exportar"); return; 
-        }
-        
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
         var wb = XLSX.utils.book_new();
-
         if (historico.length > 0) {
-            var dadosVendas = historico.map(h => ({ 
-                "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, 
-                "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, 
-                "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), 
-                "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), 
-                "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd 
-            }));
+            var dadosVendas = historico.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
         }
-
         if (despesas.length > 0) {
             var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Quantidade": d.qtd, "Descrição": d.nome, "Valor Total (R$)": d.valor }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDespesas), "Despesas");
         }
-
         if (estoque.length > 0) {
             var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço Pago (R$)": e.preco }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), "Estoque");
         }
-
         if (catalogo.length > 0) {
             var dadosCatalogo = catalogo.map(c => {
                 var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
@@ -1854,9 +1769,7 @@
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
         }
-
-        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
-        showToast("📊 Backup Excel baixado!");
+        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx"); showToast("📊 Backup Excel baixado!");
     };
 </script>
 </body>
