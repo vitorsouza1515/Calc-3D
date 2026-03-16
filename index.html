@@ -272,6 +272,28 @@
     </div>
 </div>
 
+<div id="despesasModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="document.getElementById('despesasModal').style.display='none'">&times;</span>
+        <div class="section-title" style="border:none; margin-bottom:15px; padding:0; color: #ef4444;">
+            <span>💸 Despesas / Compras</span>
+            <label class="switch"><input type="checkbox" id="toggle_despesas" data-save="true"><span class="slider-switch"></span></label>
+        </div>
+        <div id="secao_despesas" style="display:none; padding-top: 5px;">
+            <div class="grid-3">
+                <div class="input-group"><label>Qtd</label><input type="text" inputmode="numeric" id="desp_qtd" value="1" oninput="aplicarMascara(this)"></div>
+                <div class="input-group" style="grid-column: span 2;"><label>Produto/Material</label><input type="text" id="desp_nome" placeholder="Ex: Fita Kapton"></div>
+            </div>
+            <div class="grid-2">
+                <div class="input-group"><label>Valor Total (R$)</label><input type="text" inputmode="decimal" id="desp_valor" placeholder="Ex: 25,00" oninput="aplicarMascara(this)"></div>
+                <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">➕ Adicionar</button>
+            </div>
+            <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 150px; overflow-y: auto;"></div>
+        </div>
+        <button class="btn btn-direta" onclick="document.getElementById('despesasModal').style.display='none'" style="width: 100%; margin-top: 15px; background: #ef4444;">Concluído</button>
+    </div>
+</div>
+
 <header style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 5px;">
     <div style="text-align: left; display: flex; flex-direction: column;">
         <div>
@@ -281,6 +303,7 @@
     </div>
     
     <div style="display:flex; gap:6px; align-items: center;">
+        <button onclick="document.getElementById('despesasModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Despesas">💸</button>
         <button onclick="document.getElementById('logisticaModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Logística">🚚</button>
         <button onclick="document.getElementById('marketplacesModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Taxas e Marketplaces">🛒</button>
         <button onclick="document.getElementById('estoqueModal').style.display='block'" style="background:none; border:none; font-size:1.3rem; cursor:pointer; padding:0;" title="Estoque de Filamentos">🧻</button>
@@ -370,28 +393,8 @@
             </div>
         </div>
     </div>
-    
-    <div class="col col-history">
-        <div class="card">
-            <div class="section-title" style="color: #ef4444;" onclick="toggleCard('cc_desp', this, event)">
-                <span style="display:flex; align-items:center;">💸 Despesas / Compras <span class="chevron">▼</span></span>
-                <label class="switch"><input type="checkbox" id="toggle_despesas" data-save="true"><span class="slider-switch"></span></label>
-            </div>
-            <div id="cc_desp">
-                <div id="secao_despesas" style="display:none; padding-top: 5px;">
-                    <div class="grid-3">
-                        <div class="input-group"><label>Qtd</label><input type="text" inputmode="numeric" id="desp_qtd" value="1" oninput="aplicarMascara(this)"></div>
-                        <div class="input-group" style="grid-column: span 2;"><label>Produto/Material</label><input type="text" id="desp_nome" placeholder="Ex: Fita Kapton"></div>
-                    </div>
-                    <div class="grid-2">
-                        <div class="input-group"><label>Valor Total (R$)</label><input type="text" inputmode="decimal" id="desp_valor" placeholder="Ex: 25,00" oninput="aplicarMascara(this)"></div>
-                        <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">➕ Adicionar</button>
-                    </div>
-                    <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 150px;"></div>
-                </div>
-            </div>
-        </div>
 
+    <div class="col col-history">
         <div class="card" style="margin-top:12px;">
             <h2 class="section-title" onclick="toggleCard('cc_hist', this, event)">
                 <span style="display:flex; align-items:center;">📂 Histórico de Vendas <span class="chevron">▼</span></span>
@@ -1076,8 +1079,7 @@
                 tDesp.checked = true;
                 tDesp.dispatchEvent(new Event('change'));
             }
-            var dash = document.querySelector('.dashboard');
-            if(dash) dash.scrollTo({ top: document.getElementById('toggle_despesas').offsetTop - 50, behavior: 'smooth' });
+            document.getElementById('despesasModal').style.display = 'block';
         }
     }
 
@@ -1974,6 +1976,9 @@
         if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
 
         calcular(); showToast("✅ Projeto Resetado!");
+        
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
