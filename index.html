@@ -27,16 +27,12 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* CORREÇÃO DO RODAPÉ E DO CORPO DA PÁGINA */
         body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; padding: 12px; overflow-x: hidden; max-width: 100vw; }
         
-        /* CABEÇALHO MAIS COMPACTO E SLIM */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
         header h1 { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
         .nuvem-icon { font-size: 0.75rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        /* Estilos do Menu Gaveta Lateral */
         .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: -5px 0 20px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 3000; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         .side-menu.open { right: 0; }
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 2999; display: none; opacity: 0; transition: opacity 0.3s; }
@@ -107,7 +103,7 @@
         .btn-direta { background: var(--success); }
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; grid-column: span 3; margin-top: 5px; }
+        .btn-orcamento { background: #4f46e5; grid-column: span 3; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
@@ -120,6 +116,7 @@
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
+        /* LISTAS COMPACTAS (SLIM) PARA CABER 3 NA TELA NO CELULAR */
         .history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
         .history-item { background: #0f172a; border-radius: 10px; padding: 10px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2;}
@@ -140,17 +137,12 @@
         .total-row span:first-child { flex: 1; line-height: 1.2; }
         .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
 
-        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
-        .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
-
         .modal { display: none; position: fixed; z-index: 4000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
+        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
         
-        /* Barra de pesquisa inline e compacta */
-        #buscaCliente { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); padding: 4px 10px; font-size: 0.7rem; outline: none; width: 110px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none;}
-        #buscaCliente:focus { width: 160px; border-color: var(--sky); }
+        .busca-larga { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.9rem; outline: none; margin-bottom: 12px; transition: border-color 0.3s; }
+        .busca-larga:focus { border-color: var(--sky); }
     </style>
 </head>
 <body>
@@ -504,11 +496,11 @@
 
     <div class="col col-history">
         <div class="card">
-            <h2 class="section-title" style="cursor:pointer;" onclick="toggleCard('wrap_hist_list', this, event)">
-                <div style="display:flex; align-items:center; gap: 10px;">
-                    <span>📂 Histórico <span class="chevron">▼</span></span>
+            <h2 class="section-title" style="cursor:pointer; flex-direction: column; align-items: stretch; gap: 10px;" onclick="toggleCard('wrap_hist_list', this, event)">
+                <div style="display:flex; align-items:center; justify-content: space-between;">
+                    <span>📂 Histórico de Vendas</span><span class="chevron">▼</span>
                 </div>
-                <input type="text" id="buscaCliente" placeholder="🔍 Pesquisar..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
+                <input type="text" class="busca-larga" id="buscaCliente" placeholder="🔍 Buscar cliente ou peça..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
             </h2>
             <div id="wrap_hist_list">
                 <div id="filtroHistorico" class="filter-container"></div>
@@ -835,45 +827,98 @@
         return { shopee: netShopee, meli: netMeli };
     }
 
+    function resetarInputProjeto() {
+        document.getElementById('nomeProjeto').value = "";
+        document.getElementById('qtdPecasProjeto').value = "1";
+        document.getElementById('tempoH').value = "";
+        document.getElementById('pesoPeca').value = "";
+        
+        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
+        document.getElementById('tipoFilamento1').value = "";
+        document.getElementById('corFilamento1').value = "";
+        document.getElementById('marcaFilamento1').value = "";
+        document.getElementById('precoFilamento').value = "120,00";
+        document.getElementById('detalhes_1').style.display = 'none';
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti && tMulti.checked) {
+            tMulti.checked = false;
+            tMulti.dispatchEvent(new Event('change'));
+        }
+        
+        ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
+    }
+
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
         var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
 
-        var custoItem = parseLocal(document.getElementById('r_gasto').textContent);
-        var vD = parseLocal(document.getElementById('r_vendaD').textContent);
+        var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         var tempoItem = pegaValor('tempoH') * qtdPecas;
         var pesoItem = pegaValor('pesoPeca') * qtdPecas;
         
-        var multiOn = document.getElementById('toggle_multi_mat').checked;
-        if(multiOn) {
-            var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1;
-            for(var i=2; i<=qtdEx+1; i++) { pesoItem += (pegaValor('pesoPeca'+i) * qtdPecas); }
-        }
+        var depCalc = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem;
+        var eneCalc = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem;
+        
+        var precoMatCalc = pegaValor('precoFilamento'); if(precoMatCalc === 0) precoMatCalc = 120;
+        var matTotalCalc = (precoMatCalc / 1000) * pesoItem;
 
         var materiaisArray = [];
-        var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
-        if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); }
-        if (multiOn) { 
-            var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
-            for(var i = 2; i <= qtdExtras + 1; i++) { 
-                var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
+        var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1');
+        var nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
+        if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; 
+        if(pesoItem > 0) materiaisArray.push(nomeMat1 + ' (' + pesoItem + 'g)');
+
+        var extras = [];
+        if (multiMatEnabled) { 
+            var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; 
+            for(var i = 2; i <= qtdEx + 1; i++) { 
+                var pesoE = pegaValor('pesoPeca'+i) * qtdPecas;
+                pesoItem += pesoE;
+                var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120;
+                matTotalCalc += (precoE / 1000) * pesoE; 
+                
+                var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i);
+                var nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
                 if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
-                if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } 
+                if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)');
+
+                extras.push({
+                    tipo: ti, cor: ci, marca: mi, 
+                    preco: pegaTexto('precoFilamento'+i), 
+                    peso: pegaTexto('pesoPeca'+i)
+                });
             } 
         }
+
+        var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; 
+        var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100);
+        var mInputCalc = pegaValor('margemInput');
+        var vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100));
+
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
 
         var novoItem = {
             id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000),
             nome: nomeItem,
             qtd: qtdPecas,
-            custo: custoItem,
-            valorComLucro: vD, 
+            custo: custoItemCalc,
+            valorComLucro: vDCalc, 
             tempo: tempoItem,
             peso: pesoItem,
-            materiais: stringMateriais
+            materiais: stringMateriais,
+            
+            tipo1: t1, cor1: c1, marca1: m1,
+            preco1: document.getElementById('precoFilamento').value,
+            peso1: document.getElementById('pesoPeca').value,
+            tempo1: document.getElementById('tempoH').value,
+            multi: multiMatEnabled,
+            qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1",
+            extras: extras,
+            taxaSucesso: document.getElementById('taxaSucesso').value,
+            margemLucro: document.getElementById('margemInput').value
         };
 
         if (editandoCarrinhoId) {
@@ -890,32 +935,8 @@
             showToast("🛒 Item adicionado ao Pedido!");
         }
 
+        resetarInputProjeto();
         renderCarrinho();
-        
-        // Limpa os inputs da tela após colocar no carrinho
-        document.getElementById('nomeProjeto').value = "";
-        document.getElementById('qtdPecasProjeto').value = "1";
-        document.getElementById('tempoH').value = "";
-        document.getElementById('pesoPeca').value = "";
-        
-        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-        document.getElementById('tipoFilamento1').value = "";
-        document.getElementById('corFilamento1').value = "";
-        document.getElementById('marcaFilamento1').value = "";
-        document.getElementById('precoFilamento').value = "120,00";
-        document.getElementById('detalhes_1').style.display = 'none';
-        
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
-        }
-        
-        localStorage.removeItem('3d4y_dark_nomeProjeto');
-        salvarDinamico('qtdPecasProjeto');
-        localStorage.removeItem('3d4y_dark_tempoH');
-        localStorage.removeItem('3d4y_dark_pesoPeca');
-        
         calcular();
     }
 
@@ -926,26 +947,7 @@
         if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
         if(btnCancel) btnCancel.style.display = "none";
         
-        document.getElementById('nomeProjeto').value = "";
-        document.getElementById('qtdPecasProjeto').value = "1";
-        document.getElementById('tempoH').value = "";
-        document.getElementById('pesoPeca').value = "";
-        
-        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-        document.getElementById('tipoFilamento1').value = "";
-        document.getElementById('corFilamento1').value = "";
-        document.getElementById('marcaFilamento1').value = "";
-        document.getElementById('precoFilamento').value = "120,00";
-        document.getElementById('detalhes_1').style.display = 'none';
-        
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
-        }
-        
-        ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
-        
+        resetarInputProjeto();
         calcular();
         showToast("❌ Edição cancelada");
     }
@@ -965,13 +967,63 @@
 
         document.getElementById('nomeProjeto').value = baseNome;
         document.getElementById('qtdPecasProjeto').value = qtd;
-        document.getElementById('tempoH').value = formatarMoeda(item.tempo / qtd);
-        document.getElementById('pesoPeca').value = formatarMoeda(item.peso / qtd);
+        document.getElementById('tempoH').value = item.tempo1 || formatarMoeda(item.tempo / qtd);
+        document.getElementById('pesoPeca').value = item.peso1 || formatarMoeda(item.peso / qtd);
+
+        if (item.taxaSucesso) document.getElementById('taxaSucesso').value = item.taxaSucesso;
+        if (item.margemLucro) {
+            document.getElementById('margemInput').value = item.margemLucro;
+            document.getElementById('margemSlider').value = item.margemLucro;
+            updateSliderProgress(document.getElementById('margemSlider'));
+        }
+
+        document.getElementById('tipoFilamento1').value = item.tipo1 || "";
+        document.getElementById('corFilamento1').value = item.cor1 || "";
+        document.getElementById('marcaFilamento1').value = item.marca1 || "";
+        document.getElementById('precoFilamento').value = item.preco1 || "120,00";
+
+        var match1 = estoque.find(e => e.tipo === item.tipo1 && e.cor === item.cor1 && e.marca === item.marca1) || estoque.find(e => e.tipo === item.tipo1 && e.cor === item.cor1);
+        var sel1 = document.getElementById('sel_est_1'); 
+        if(match1) { 
+            if(sel1) sel1.value = match1.id; 
+            document.getElementById('marcaFilamento1').value = match1.marca;
+        } else {
+            if(sel1) sel1.value = "";
+        }
+        
+        document.getElementById('detalhes_1').style.display = (item.tipo1) ? 'block' : 'none';
 
         var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
+        if(tMulti) { 
+            tMulti.checked = item.multi || false; 
+            tMulti.dispatchEvent(new Event('change')); 
+        }
+
+        if(item.multi && item.extras) {
+            document.getElementById('qtdCoresExtras').value = item.qtdCores || "1";
+            renderCoresExtras();
+            item.extras.forEach((ex, idx) => {
+                var i = idx + 2;
+                setTimeout(() => {
+                    if(document.getElementById('tipoFilamento'+i)) {
+                        document.getElementById('tipoFilamento'+i).value = ex.tipo;
+                        document.getElementById('corFilamento'+i).value = ex.cor;
+                        document.getElementById('pesoPeca'+i).value = ex.peso;
+                        
+                        var matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor);
+                        var selI = document.getElementById('sel_est_'+i);
+                        if(matchI) {
+                            if(selI) selI.value = matchI.id;
+                            document.getElementById('precoFilamento'+i).value = matchI.preco;
+                            document.getElementById('marcaFilamento'+i).value = matchI.marca;
+                        } else {
+                            if(selI) selI.value = "";
+                            document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
+                            document.getElementById('marcaFilamento'+i).value = ex.marca;
+                        }
+                    }
+                }, 50);
+            });
         }
 
         editandoCarrinhoId = id;
@@ -980,7 +1032,7 @@
         if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; }
         if(btnCancel) btnCancel.style.display = "block";
 
-        salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
+        ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id));
         calcular(); showToast("✏️ Item carregado para edição!");
         var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1053,30 +1105,12 @@
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
         
-        // Limpa os campos visuais da tela principal
-        document.getElementById('nomeProjeto').value = "";
-        document.getElementById('qtdPecasProjeto').value = "1";
-        document.getElementById('tempoH').value = "";
-        document.getElementById('pesoPeca').value = "";
+        resetarInputProjeto();
         document.getElementById('sel_catalogo').value = "";
-        
-        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-        document.getElementById('tipoFilamento1').value = "";
-        document.getElementById('corFilamento1').value = "";
-        document.getElementById('marcaFilamento1').value = "";
-        document.getElementById('precoFilamento').value = "120,00";
-        document.getElementById('detalhes_1').style.display = 'none';
-        
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
-        }
         
         document.getElementById('boxPrecoFixo').style.display = 'none';
         document.getElementById('precoFixoCatMain').value = "";
-        
-        ['nomeProjeto','qtdPecasProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
+        localStorage.removeItem('3d4y_dark_precoFixoCatMain');
         
         calcular();
         showToast("❌ Edição cancelada");
@@ -1141,27 +1175,8 @@
     function carregarDoCatalogo() { 
         var id = document.getElementById('sel_catalogo').value; 
         
-        // Se a pessoa selecionou "-- Escolher produto cadastrado --" (ID vazio)
         if(!id) {
-            // Limpa os campos do projeto para voltar ao modo "Novo"
-            document.getElementById('nomeProjeto').value = "";
-            document.getElementById('qtdPecasProjeto').value = "1";
-            document.getElementById('tempoH').value = "";
-            document.getElementById('pesoPeca').value = "";
-            
-            var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-            document.getElementById('tipoFilamento1').value = "";
-            document.getElementById('corFilamento1').value = "";
-            document.getElementById('marcaFilamento1').value = "";
-            document.getElementById('precoFilamento').value = "120,00";
-            document.getElementById('detalhes_1').style.display = 'none';
-            
-            var tMulti = document.getElementById('toggle_multi_mat');
-            if(tMulti && tMulti.checked) {
-                tMulti.checked = false;
-                tMulti.dispatchEvent(new Event('change'));
-            }
-            
+            resetarInputProjeto();
             document.getElementById('canalVendaSelecionado').value = "Direta";
             document.getElementById('valorPersonalizado').value = "";
             mostrarValorPersonalizado();
@@ -1170,14 +1185,10 @@
             if(boxPreco) boxPreco.style.display = 'none';
             document.getElementById('precoFixoCatMain').value = '';
             
-            // Remove do cache para não voltar se der F5
-            ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'valorPersonalizado', 'precoFixoCatMain'].forEach(f => localStorage.removeItem('3d4y_dark_' + f));
-            
             calcular();
             return;
         } 
         
-        // Se escolheu um produto real:
         aplicarDadosNoForm(id, false); 
         showToast("🏷️ Dados carregados!"); 
     }
@@ -1191,7 +1202,6 @@
         document.getElementById('catalogoModal').style.display = 'none'; showToast("✏️ Edite os dados e clique em Confirmar Alteração");
     }
 
-    // A função agora aceita um segundo parâmetro "isEditing" que diz se a caixa do preço fixo deve aparecer ou não
     function aplicarDadosNoForm(id, isEditing = false) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
         document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
@@ -1200,7 +1210,6 @@
         var elPrecoFixo = document.getElementById('precoFixoCatMain');
         var boxPreco = document.getElementById('boxPrecoFixo');
         
-        // Só exibe a caixa de Preço Fixo se estiver clicando no botão "Editar"
         if(isEditing) {
             if(elPrecoFixo && boxPreco) { 
                 boxPreco.style.display = 'flex';
@@ -1590,7 +1599,7 @@
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
                 const walk = (x - startX); 
-                if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
+                if (Math.abs(walk) > 5) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
                     sliderFiltro.scrollLeft = scrollLeft - walk;
@@ -1679,6 +1688,28 @@
         var tagD = document.getElementById('tag_lucroD'); if(tagD) tagD.textContent = "Lucro: R$ " + formatarMoeda(lucroD);
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
         var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
+    }
+
+    function resetarInputProjeto() {
+        document.getElementById('nomeProjeto').value = "";
+        document.getElementById('qtdPecasProjeto').value = "1";
+        document.getElementById('tempoH').value = "";
+        document.getElementById('pesoPeca').value = "";
+        
+        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
+        document.getElementById('tipoFilamento1').value = "";
+        document.getElementById('corFilamento1').value = "";
+        document.getElementById('marcaFilamento1').value = "";
+        document.getElementById('precoFilamento').value = "120,00";
+        document.getElementById('detalhes_1').style.display = 'none';
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti && tMulti.checked) {
+            tMulti.checked = false;
+            tMulti.dispatchEvent(new Event('change'));
+        }
+        
+        ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
     }
 
     function salvarHistorico() {
@@ -1781,38 +1812,31 @@
         var item = historico.find(h => h.id === id);
         if (!item) return;
 
-        // Limpa o carrinho atual
         carrinho = [];
         document.getElementById('carrinho_container').style.display = 'none';
 
-        if (item.cartItems && item.cartItems.length === 1) {
-            var prod = item.cartItems[0];
-            var match = prod.nome.match(/^(\d+)x\s(.*)/); 
-            var qtd = match ? parseInt(match[1]) : (prod.qtd || item.totalQtd || 1);
-            var baseNome = match ? match[2] : prod.nome;
-
-            document.getElementById('nomeProjeto').value = baseNome;
-            document.getElementById('qtdPecasProjeto').value = qtd;
-            document.getElementById('tempoH').value = formatarMoeda((prod.tempo || item.tempo) / qtd);
-            document.getElementById('pesoPeca').value = formatarMoeda((prod.peso || item.peso) / qtd);
-            
-            var tMulti = document.getElementById('toggle_multi_mat');
-            if(tMulti && tMulti.checked) { tMulti.checked = false; tMulti.dispatchEvent(new Event('change')); }
-            
-            salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
-        } else if (item.cartItems && item.cartItems.length > 1) {
+        // Garante que todo item editado vá direto pro carrinho para permitir múltiplas adições e edições finas
+        if (item.cartItems && item.cartItems.length > 0) {
             carrinho = JSON.parse(JSON.stringify(item.cartItems));
-            renderCarrinho();
-            document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
         } else {
-            var match = item.nome.match(/^(\d+)x\s(.*)/); var qtd = match ? parseInt(match[1]) : (item.totalQtd || 1);
+            var match = item.nome.match(/^(\d+)x\s(.*)/); 
+            var qtd = match ? parseInt(match[1]) : (item.totalQtd || 1);
             var baseNome = match ? match[2] : item.nome;
-            document.getElementById('nomeProjeto').value = baseNome;
-            document.getElementById('qtdPecasProjeto').value = qtd;
-            document.getElementById('tempoH').value = formatarMoeda((item.tempo) / qtd);
-            document.getElementById('pesoPeca').value = formatarMoeda((item.peso) / qtd);
-            salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
+            
+            carrinho.push({
+                id: Date.now(),
+                nome: item.nome,
+                qtd: qtd,
+                custo: item.custo,
+                valorComLucro: (item.valorBruto || item.valorVenda) - (item.frete || 0) - (item.logistica || 0),
+                peso: item.peso || 0,
+                tempo: item.tempo || 0,
+                materiais: item.materiais || ""
+            });
         }
+        
+        resetarInputProjeto();
+        renderCarrinho();
 
         document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
         
@@ -1839,12 +1863,13 @@
             var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
         }
 
-        calcular(); editHistoricoId = id;
+        calcular(); 
+        editHistoricoId = id;
         
         document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição de Venda"; 
         document.getElementById('btn_salvar_venda_main').style.background = "var(--sky)";
         
-        showToast("✏️ Venda carregada para edição!");
+        showToast("✏️ Venda carregada no carrinho!");
         var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2027,20 +2052,13 @@
 
     function resetarDados() {
         carrinho = []; renderCarrinho();
-        ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
-        
-        var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+        ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
         
         var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = window.configGlobais.custoEmbalagem || "0,00";
         var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = window.configGlobais.custoDeslocamento || "0,00";
         var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
 
-        ['tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
-        var elPreco1 = document.getElementById('precoFilamento'); if(elPreco1) { elPreco1.value = "120,00"; }
-        document.querySelectorAll('.detalhes-material').forEach(el => el.style.display = 'none');
-        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
-        
         var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none';
         
         editCatalogoId = null; 
@@ -2054,12 +2072,9 @@
         if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
         if(btnCancel) btnCancel.style.display = "none";
 
-        var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 0;
-        for(var i = 2; i <= qtdExtras + 1; i++) { var selExtra = document.getElementById('sel_est_' + i); if(selExtra) selExtra.value = ""; ['tipoFilamento','corFilamento','marcaFilamento','precoFilamento','pesoPeca'].forEach(pref => localStorage.removeItem('3d4y_dark_' + pref + i)); }
-
-        ['toggle_multi_mat', 'toggle_urgente'].forEach(id => { var t = document.getElementById(id); if (t && t.checked) { t.checked = false; t.dispatchEvent(new Event('change')); } });
-        var elQtdCores = document.getElementById('qtdCoresExtras'); if(elQtdCores) { elQtdCores.value = "1"; salvarDinamico('qtdCoresExtras'); renderCoresExtras(); }
-
+        var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente && tUrgente.checked) { tUrgente.checked = false; tUrgente.dispatchEvent(new Event('change')); }
+        
+        resetarInputProjeto();
         calcular(); 
         
         setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100);
