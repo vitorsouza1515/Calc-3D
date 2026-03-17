@@ -103,7 +103,7 @@
         .btn-direta { background: var(--success); }
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; grid-column: span 3; }
+        .btn-orcamento { background: #4f46e5; grid-column: span 3; margin-top: 5px; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
@@ -116,7 +116,6 @@
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        /* LISTAS COMPACTAS (SLIM) PARA CABER 3 NA TELA NO CELULAR */
         .history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
         .history-item { background: #0f172a; border-radius: 10px; padding: 10px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2;}
@@ -138,11 +137,11 @@
         .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
 
         .modal { display: none; position: fixed; z-index: 4000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
+        .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
         
-        .busca-larga { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.9rem; outline: none; margin-bottom: 12px; transition: border-color 0.3s; }
-        .busca-larga:focus { border-color: var(--sky); }
+        .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
+        .busca-larga:focus { width: 180px; border-color: var(--sky); }
     </style>
 </head>
 <body>
@@ -496,11 +495,11 @@
 
     <div class="col col-history">
         <div class="card">
-            <h2 class="section-title" style="cursor:pointer; flex-direction: column; align-items: stretch; gap: 10px;" onclick="toggleCard('wrap_hist_list', this, event)">
-                <div style="display:flex; align-items:center; justify-content: space-between;">
-                    <span>📂 Histórico de Vendas</span><span class="chevron">▼</span>
+            <h2 class="section-title" style="cursor:pointer; flex-direction: row; align-items: center; justify-content: space-between;" onclick="toggleCard('wrap_hist_list', this, event)">
+                <div style="display:flex; align-items:center; gap: 5px;">
+                    <span>📂 HISTÓRICO</span><span class="chevron">▼</span>
                 </div>
-                <input type="text" class="busca-larga" id="buscaCliente" placeholder="🔍 Buscar cliente ou peça..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
+                <input type="text" class="busca-larga" id="buscaCliente" placeholder="🔍 Pesquisar..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
             </h2>
             <div id="wrap_hist_list">
                 <div id="filtroHistorico" class="filter-container"></div>
@@ -558,6 +557,7 @@
         }
     });
     
+    // Funções do Menu Lateral Gaveta
     window.abrirGaveta = function() {
         document.getElementById('sideMenu').classList.add('open');
         document.getElementById('menuOverlay').classList.add('open');
@@ -1122,7 +1122,16 @@
         var extras = []; var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
         
+        // --- VERIFICAÇÃO SE O NOME JÁ EXISTE ---
+        var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
+        
         if(editCatalogoId) {
+            // Se estiver editando
+            if (existe && existe.id !== editCatalogoId) {
+                alert("❌ Já existe outro projeto com este nome exato no seu catálogo.\nPor favor, mude o nome (ex: " + nome + " v2).");
+                return;
+            }
+            
             var idx = catalogo.findIndex(p => p.id === editCatalogoId);
             if(idx > -1) {
                 catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
@@ -1130,6 +1139,12 @@
             editCatalogoId = null; 
             showToast("🏷️ Produto atualizado no catálogo!");
         } else {
+            // Se for salvar um novo
+            if (existe) {
+                alert("❌ O projeto '" + nome + "' JÁ EXISTE no seu Catálogo de Produtos!\n\nSe você quiser alterar as configurações dele, use o botão azul '🏷️ Catálogo' no topo da tela e clique no Lápis ✏️ para editar o projeto.");
+                return; // Trava o código aqui e não deixa salvar
+            }
+            
             var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
         }
@@ -1558,7 +1573,6 @@
         
         renderCoresExtras(); 
         
-        // Força a atualização visual do slider para bater com o valor numérico lido do cache/firebase
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
         
@@ -1599,7 +1613,7 @@
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
                 const walk = (x - startX); 
-                if (Math.abs(walk) > 5) window.isDraggingFiltro = true; 
+                if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
                     sliderFiltro.scrollLeft = scrollLeft - walk;
@@ -1688,28 +1702,6 @@
         var tagD = document.getElementById('tag_lucroD'); if(tagD) tagD.textContent = "Lucro: R$ " + formatarMoeda(lucroD);
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
         var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
-    }
-
-    function resetarInputProjeto() {
-        document.getElementById('nomeProjeto').value = "";
-        document.getElementById('qtdPecasProjeto').value = "1";
-        document.getElementById('tempoH').value = "";
-        document.getElementById('pesoPeca').value = "";
-        
-        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-        document.getElementById('tipoFilamento1').value = "";
-        document.getElementById('corFilamento1').value = "";
-        document.getElementById('marcaFilamento1').value = "";
-        document.getElementById('precoFilamento').value = "120,00";
-        document.getElementById('detalhes_1').style.display = 'none';
-        
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
-        }
-        
-        ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
     }
 
     function salvarHistorico() {
@@ -1815,13 +1807,11 @@
         carrinho = [];
         document.getElementById('carrinho_container').style.display = 'none';
 
-        // Garante que todo item editado vá direto pro carrinho para permitir múltiplas adições e edições finas
         if (item.cartItems && item.cartItems.length > 0) {
             carrinho = JSON.parse(JSON.stringify(item.cartItems));
         } else {
             var match = item.nome.match(/^(\d+)x\s(.*)/); 
             var qtd = match ? parseInt(match[1]) : (item.totalQtd || 1);
-            var baseNome = match ? match[2] : item.nome;
             
             carrinho.push({
                 id: Date.now(),
