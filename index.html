@@ -107,7 +107,7 @@
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; max-width: 100%; }
+        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-width: 100%; padding-right: 5px;}
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
@@ -130,9 +130,10 @@
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
 
+        /* Modais aumentados para melhor visualização */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .modal-content { background-color: var(--card-bg); margin: 15% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
-        .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; }
+        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
+        .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
         
         #buscaCliente { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); padding: 4px 10px; font-size: 0.7rem; outline: none; width: 130px; transition: width 0.3s; font-weight: normal; text-transform: none; margin-left: 10px;}
         #buscaCliente:focus { width: 180px; border-color: var(--sky); }
@@ -189,8 +190,8 @@
         </div>
         <div id="secao_logistica">
             <div class="grid-2">
-                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
+                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
                 <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
                 <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
             </div>
@@ -209,8 +210,8 @@
             <div class="grid-2">
                 <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
                 <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
             </div>
         </div>
         
@@ -235,7 +236,7 @@
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Salvar Projeto Atual:</p>
         <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); margin-bottom: 15px;">💾 Salvar no Catálogo</button>
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; border-top: 1px dashed var(--border); padding-top: 10px;">Produtos Salvos:</p>
-        <div id="lista_catalogo" class="history-list" style="max-height: 250px; overflow-y: auto;"></div>
+        <div id="lista_catalogo" class="history-list" style="max-height: 400px;"></div>
     </div>
 </div>
 
@@ -254,7 +255,7 @@
         </div>
         <div style="border-top: 1px dashed var(--border); margin-top: 15px; padding-top: 10px;">
             <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Filamentos Cadastrados:</p>
-            <div id="lista_estoque" class="history-list" style="max-height: 200px; overflow-y: auto;"></div>
+            <div id="lista_estoque" class="history-list" style="max-height: 400px;"></div>
         </div>
     </div>
 </div>
@@ -275,9 +276,7 @@
                 <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">➕ Adicionar</button>
             </div>
             
-            <button class="btn" style="width: 100%; margin-top: 10px; background: var(--sky); border: 1px dashed #fff; font-size: 0.65rem;" onclick="injetarDespesasAntigas()">📥 Injetar Despesas da Foto</button>
-            
-            <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 150px; overflow-y: auto;"></div>
+            <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 400px;"></div>
         </div>
         <button class="btn btn-direta" onclick="fecharModal('despesasModal')" style="width: 100%; margin-top: 15px; background: #ef4444;">Concluído</button>
     </div>
@@ -305,7 +304,7 @@
                 <span style="display:flex; align-items:center;">👤 Identificação / CRM <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--danger)">URGENTE</span>
-                    <label class="switch"><input type="checkbox" id="toggle_urgente"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_urgente" data-save="true"><span class="slider-switch"></span></label>
                 </div>
             </h2>
             <div id="cc_crm">
@@ -344,7 +343,7 @@
                 <span style="display:flex; align-items:center;">📦 O Projeto <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--text-muted)">MULTI-COR</span>
-                    <label class="switch"><input type="checkbox" id="toggle_multi_mat"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_multi_mat" data-save="true"><span class="slider-switch"></span></label>
                 </div>
             </div>
             
@@ -373,7 +372,7 @@
                 </div>
 
                 <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
-                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
+                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
                     <div id="container_cores_extras"></div>
                 </div>
 
@@ -521,7 +520,6 @@
         });
     }
 
-    // Fecha os modais se clicar fora
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             window.fecharModal(event.target.id);
@@ -611,7 +609,6 @@
             document.getElementById('margemSlider').value = pegaValor('margemInput');
             updateSliderProgress(document.getElementById('margemSlider'));
 
-            // Script de Resgate do Custo de Produção (Roda Inivisível)
             let precisaSalvarNuven = false;
             historico.forEach(h => {
                 if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento' && h.status !== 'Devolução') {
@@ -1229,63 +1226,6 @@
         }
         syncNuvem(); document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = "";
     }
-    
-    window.injetarDespesasAntigas = function() {
-        if (confirm("Deseja importar as 34 despesas da tabela antiga? (Isso não apagará as atuais, apenas adicionará ao final)")) {
-            var antigas = [
-                { data: "05/02/2026", nome: "Impressora 3D", valor: 4214.47 },
-                { data: "05/02/2026", nome: "Filamento Pla Preto 1kg", valor: 81.90 },
-                { data: "05/02/2026", nome: "Filamento Pla Banco 1kg", valor: 81.90 },
-                { data: "08/02/2026", nome: "Filamento Pla Amarelo 1kg", valor: 76.17 },
-                { data: "08/02/2026", nome: "Filamento Pla Rosa 1kg", valor: 77.00 },
-                { data: "08/02/2026", nome: "Filamento Pla Vermelho 1kg", valor: 76.17 },
-                { data: "08/02/2026", nome: "Filamento Pla Azul 1kg", valor: 76.17 },
-                { data: "09/02/2026", nome: "Filamento PLA Verde 1kg", valor: 74.92 },
-                { data: "09/02/2026", nome: "Fita Led", valor: 20.07 },
-                { data: "10/02/2026", nome: "Filamento Pla Cinza 1kg", valor: 75.50 },
-                { data: "10/02/2026", nome: "Filamento Pla Branco 1kg", valor: 75.50 },
-                { data: "10/02/2026", nome: "Filamento Pla Branco 1kg", valor: 75.50 },
-                { data: "10/02/2026", nome: "Filamento Pla Preto 1kg", valor: 75.50 },
-                { data: "10/02/2026", nome: "Filamento Pla Preto 1kg", valor: 75.50 },
-                { data: "10/02/2026", nome: "Adesivo Liquido 2 und", valor: 19.00 },
-                { data: "10/02/2026", nome: "Alicate", valor: 10.39 },
-                { data: "13/02/2026", nome: "Cola Adesivo Tek Bond 200", valor: 33.95 },
-                { data: "15/02/2026", nome: "Filamento Petg Branco 1kg", valor: 47.68 },
-                { data: "15/02/2026", nome: "Filamento Petg Preto 1kg", valor: 47.05 },
-                { data: "15/02/2026", nome: "Jogo de Lima", valor: 14.99 },
-                { data: "15/02/2026", nome: "Estilete", valor: 11.85 },
-                { data: "17/02/2026", nome: "Caixa Plastica", valor: 59.76 },
-                { data: "19/02/2026", nome: "Filamento Petg Preto 1kg", valor: 52.91 },
-                { data: "19/02/2026", nome: "Sílica Gel Laranja", valor: 41.96 },
-                { data: "19/02/2026", nome: "Saco Zip Lock 100 und", valor: 57.79 },
-                { data: "03/03/2026", nome: "Óleo Singer", valor: 9.90 },
-                { data: "03/03/2026", nome: "Fita Adesiva Trasparente", valor: 6.90 },
-                { data: "06/03/2026", nome: "Filamento Petg Preto 2kg", valor: 86.79 },
-                { data: "07/03/2026", nome: "Parafusos", valor: 19.40 },
-                { data: "10/03/2026", nome: "Papel Pardo", valor: 14.90 },
-                { data: "10/03/2026", nome: "Fita Adesiva Trasparente", valor: 7.00 },
-                { data: "13/03/2026", nome: "Filamento Petg Preto 1kg", valor: 48.83 },
-                { data: "15/03/2026", nome: "Filamento Petg Preto 2kg", valor: 78.66 },
-                { data: "15/03/2026", nome: "Saco Zip Lock Pequeno 100 und", valor: 9.89 }
-            ];
-            
-            var t = Date.now();
-            // Adiciona no final para não bagunçar as despesas mais recentes que você já possa ter inserido
-            antigas.forEach((d, i) => {
-                despesas.push({
-                    id: t + i,
-                    data: d.data,
-                    qtd: 1,
-                    nome: d.nome,
-                    valor: d.valor
-                });
-            });
-            
-            syncNuvem();
-            renderDespesas();
-            showToast("✅ Despesas importadas com sucesso!");
-        }
-    }
 
     function renderDespesas() {
         var lista = document.getElementById('lista_despesas'); if(!lista) return;
@@ -1424,8 +1364,8 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX); 
-                if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
+                const walk = (x - startX) * 1.5; 
+                if (Math.abs(walk) > 5) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
                     sliderFiltro.scrollLeft = scrollLeft - walk;
@@ -1465,7 +1405,7 @@
         
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado;
         var isCart = carrinho && carrinho.length > 0;
-        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : qtdPecas;
+        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
         if(totalQtd < 1) totalQtd = 1;
 
         var cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
@@ -1953,14 +1893,32 @@
 
         doc.autoTable({ startY: 76, head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor (Líq)', 'Lucro', 'Tempo']], body: tableData, theme: 'grid', headStyles: { fillColor: [59, 130, 246] }, styles: { fontSize: 8 } });
         
+        let currentY = doc.lastAutoTable.finalY + 15;
+
         if (tableDataDevolucoes.length > 0) {
-            let finalY = doc.lastAutoTable.finalY + 15;
+            if (currentY > 170) { doc.addPage(); currentY = 20; }
             doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
-            doc.text("Histórico de Devoluções", 14, finalY);
+            doc.text("Histórico de Devoluções", 14, currentY);
             doc.autoTable({
-                startY: finalY + 5,
+                startY: currentY + 5,
                 head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor Estornado', 'Lucro Nulo', 'Tempo']],
                 body: tableDataDevolucoes,
+                theme: 'grid',
+                headStyles: { fillColor: [239, 68, 68] },
+                styles: { fontSize: 8 }
+            });
+            currentY = doc.lastAutoTable.finalY + 15;
+        }
+
+        if (despesas.length > 0) {
+            const tableDataDespesas = despesas.map(d => [ d.data, d.qtd + "x", d.nome, "R$ " + formatarMoeda(d.valor) ]);
+            if (currentY > 170) { doc.addPage(); currentY = 20; }
+            doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
+            doc.text("Histórico de Despesas / Compras", 14, currentY);
+            doc.autoTable({
+                startY: currentY + 5,
+                head: [['Data', 'Qtd', 'Descrição', 'Valor Total']],
+                body: tableDataDespesas,
                 theme: 'grid',
                 headStyles: { fillColor: [239, 68, 68] },
                 styles: { fontSize: 8 }
