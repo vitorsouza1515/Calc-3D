@@ -57,7 +57,6 @@
             .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); max-width: 100%; width: 100%; margin: 0; align-items: start; padding-right: 10px; }
             .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
             .col-history { order: 2; } .col-results { order: 3; }
-            .bottom-bar { display: none; /* No PC o botão volta pro lugar normal se quiser, mas vamos deixar pra todos por padrão */ }
         }
 
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; overflow-x: hidden; }
@@ -106,17 +105,18 @@
         .price-box.meli { border-color: var(--meli); color: var(--meli); }
         .lucro-tag { font-size: 0.65rem; color: #10b981; font-weight: 700; margin-top: 4px; background: rgba(16, 185, 129, 0.1); display: inline-block; padding: 2px 8px; border-radius: 10px; }
 
-        .share-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
+        .share-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
         .btn { padding: 14px 5px; border: none; border-radius: 12px; font-size: 0.75rem; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .btn:active { transform: scale(0.95); }
         .btn-direta { background: var(--success); }
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; grid-column: span 3; margin-top: 5px; }
+        .btn-orcamento { background: #4f46e5; grid-column: span 3; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
+        .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
         
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; cursor: grab; user-select: none; -webkit-user-select: none; }
         .filter-container:active { cursor: grabbing; }
@@ -151,7 +151,6 @@
         .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
         
-        /* Nova Barra de Pesquisa Larga */
         .busca-larga { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.9rem; outline: none; margin-bottom: 12px; transition: border-color 0.3s; }
         .busca-larga:focus { border-color: var(--sky); }
     </style>
@@ -164,7 +163,7 @@
 <div id="sideMenu" class="side-menu">
     <div class="menu-header">
         <h2 style="font-size: 1.2rem; color: var(--sky); margin:0;">Navegação</h2>
-        <span class="menu-close" onclick="fecharGaveta()">&times;</span>
+        <span class="menu-close" onclick="fecharGaveta()" style="font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</span>
     </div>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('despesasModal').style.display='block'">💸 Despesas / Compras</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('logisticaModal').style.display='block'">🚚 Logística e Frete</button>
@@ -328,7 +327,7 @@
                 <span style="display:flex; align-items:center;">👤 Identificação / CRM <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--danger)">URGENTE</span>
-                    <label class="switch"><input type="checkbox" id="toggle_urgente"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_urgente" data-save="true"><span class="slider-switch"></span></label>
                 </div>
             </h2>
             <div id="cc_crm">
@@ -360,7 +359,7 @@
                 </select>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button class="btn" id="btn_salvar_catalogo_main" onclick="salvarNoCatalogo()" style="flex: 1; background: var(--orange); font-size: 0.65rem;">💾 Salvar Novo Projeto no Catálogo</button>
+                <button class="btn" id="btn_salvar_catalogo_main" onclick="document.getElementById('catalogoModal').style.display='block';" style="flex: 1; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
                 <button class="btn" id="btn_cancelar_catalogo_main" onclick="cancelarEdicaoCatalogo()" style="display:none; background: var(--danger); width: 40px; font-size: 1rem; padding: 0;" title="Cancelar Edição">❌</button>
             </div>
         </div>
@@ -405,7 +404,7 @@
 
                 <div class="grid-2" style="margin-top: 8px;">
                     <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
-                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
+                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
                 
                 <div id="boxPrecoFixo" style="display: none; margin-top: 15px; padding: 12px; border-radius: 12px; border: 2px dashed var(--orange); background: rgba(249, 115, 22, 0.05); flex-direction: column;">
@@ -416,8 +415,8 @@
                 <div class="range-area">
                     <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
                     <div class="range-container">
-                        <input type="range" id="margemSlider" min="0" max="1000" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();" onchange="syncNuvem()">
-                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();" onchange="syncNuvem()"><span>%</span></div>
+                        <input type="range" id="margemSlider" min="0" max="1000" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();">
+                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();"><span>%</span></div>
                     </div>
                 </div>
             </div>
@@ -484,11 +483,15 @@
             </div>
 
             <button class="btn-save-hist" id="btn_salvar_venda_main" onclick="salvarHistorico()">💾 Salvar Venda</button>
-            <div class="share-grid">
+            
+            <button class="btn" style="width: 100%; background: #475569; padding: 14px; border-radius: 12px; margin-top: 10px; font-weight: 800; color: white;" onclick="var el = document.getElementById('orcamento_options'); el.style.display = el.style.display === 'none' ? 'grid' : 'none';">📤 Gerar / Enviar Orçamento</button>
+            <div id="orcamento_options" class="share-grid" style="display: none;">
                 <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
                 <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
                 <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
+                <button class="btn btn-orcamento" onclick="gerarPDF()" style="margin-top: 0;">📄 PDF</button>
             </div>
+
             <button class="btn-reset" onclick="resetarDados()">🗑️ Limpar Projeto</button>
         </div>
     </div>
@@ -617,8 +620,7 @@
     
     window.configGlobais = { 
         maquina: "3.275", vidaUtil: "3.000", consumoW: "350", precoKwh: "1,20", qa_aviso: "100",
-        custoEmbalagem: "0,00", custoDeslocamento: "0,00", taxaMeli: "17", fixaMeli: "6,75",
-        taxaSucesso: "80", margemLucro: "80"
+        custoEmbalagem: "0,00", custoDeslocamento: "0,00", taxaMeli: "17", fixaMeli: "6,75" 
     };
 
     window.toggleCard = function(id, el, event) {
@@ -661,27 +663,6 @@
             document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
             document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
             document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
-            
-            document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
-            document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
-            document.getElementById('margemSlider').value = pegaValor('margemInput');
-            updateSliderProgress(document.getElementById('margemSlider'));
-
-            let precisaSalvarNuven = false;
-            historico.forEach(h => {
-                if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento' && h.status !== 'Devolução') {
-                    let hrs = parseLocal(h.tempo) || 0;
-                    let grm = parseLocal(h.peso) || 0;
-                    if (hrs > 0 || grm > 0) {
-                        let dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * hrs;
-                        let ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * hrs;
-                        let mat = (120 / 1000) * grm; 
-                        h.custo = dep + ene + mat;
-                        precisaSalvarNuven = true;
-                    }
-                }
-            });
-            if(precisaSalvarNuven) syncNuvem();
 
             renderHistorico();
             renderEstoque();
@@ -700,17 +681,15 @@
 
     function syncNuvem() {
         window.configGlobais = {
-            maquina: pegaTexto('maquina') || "3.275",
-            vidaUtil: pegaTexto('vidaUtil') || "3.000",
-            consumoW: pegaTexto('consumoW') || "350",
-            precoKwh: pegaTexto('precoKwh') || "1,20",
-            qa_aviso: pegaTexto('qa_aviso') || "100",
-            custoEmbalagem: pegaTexto('custoEmbalagem') || "0,00",
-            custoDeslocamento: pegaTexto('custoDeslocamento') || "0,00",
-            taxaMeli: pegaTexto('taxaMeli') || "17",
-            fixaMeli: pegaTexto('fixaMeli') || "6,75",
-            taxaSucesso: pegaTexto('taxaSucesso') || "80",
-            margemLucro: pegaTexto('margemInput') || "80"
+            maquina: document.getElementById('maquina').value || "3.275",
+            vidaUtil: document.getElementById('vidaUtil').value || "3.000",
+            consumoW: document.getElementById('consumoW').value || "350",
+            precoKwh: document.getElementById('precoKwh').value || "1,20",
+            qa_aviso: document.getElementById('qa_aviso').value || "100",
+            custoEmbalagem: document.getElementById('custoEmbalagem').value || "0,00",
+            custoDeslocamento: document.getElementById('custoDeslocamento').value || "0,00",
+            taxaMeli: document.getElementById('taxaMeli').value || "17",
+            fixaMeli: document.getElementById('fixaMeli').value || "6,75"
         };
 
         nuvemRef.set({
@@ -1027,7 +1006,7 @@
 
     window.cancelarEdicaoCatalogo = function() {
         editCatalogoId = null;
-        var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
         
         ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
@@ -1054,7 +1033,7 @@
             catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
         }
         
-        var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
         
         document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain');
@@ -1122,7 +1101,7 @@
         if(match1) { 
             if(sel1) sel1.value = match1.id; 
             document.getElementById('precoFilamento').value = match1.preco;
-            document.getElementById('marcaFilamento1').value = match1.marca; 
+            document.getElementById('marcaFilamento1').value = match1.marca;
         } else {
             if(sel1) sel1.value = "";
             document.getElementById('precoFilamento').value = p.preco1 || "120,00";
@@ -1453,9 +1432,11 @@
         
         renderCoresExtras(); 
         
+        // Força a atualização visual do slider para bater com o valor numérico lido do cache/firebase
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
         
+        // Verifica se estava aparecendo a caixa do Preço Fixo
         if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; }
         
         calcular(); mostrarValorPersonalizado();
@@ -1493,7 +1474,7 @@
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
                 const walk = (x - startX) * 1.5; 
-                if (Math.abs(walk) > 5) window.isDraggingFiltro = true; 
+                if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
                     sliderFiltro.scrollLeft = scrollLeft - walk;
@@ -1977,7 +1958,7 @@
 
         editHistoricoId = null; 
         var btnSaveMain = document.getElementById('btn_salvar_venda_main'); if(btnSaveMain) { btnSaveMain.textContent = "💾 Salvar Venda"; btnSaveMain.style.background = "var(--purple)"; }
-        var btnSticky = document.getElementById('btn_salvar_venda_sticky'); if(btnSticky) { btnSticky.textContent = "💾 Salvar Venda"; btnSticky.style.background = "var(--purple)"; }
+        var btnSticky = document.getElementById('btn_salvar_venda_sticky'); if(btnSticky) { btnSticky.textContent = "💾 Salvar"; btnSticky.style.background = "var(--purple)"; }
         
         editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
         if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
