@@ -27,7 +27,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; padding-bottom: 90px; overflow-x: hidden; max-width: 100vw; }
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow-x: hidden; max-width: 100vw; }
         
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; padding-bottom: 5px; border-bottom: 1px dashed var(--border); }
         header h1 { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
@@ -41,14 +41,6 @@
         .menu-btn { background: #0f172a; color: var(--text-main); border: 1px solid var(--border); padding: 14px; border-radius: 12px; font-size: 0.9rem; font-weight: 700; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .menu-btn:active { transform: scale(0.98); border-color: var(--primary); }
         .menu-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 10px; }
-
-        /* Barra Flutuante de Salvar */
-        .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--primary); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 999; box-shadow: 0 -5px 20px rgba(0,0,0,0.6); padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
-        .bottom-bar-info { display: flex; flex-direction: column; }
-        .bottom-bar-info span { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-        .bottom-bar-info b { font-size: 1.3rem; color: var(--success); }
-        .btn-sticky { background: var(--purple); color: #fff; padding: 12px 24px; border-radius: 12px; font-weight: 800; border: none; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-        .btn-sticky:active { transform: scale(0.95); }
 
         .dashboard { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-y: auto; overflow-x: hidden; width: 100%; }
         .col-input { order: 1; } .col-results { order: 2; } .col-history { order: 3; }
@@ -114,7 +106,7 @@
         .btn-orcamento { background: #4f46e5; grid-column: span 3; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
-        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
+        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
         
@@ -124,7 +116,8 @@
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-width: 100%; padding-right: 5px;}
+        /* TRAVA DE ALTURA MÁXIMA PARA LISTAS */
+        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
@@ -142,10 +135,6 @@
         .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; margin-bottom: 5px; gap: 10px; }
         .total-row span:first-child { flex: 1; line-height: 1.2; }
         .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
-
-        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
-        .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
 
         .modal { display: none; position: fixed; z-index: 4000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
         .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
@@ -171,6 +160,14 @@
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('estoqueModal').style.display='block'">🧻 Estoque de Filamentos</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('catalogoModal').style.display='block'">🏷️ Catálogo de Produtos</button>
     <button class="menu-btn" onclick="fecharGaveta(); abrirConfigModal()">⚙️ Base Operacional</button>
+    
+    <hr style="border: 1px dashed var(--border); margin: 10px 0;">
+    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; padding-left: 5px;">Relatórios & Exportação</span>
+    
+    <button class="menu-btn" onclick="fecharGaveta(); gerarRelatorioGeral()">📄 Relatório PDF Geral</button>
+    <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel Completo</button>
+    <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
+    <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
 </div>
 
 <div id="configModal" class="modal">
@@ -264,7 +261,7 @@
         <span class="close-modal" onclick="fecharModal('catalogoModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--orange); cursor:default;">🏷️ Gerenciar Catálogo</h2>
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Produtos Salvos (Use a tela principal para editar/adicionar):</p>
-        <div id="lista_catalogo" class="history-list" style="max-height: 400px;"></div>
+        <div id="lista_catalogo" class="history-list"></div>
     </div>
 </div>
 
@@ -286,7 +283,7 @@
         </div>
         <div style="border-top: 1px dashed var(--border); margin-top: 15px; padding-top: 10px;">
             <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Filamentos Cadastrados:</p>
-            <div id="lista_estoque" class="history-list" style="max-height: 400px;"></div>
+            <div id="lista_estoque" class="history-list"></div>
         </div>
     </div>
 </div>
@@ -309,7 +306,7 @@
                     <button class="btn" id="btn_cancelar_despesa" onclick="cancelarEdicaoDespesa()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
                 </div>
             </div>
-            <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 400px;"></div>
+            <div id="lista_despesas" class="history-list" style="margin-top: 12px;"></div>
         </div>
         <button class="btn btn-direta" onclick="fecharModal('despesasModal')" style="width: 100%; margin-top: 15px; background: #ef4444;">Concluído</button>
     </div>
@@ -489,7 +486,7 @@
                 <button class="btn btn-direta" onclick="wpp('direta')">WhatsApp</button>
                 <button class="btn btn-shopee" onclick="wpp('shopee')">Shopee</button>
                 <button class="btn btn-meli" onclick="wpp('meli')">M. Livre</button>
-                <button class="btn btn-orcamento" onclick="gerarPDF()" style="margin-top: 0;">📄 PDF</button>
+                <button class="btn btn-orcamento" onclick="gerarOrcamentoPDF()" style="margin-top: 0;">📄 PDF</button>
             </div>
 
             <button class="btn-reset" onclick="resetarDados()">🗑️ Limpar Projeto</button>
@@ -513,7 +510,6 @@
                 <span style="display:flex; align-items:center;">📈 Resumo Financeiro <span class="chevron">▼</span></span>
             </h2>
             <div id="wrap_hist_totals">
-                
                 <div class="total-summary">
                     <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                     <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
@@ -534,25 +530,9 @@
                     <div class="total-row"><span>Total Shopee (<span id="qtd_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_shopee">0,00</span></b></div>
                     <div class="total-row"><span>Total M. Livre (<span id="qtd_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_meli">0,00</span></b></div>
                 </div>
-             
-                <div class="report-grid">
-                    <button class="btn-report" onclick="gerarPDF()">📄 PDF Geral</button>
-                    <button class="btn-report" style="background: #166534;" onclick="exportarExcel()">📊 Excel Completo</button>
-                </div>
-               
-                <button class="btn-import" onclick="document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
-                <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
             </div>
         </div>
     </div>
-</div>
-
-<div class="bottom-bar">
-    <div class="bottom-bar-info">
-        <span>Venda Final:</span>
-        <b id="sticky_total">R$ 0,00</b>
-    </div>
-    <button class="btn-sticky" id="btn_salvar_venda_sticky" onclick="salvarHistorico()">💾 Salvar</button>
 </div>
 
 <script>
@@ -1098,9 +1078,7 @@
     function carregarDoCatalogo() { 
         var id = document.getElementById('sel_catalogo').value; 
         
-        // Se a pessoa selecionou "-- Escolher produto cadastrado --" (ID vazio)
         if(!id) {
-            // Limpa os campos do projeto para voltar ao modo "Novo"
             document.getElementById('nomeProjeto').value = "";
             document.getElementById('qtdPecasProjeto').value = "1";
             document.getElementById('tempoH').value = "";
@@ -1127,21 +1105,18 @@
             if(boxPreco) boxPreco.style.display = 'none';
             document.getElementById('precoFixoCatMain').value = '';
             
-            // Remove do cache para não voltar se der F5
             ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'valorPersonalizado', 'precoFixoCatMain'].forEach(f => localStorage.removeItem('3d4y_dark_' + f));
             
             calcular();
             return;
         } 
         
-        // Se escolheu um produto real:
         aplicarDadosNoForm(id, false); 
         showToast("🏷️ Dados carregados!"); 
     }
 
     function editarDoCatalogo(id) {
-        aplicarDadosNoForm(id, true); 
-        editCatalogoId = id;
+        aplicarDadosNoForm(id, true); editCatalogoId = id;
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Confirmar Alteração no Catálogo"; btnMain.style.background = "var(--purple)"; }
         
         document.getElementById('btn_cancelar_catalogo_main').style.display = "block";
@@ -1149,7 +1124,6 @@
         document.getElementById('catalogoModal').style.display = 'none'; showToast("✏️ Edite os dados e clique em Confirmar Alteração");
     }
 
-    // A função agora aceita um segundo parâmetro "isEditing" que diz se a caixa do preço fixo deve aparecer ou não
     function aplicarDadosNoForm(id, isEditing = false) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
         document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
@@ -1158,7 +1132,6 @@
         var elPrecoFixo = document.getElementById('precoFixoCatMain');
         var boxPreco = document.getElementById('boxPrecoFixo');
         
-        // Só exibe a caixa de Preço Fixo se estiver clicando no botão "Editar"
         if(isEditing) {
             if(elPrecoFixo && boxPreco) { 
                 boxPreco.style.display = 'flex';
@@ -1546,7 +1519,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 1.5; 
+                const walk = (x - startX); 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1636,22 +1609,6 @@
         var tagD = document.getElementById('tag_lucroD'); if(tagD) tagD.textContent = "Lucro: R$ " + formatarMoeda(lucroD);
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
         var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
-
-        // Atualizar barra flutuante (Sticky)
-        var stickyVal = document.getElementById('sticky_total');
-        if(stickyVal) {
-            var canal = document.getElementById('canalVendaSelecionado').value;
-            if(canal === 'Personalizado') {
-                var vp = document.getElementById('valorPersonalizado').value;
-                stickyVal.textContent = "R$ " + (vp || "0,00");
-            } else if (canal === 'Shopee') {
-                stickyVal.textContent = "R$ " + formatarMoeda(totS);
-            } else if (canal === 'Meli') {
-                stickyVal.textContent = "R$ " + formatarMoeda(totM);
-            } else {
-                stickyVal.textContent = "R$ " + formatarMoeda(vd);
-            }
-        }
     }
 
     function salvarHistorico() {
@@ -1734,8 +1691,6 @@
             
             document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; 
             document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)";
-            var btnSticky = document.getElementById('btn_salvar_venda_sticky');
-            if(btnSticky) { btnSticky.textContent = "💾 Salvar"; btnSticky.style.background = "var(--purple)"; }
         } else { historico.unshift(novo); }
 
         syncNuvem();
@@ -1760,7 +1715,6 @@
         carrinho = [];
         document.getElementById('carrinho_container').style.display = 'none';
 
-        // Inteligência para Editar: Se for só 1 item, joga direto nos inputs em vez do carrinho!
         if (item.cartItems && item.cartItems.length === 1) {
             var prod = item.cartItems[0];
             var match = prod.nome.match(/^(\d+)x\s(.*)/); 
@@ -1777,12 +1731,10 @@
             
             salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
         } else if (item.cartItems && item.cartItems.length > 1) {
-            // Se for uma venda Múltipla, carrega pro carrinho
             carrinho = JSON.parse(JSON.stringify(item.cartItems));
             renderCarrinho();
             document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
         } else {
-            // Histórico antigo sem cartItems
             var match = item.nome.match(/^(\d+)x\s(.*)/); var qtd = match ? parseInt(match[1]) : (item.totalQtd || 1);
             var baseNome = match ? match[2] : item.nome;
             document.getElementById('nomeProjeto').value = baseNome;
@@ -1821,9 +1773,6 @@
         
         document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição"; 
         document.getElementById('btn_salvar_venda_main').style.background = "var(--sky)";
-        
-        var btnSticky = document.getElementById('btn_salvar_venda_sticky');
-        if(btnSticky) { btnSticky.textContent = "💾 Confirmar Edição"; btnSticky.style.background = "var(--sky)"; }
         
         showToast("✏️ Venda carregada para edição!");
         var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2030,7 +1979,6 @@
 
         editHistoricoId = null; 
         var btnSaveMain = document.getElementById('btn_salvar_venda_main'); if(btnSaveMain) { btnSaveMain.textContent = "💾 Salvar Venda"; btnSaveMain.style.background = "var(--purple)"; }
-        var btnSticky = document.getElementById('btn_salvar_venda_sticky'); if(btnSticky) { btnSticky.textContent = "💾 Salvar"; btnSticky.style.background = "var(--purple)"; }
         
         editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
         if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
@@ -2067,7 +2015,74 @@
         window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
     }
 
-    window.gerarPDF = function() {
+    // GERA O ORÇAMENTO PARA O CLIENTE
+    window.gerarOrcamentoPDF = function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.text("ORÇAMENTO - 3D 4You", 14, 20);
+
+        doc.setFontSize(12);
+        doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 14, 30);
+        
+        var cliNome = pegaTexto('nomeCliente') || "Cliente Balcão";
+        doc.text("Cliente: " + cliNome, 14, 38);
+
+        var isCart = carrinho && carrinho.length > 0;
+        var valF = 0;
+        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
+        var tipoCanal = document.getElementById('canalVendaSelecionado').value;
+
+        // Puxa o valor final da tela
+        if(isCart) {
+            valF = tipoCanal === 'Direta' ? document.getElementById('cart_tot_vd').textContent : (tipoCanal === 'Shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
+        } else {
+            valF = tipoCanal === 'Direta' ? document.getElementById('r_vendaD').textContent : (tipoCanal === 'Shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
+        }
+        
+        if (isPersonalizado) {
+            var vPerso = pegaTexto('valorPersonalizado');
+            if (vPerso) valF = vPerso;
+        }
+
+        let startY = 50;
+        let tableData = [];
+
+        if(isCart) {
+            carrinho.forEach(i => {
+                tableData.push([i.nome, "R$ " + formatarMoeda(i.valorComLucro)]);
+            });
+        } else {
+            var nProj = document.getElementById('nomeProjeto').value || "Peça 3D";
+            var qtd = document.getElementById('qtdPecasProjeto').value || "1";
+            tableData.push([qtd + "x " + nProj, "R$ " + valF]);
+        }
+
+        doc.autoTable({
+            startY: startY,
+            head: [['Descrição do Item', 'Valor Estimado']],
+            body: tableData,
+            theme: 'grid',
+            headStyles: { fillColor: [59, 130, 246] }
+        });
+
+        let finalY = doc.lastAutoTable.finalY + 15;
+        
+        doc.setFontSize(16);
+        doc.setFont(undefined, 'bold');
+        doc.text("VALOR TOTAL: R$ " + valF, 14, finalY);
+
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'normal');
+        doc.text("Orçamento sujeito a alteração. Válido por 7 dias.", 14, finalY + 10);
+
+        doc.save("Orcamento_Cliente_3D4You.pdf");
+        showToast("📄 Orçamento PDF Gerado!");
+    }
+
+    // GERA O RELATÓRIO GERAL DA EMPRESA (Oculto no Menu)
+    window.gerarRelatorioGeral = function() {
         if (historico.length === 0) {
             showToast("⚠️ Nenhum dado para exportar");
             return;
@@ -2077,7 +2092,7 @@
         const doc = new jsPDF('landscape'); 
 
         doc.setFontSize(16);
-        doc.text("Relatório Geral - 3D 4You", 14, 15);
+        doc.text("Relatório Financeiro Geral - 3D 4You", 14, 15);
         doc.setFontSize(9);
         doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
 
@@ -2177,8 +2192,8 @@
             });
         }
 
-        doc.save("Relatorio_3D4You.pdf");
-        showToast("📄 PDF Gerado com sucesso!");
+        doc.save("Relatorio_Geral_3D4You.pdf");
+        showToast("📄 Relatório PDF Gerado!");
     };
 
     window.exportarExcel = function() {
