@@ -27,7 +27,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow-x: hidden; max-width: 100vw; }
+        body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; padding-bottom: 90px; overflow-x: hidden; max-width: 100vw; }
         
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; padding-bottom: 5px; border-bottom: 1px dashed var(--border); }
         header h1 { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
@@ -106,7 +106,7 @@
         .btn-orcamento { background: #4f46e5; grid-column: span 3; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
-        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
+        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
         
@@ -883,29 +883,61 @@
         }
 
         renderCarrinho();
-        document.getElementById('nomeProjeto').value = "";
-        document.getElementById('qtdPecasProjeto').value = "1";
-        localStorage.removeItem('3d4y_dark_nomeProjeto');
-        salvarDinamico('qtdPecasProjeto');
-        calcular();
-    }
-
-    function cancelarEdicaoCarrinho() {
-        editandoCarrinhoId = null;
+        
+        // Limpa os inputs da tela após colocar no carrinho
         document.getElementById('nomeProjeto').value = "";
         document.getElementById('qtdPecasProjeto').value = "1";
         document.getElementById('tempoH').value = "";
         document.getElementById('pesoPeca').value = "";
         
-        var btnAdd = document.getElementById('btn_add_carrinho');
-        var btnCancel = document.getElementById('btn_cancelar_edicao');
-        if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
-        if(btnCancel) btnCancel.style.display = "none";
+        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
+        document.getElementById('tipoFilamento1').value = "";
+        document.getElementById('corFilamento1').value = "";
+        document.getElementById('marcaFilamento1').value = "";
+        document.getElementById('precoFilamento').value = "120,00";
+        document.getElementById('detalhes_1').style.display = 'none';
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti && tMulti.checked) {
+            tMulti.checked = false;
+            tMulti.dispatchEvent(new Event('change'));
+        }
         
         localStorage.removeItem('3d4y_dark_nomeProjeto');
         salvarDinamico('qtdPecasProjeto');
         localStorage.removeItem('3d4y_dark_tempoH');
         localStorage.removeItem('3d4y_dark_pesoPeca');
+        
+        calcular();
+    }
+
+    function cancelarEdicaoCarrinho() {
+        editandoCarrinhoId = null;
+        var btnAdd = document.getElementById('btn_add_carrinho');
+        var btnCancel = document.getElementById('btn_cancelar_edicao');
+        if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
+        if(btnCancel) btnCancel.style.display = "none";
+        
+        document.getElementById('nomeProjeto').value = "";
+        document.getElementById('qtdPecasProjeto').value = "1";
+        document.getElementById('tempoH').value = "";
+        document.getElementById('pesoPeca').value = "";
+        
+        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
+        document.getElementById('tipoFilamento1').value = "";
+        document.getElementById('corFilamento1').value = "";
+        document.getElementById('marcaFilamento1').value = "";
+        document.getElementById('precoFilamento').value = "120,00";
+        document.getElementById('detalhes_1').style.display = 'none';
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti && tMulti.checked) {
+            tMulti.checked = false;
+            tMulti.dispatchEvent(new Event('change'));
+        }
+        
+        ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
+        
         calcular();
         showToast("❌ Edição cancelada");
     }
@@ -1013,9 +1045,32 @@
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
         
-        ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
-        document.getElementById('boxPrecoFixo').style.display = 'none';
+        // Limpa os campos visuais da tela principal
+        document.getElementById('nomeProjeto').value = "";
+        document.getElementById('qtdPecasProjeto').value = "1";
+        document.getElementById('tempoH').value = "";
+        document.getElementById('pesoPeca').value = "";
+        document.getElementById('sel_catalogo').value = "";
         
+        var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
+        document.getElementById('tipoFilamento1').value = "";
+        document.getElementById('corFilamento1').value = "";
+        document.getElementById('marcaFilamento1').value = "";
+        document.getElementById('precoFilamento').value = "120,00";
+        document.getElementById('detalhes_1').style.display = 'none';
+        
+        var tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti && tMulti.checked) {
+            tMulti.checked = false;
+            tMulti.dispatchEvent(new Event('change'));
+        }
+        
+        document.getElementById('boxPrecoFixo').style.display = 'none';
+        document.getElementById('precoFixoCatMain').value = "";
+        
+        ['nomeProjeto','qtdPecasProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
+        
+        calcular();
         showToast("❌ Edição cancelada");
     };
 
@@ -1519,7 +1574,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX); 
+                const walk = (x - startX) * 1.5; 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1562,7 +1617,7 @@
         
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado;
         var isCart = carrinho && carrinho.length > 0;
-        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : qtdPecas;
+        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
         if(totalQtd < 1) totalQtd = 1;
 
         var cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
@@ -1771,7 +1826,7 @@
 
         calcular(); editHistoricoId = id;
         
-        document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição"; 
+        document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição de Venda"; 
         document.getElementById('btn_salvar_venda_main').style.background = "var(--sky)";
         
         showToast("✏️ Venda carregada para edição!");
