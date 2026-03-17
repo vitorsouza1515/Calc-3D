@@ -189,8 +189,8 @@
         </div>
         <div id="secao_logistica">
             <div class="grid-2">
-                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
+                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
                 <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
                 <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
             </div>
@@ -209,8 +209,8 @@
             <div class="grid-2">
                 <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
                 <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
             </div>
         </div>
         
@@ -302,7 +302,7 @@
                 <span style="display:flex; align-items:center;">👤 Identificação / CRM <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--danger)">URGENTE</span>
-                    <label class="switch"><input type="checkbox" id="toggle_urgente"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_urgente" data-save="true"><span class="slider-switch"></span></label>
                 </div>
             </h2>
             <div id="cc_crm">
@@ -341,7 +341,7 @@
                 <span style="display:flex; align-items:center;">📦 O Projeto <span class="chevron">▼</span></span>
                 <div style="display:flex; align-items:center; gap:5px; font-size:0.65rem;">
                     <span style="color:var(--text-muted)">MULTI-COR</span>
-                    <label class="switch"><input type="checkbox" id="toggle_multi_mat"><span class="slider-switch"></span></label>
+                    <label class="switch"><input type="checkbox" id="toggle_multi_mat" data-save="true"><span class="slider-switch"></span></label>
                 </div>
             </div>
             
@@ -370,19 +370,19 @@
                 </div>
 
                 <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
-                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
+                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
                     <div id="container_cores_extras"></div>
                 </div>
 
                 <div class="grid-2" style="margin-top: 8px;">
                     <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
-                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="95" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="80" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
                 </div>
                 <div class="range-area">
                     <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
                     <div class="range-container">
-                        <input type="range" id="margemSlider" min="0" max="1000" value="100">
-                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="100" oninput="aplicarMascara(this)"><span>%</span></div>
+                        <input type="range" id="margemSlider" min="0" max="1000" value="80" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();" onchange="syncNuvem()">
+                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="80" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();" onchange="syncNuvem()"><span>%</span></div>
                     </div>
                 </div>
             </div>
@@ -518,7 +518,6 @@
         });
     }
 
-    // Fecha os modais se clicar fora
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             window.fecharModal(event.target.id);
@@ -558,7 +557,8 @@
     
     window.configGlobais = { 
         maquina: "3.275", vidaUtil: "3.000", consumoW: "350", precoKwh: "1,20", qa_aviso: "100",
-        custoEmbalagem: "0,00", custoDeslocamento: "0,00", taxaMeli: "17", fixaMeli: "6,75" 
+        custoEmbalagem: "0,00", custoDeslocamento: "0,00", taxaMeli: "17", fixaMeli: "6,75",
+        taxaSucesso: "80", margemLucro: "80"
     };
 
     window.toggleCard = function(id, el, event) {
@@ -601,8 +601,12 @@
             document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento;
             document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli;
             document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli;
+            
+            document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
+            document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
+            document.getElementById('margemSlider').value = pegaValor('margemInput');
+            updateSliderProgress(document.getElementById('margemSlider'));
 
-            // Script de Resgate do Custo de Produção (Roda Inivisível)
             let precisaSalvarNuven = false;
             historico.forEach(h => {
                 if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento' && h.status !== 'Devolução') {
@@ -644,7 +648,9 @@
             custoEmbalagem: pegaTexto('custoEmbalagem') || "0,00",
             custoDeslocamento: pegaTexto('custoDeslocamento') || "0,00",
             taxaMeli: pegaTexto('taxaMeli') || "17",
-            fixaMeli: pegaTexto('fixaMeli') || "6,75"
+            fixaMeli: pegaTexto('fixaMeli') || "6,75",
+            taxaSucesso: pegaTexto('taxaSucesso') || "80",
+            margemLucro: pegaTexto('margemInput') || "80"
         };
 
         nuvemRef.set({
@@ -1316,6 +1322,8 @@
 
         var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
+        var pf = document.getElementById('precoFilamento'); if(pf && !pf.value) pf.value = "120,00";
+
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
         if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
         
@@ -1355,13 +1363,26 @@
             });
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
-                e.preventDefault();
                 const x = e.pageX - sliderFiltro.offsetLeft;
                 const walk = (x - startX) * 1.5; 
                 if (Math.abs(walk) > 5) window.isDraggingFiltro = true; 
-                sliderFiltro.scrollLeft = scrollLeft - walk;
+                if (window.isDraggingFiltro) {
+                    e.preventDefault();
+                    sliderFiltro.scrollLeft = scrollLeft - walk;
+                }
             });
         }
+        
+        document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
+        document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
+        document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
+        document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20";
+        document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100";
+        document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00";
+        document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
+        document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
+        document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+        calcular();
     };
 
     function calcular() {
@@ -1861,19 +1882,27 @@
         });
 
         let lucroReal = totLucro - despesasTotais;
-        doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 48, 'F');
+
+        doc.setFillColor(240, 240, 240);
+        doc.rect(14, 25, 268, 48, 'F');
         
-        doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos e Devoluções):", 18, 32);
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos e Devoluções):", 18, 32);
         
-        doc.setFontSize(9); doc.setFont(undefined, 'normal');
+        doc.setFontSize(9);
+        doc.setFont(undefined, 'normal');
         doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totBruto)}`, 18, 40); doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
         doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 46); doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46);
         
         doc.setFont(undefined, 'bold');
         doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54); doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 54);
-        doc.setTextColor(0, 150, 0); doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 54); doc.setTextColor(0, 0, 0);
+        doc.setTextColor(0, 150, 0);
+        doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 54);
+        doc.setTextColor(0, 0, 0);
 
-        doc.setFontSize(8); doc.setFont(undefined, 'normal');
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
         doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64); doc.text(`Total M. Livre: R$ ${formatarMoeda(somaMeli)}`, 160, 64);
 
         doc.setFont(undefined, 'bold');
@@ -1902,7 +1931,10 @@
     };
 
     window.exportarExcel = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { 
+            showToast("⚠️ Nenhum dado para exportar"); return; 
+        }
+        
         var wb = XLSX.utils.book_new();
         
         var vendasValidas = historico.filter(h => h.status !== 'Devolução');
@@ -1936,7 +1968,23 @@
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
         }
 
-        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx"); showToast("📊 Backup Excel baixado!");
+        var dadosConfig = [{
+            "Máquina (R$)": window.configGlobais.maquina || "3.275",
+            "Vida Útil (h)": window.configGlobais.vidaUtil || "3.000",
+            "Consumo (W)": window.configGlobais.consumoW || "350",
+            "Preço kWh (R$)": window.configGlobais.precoKwh || "1,20",
+            "Aviso Manutenção (h)": window.configGlobais.qa_aviso || "100",
+            "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem || "0,00",
+            "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento || "0,00",
+            "Taxa M. Livre (%)": window.configGlobais.taxaMeli || "17",
+            "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli || "6,75",
+            "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso || "80",
+            "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro || "80"
+        }];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosConfig), "Configurações");
+
+        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
+        showToast("📊 Backup Excel baixado!");
     };
 </script>
 </body>
