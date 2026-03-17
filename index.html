@@ -9,36 +9,56 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="./logo.png">
+    
     <title>3D 4You ERP</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     
     <style>
-        :root { --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8; --border: #334155; --primary: #3b82f6; --success: #10b981; --shopee: #f94d30; --meli: #facc15; --sky: #0ea5e9; --purple: #8b5cf6; --orange: #f97316; --danger: #ef4444; }
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --border: #334155; --primary: #3b82f6; --success: #10b981; --shopee: #f94d30;
+            --meli: #facc15; --sky: #0ea5e9; --purple: #8b5cf6; --orange: #f97316; --danger: #ef4444;
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; padding: 15px; overflow-x: hidden; max-width: 100vw; }
+        
         header { text-align: center; margin-bottom: 12px; flex-shrink: 0; position: relative; }
         header h1 { font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; margin: 0; }
         .nuvem-icon { font-size: 0.8rem; margin-left: 5px; vertical-align: super; color: var(--success); }
+
         .dashboard { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-y: auto; overflow-x: hidden; padding-bottom: 20px; width: 100%; }
         .col-input { order: 1; } .col-results { order: 2; } .col-history { order: 3; }
-        @media (min-width: 1024px) { .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); max-width: 100%; width: 100%; margin: 0; overflow-y: auto; align-items: start; padding-right: 10px; } .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; } .col-history { order: 2; } .col-results { order: 3; } }
+
+        @media (min-width: 1024px) { 
+            .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr); max-width: 100%; width: 100%; margin: 0; overflow-y: auto; align-items: start; padding-right: 10px; }
+            .col { display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; }
+            .col-history { order: 2; } .col-results { order: 3; }
+        }
+
         .card { background: var(--card-bg); border-radius: 16px; padding: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-width: 100%; overflow-x: hidden; }
         .section-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 12px; color: var(--sky); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 6px; text-transform: uppercase; cursor: pointer; user-select: none; }
         .chevron { transition: transform 0.3s; display: inline-block; font-size: 0.7rem; margin-left: 8px; color: var(--text-muted); vertical-align: middle; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
         .input-group { display: flex; flex-direction: column; margin-bottom: 8px; min-width: 0; }
         .input-group label { font-size: 0.65rem; font-weight: 700; margin-bottom: 4px; color: var(--text-muted); text-transform: uppercase; }
         .input-group input, .input-group select { background: #0f172a; padding: 10px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); outline: none; width: 100%; min-width: 0; }
         .input-group input[readonly] { background: #0a0f1d; color: #94a3b8; cursor: not-allowed; border-color: #1e293b; }
+
         .peso-destaque { border: 2px solid var(--sky) !important; background: rgba(14, 165, 233, 0.1) !important; font-size: 1.1rem !important; color: #fff !important; }
         .filament-box { background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin-bottom: 10px; }
         .filament-box-title { font-size: 0.7rem; color: var(--sky); font-weight: 800; margin-bottom: 10px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
         .detalhes-material { display: none; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px; }
+
         .range-area { margin-top: 15px; background: rgba(15, 23, 42, 0.4); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
         .range-container { display: flex; align-items: center; gap: 15px; }
         input[type="range"] { flex: 1; height: 10px; background: #334155; border-radius: 8px; appearance: none; outline: none; min-width: 0; }
@@ -46,6 +66,7 @@
         .margem-box { display: flex; align-items: center; background: #0f172a; border: 2px solid var(--primary); border-radius: 10px; padding: 0 12px; width: 100px; flex-shrink: 0; height: 45px; }
         .margem-box input { width: 100%; min-width: 0; font-size: 1.3rem; font-weight: 900; color: var(--primary); text-align: right; background: transparent; border: none; outline: none; }
         .margem-box span { color: var(--primary); font-weight: 900; font-size: 1.1rem; margin-left: 2px; }
+
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; flex-shrink: 0; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider-switch { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 20px; }
@@ -54,34 +75,44 @@
         input:checked + .slider-switch:before { transform: translateX(14px); }
         #toggle_multi_mat:checked + .slider-switch { background-color: var(--purple); }
         #toggle_urgente:checked + .slider-switch { background-color: var(--danger); }
+
         .results { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 18px; border: 1px solid var(--primary); display: flex; flex-direction: column; gap: 12px; }
         .result-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.8rem; border-bottom: 1px dashed rgba(255,255,255,0.05); gap: 10px; }
         .result-row span:first-child { flex: 1; line-height: 1.2; }
         .result-row .value { font-family: monospace; font-weight: 600; color: var(--text-main); font-size: 0.9rem; white-space: nowrap; text-align: right; }
+        
         .price-box { border-radius: 12px; padding: 12px; text-align: center; border-left: 4px solid transparent; background: rgba(0,0,0,0.2); position: relative; }
         .price-box .total { font-size: 1.7rem; font-weight: 900; }
         .price-box.direta { border-color: var(--success); color: #34d399; }
         .price-box.shopee { border-color: var(--shopee); color: #ff8b73; }
         .price-box.meli { border-color: var(--meli); color: var(--meli); }
         .lucro-tag { font-size: 0.65rem; color: #10b981; font-weight: 700; margin-top: 4px; background: rgba(16, 185, 129, 0.1); display: inline-block; padding: 2px 8px; border-radius: 10px; }
+
         .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 5px; }
         .btn { padding: 14px 5px; border: none; border-radius: 12px; font-size: 0.75rem; font-weight: 800; color: white; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
         .btn:active { transform: scale(0.95); }
-        .btn-direta { background: var(--success); } .btn-shopee { background: var(--shopee); } .btn-meli { background: #ca8a04; } .btn-orcamento { background: #4f46e5; }
+        .btn-direta { background: var(--success); }
+        .btn-shopee { background: var(--shopee); }
+        .btn-meli { background: #ca8a04; }
+        .btn-orcamento { background: #4f46e5; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
+
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 1000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
         .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
+        
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; cursor: grab; user-select: none; -webkit-user-select: none; }
         .filter-container:active { cursor: grabbing; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+
         .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-width: 100%; padding-right: 5px;}
         .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
         .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
+        
         .status-select { font-size: 0.7rem; font-weight: 800; border-radius: 6px; padding: 6px 10px; border: none; outline: none; cursor: pointer; appearance: auto; -webkit-appearance: auto; text-transform: uppercase; max-width: 100%; }
         .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
         .status-fila { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
@@ -89,16 +120,20 @@
         .status-finalizado { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); }
         .status-enviado { background: rgba(14, 165, 233, 0.15); color: var(--sky); border: 1px solid rgba(14, 165, 233, 0.4); }
         .status-devolucao { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+
         .total-summary { background: rgba(59, 130, 246, 0.1); border: 1px solid var(--primary); border-radius: 12px; padding: 12px; margin-top: 10px; }
         .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; margin-bottom: 5px; gap: 10px; }
         .total-row span:first-child { flex: 1; line-height: 1.2; }
         .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
+
         .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
         .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
+
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
         .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
+        
         #buscaCliente { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); padding: 4px 10px; font-size: 0.7rem; outline: none; width: 130px; transition: width 0.3s; font-weight: normal; text-transform: none; margin-left: 10px;}
         #buscaCliente:focus { width: 180px; border-color: var(--sky); }
     </style>
@@ -112,10 +147,10 @@
         <span class="close-modal" onclick="fecharModal('configModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; cursor:default;">⚙️ Base Operacional</h2>
         <div class="grid-2">
-            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="3.275" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="3.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="350" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="1,20" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
         </div>
         
         <div class="input-group" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
@@ -123,7 +158,7 @@
                 <label style="color:var(--purple); margin:0;">Aviso de Manutenção (a cada h):</label>
                 <button onclick="resetarQA()" style="background: var(--purple); border: none; color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer; font-weight:bold;">✅ ZERAR MANUTENÇÃO</button>
             </div>
-            <input type="text" inputmode="decimal" id="qa_aviso" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
+            <input type="text" inputmode="decimal" id="qa_aviso" value="100" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
                 <label style="color:var(--sky); margin:0;">Total Histórico (Odômetro):</label>
@@ -141,6 +176,7 @@
             </div>
             <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px; text-align: right; font-weight: bold;" id="msg_vida_util">...</div>
         </div>
+        
         <button class="btn btn-direta" onclick="fecharModal('configModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
@@ -153,10 +189,10 @@
         </div>
         <div id="secao_logistica">
             <div class="grid-2">
-                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="0,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="0,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
-                <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
         <button class="btn btn-direta" onclick="fecharModal('logisticaModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
@@ -173,8 +209,8 @@
             <div class="grid-2">
                 <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
                 <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
         
@@ -196,7 +232,12 @@
     <div class="modal-content">
         <span class="close-modal" onclick="fecharModal('catalogoModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--orange); cursor:default;">🏷️ Gerenciar Catálogo</h2>
-        <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Salvar Projeto Atual:</p>
+        
+        <div class="input-group" style="margin-bottom: 8px;">
+            <label style="color: var(--orange);">Preço de Venda Fixo (Opcional - R$)</label>
+            <input type="text" inputmode="decimal" id="precoFixoCat" placeholder="Ex: 85,00" oninput="aplicarMascara(this); salvarDinamico('precoFixoCat')">
+        </div>
+        
         <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); margin-bottom: 15px;">💾 Salvar no Catálogo</button>
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; border-top: 1px dashed var(--border); padding-top: 10px;">Produtos Salvos:</p>
         <div id="lista_catalogo" class="history-list" style="max-height: 400px;"></div>
@@ -297,7 +338,7 @@
                     <option value="">-- Escolher produto cadastrado --</option>
                 </select>
             </div>
-            <button class="btn" id="btn_salvar_catalogo_main" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
+            <button class="btn" id="btn_salvar_catalogo_main" onclick="document.getElementById('catalogoModal').style.display='block';" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
         </div>
 
         <div class="card" style="margin-top: 12px;">
@@ -334,19 +375,19 @@
                 </div>
 
                 <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
-                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
+                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
                     <div id="container_cores_extras"></div>
                 </div>
 
                 <div class="grid-2" style="margin-top: 8px;">
                     <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
-                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="80" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 </div>
                 <div class="range-area">
                     <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
                     <div class="range-container">
-                        <input type="range" id="margemSlider" min="0" max="1000" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();">
-                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();"><span>%</span></div>
+                        <input type="range" id="margemSlider" min="0" max="1000" value="80" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();">
+                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="80" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();"><span>%</span></div>
                     </div>
                 </div>
             </div>
@@ -482,7 +523,6 @@
         });
     }
 
-    // Fecha os modais se clicar fora
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) {
             window.fecharModal(event.target.id);
@@ -557,15 +597,15 @@
             window.qaOffset = data.qaOffset || 0; 
             window.configGlobais = data.configGlobais || window.configGlobais;
 
-            document.getElementById('maquina').value = window.configGlobais.maquina;
-            document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil;
-            document.getElementById('consumoW').value = window.configGlobais.consumoW;
-            document.getElementById('precoKwh').value = window.configGlobais.precoKwh;
-            document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso;
-            document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem;
-            document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento;
-            document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli;
-            document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli;
+            document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
+            document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
+            document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
+            document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20";
+            document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100";
+            document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00";
+            document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
+            document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
+            document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
             
             document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
             document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
@@ -663,7 +703,7 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto'];
+    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCat'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
@@ -986,21 +1026,24 @@
 
     function salvarNoCatalogo() {
         var nome = pegaTexto('nomeProjeto'); if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
+        var precoFixo = pegaTexto('precoFixoCat');
         var extras = []; var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
+        
         if(editCatalogoId) {
             var idx = catalogo.findIndex(p => p.id === editCatalogoId);
             if(idx > -1) {
-                catalogo[idx] = { id: editCatalogoId, nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
+                catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
                 if(confirm("Deseja atualizar as cores, pesos e tempo em todas as vendas passadas de '" + nome + "' no Histórico?")) { retroUpdateHistory(catalogo[idx]); }
             }
             editCatalogoId = null; var btnModal = document.getElementById('btn_salvar_catalogo'); if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
             var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
             showToast("🏷️ Produto atualizado no catálogo!");
         } else {
-            var novoProduto = { id: Date.now(), nome: nome, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
+            var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
         }
+        document.getElementById('precoFixoCat').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCat');
         syncNuvem();
     }
 
@@ -1014,13 +1057,14 @@
             htmlSel += `<option value="${p.id}">${p.nome}</option>`;
             var pesoTotal = parseLocal(p.peso1); if(p.multi && p.extras && p.extras.length > 0) { p.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
             var pesoStr = formatarMoeda(pesoTotal) + 'g';
+            var htmlPrecoFixo = p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0 ? ' | Venda Fixo: R$ ' + p.precoFixo : '';
             
             htmlLista += `
             <div class="history-item">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                     <div style="flex: 1; min-width: 0;">
                         <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${p.nome}</h4>
-                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}</div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}${htmlPrecoFixo}</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <button onclick="editarDoCatalogo(${p.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button>
@@ -1044,8 +1088,11 @@
     function aplicarDadosNoForm(id) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
         document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
-        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('precoFilamento').value = p.preco1; document.getElementById('tempoH').value = p.tempo;
+        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('precoFilamento').value = p.preco1 || "120,00"; document.getElementById('tempoH').value = p.tempo;
         
+        var elPrecoFixo = document.getElementById('precoFixoCat');
+        if(elPrecoFixo) { elPrecoFixo.value = p.precoFixo || ''; salvarDinamico('precoFixoCat'); }
+
         var match1 = estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1 && e.marca === p.marca1); var sel1 = document.getElementById('sel_est_1'); if(sel1) { sel1.value = match1 ? match1.id : ""; }
         var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = p.multi; tMulti.dispatchEvent(new Event('change')); }
         
@@ -1063,7 +1110,22 @@
             });
         }
         ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','qtdCoresExtras'].forEach(field => salvarDinamico(field));
-        document.getElementById('detalhes_1').style.display = 'block'; calcular();
+        document.getElementById('detalhes_1').style.display = 'block'; 
+        
+        // Auto-preenche o campo Valor Personalizado se a peça tiver preço fixo salvo no catálogo
+        if (p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0) {
+            document.getElementById('canalVendaSelecionado').value = 'Personalizado';
+            document.getElementById('valorPersonalizado').value = p.precoFixo;
+            salvarDinamico('valorPersonalizado');
+            mostrarValorPersonalizado();
+        } else {
+            document.getElementById('canalVendaSelecionado').value = 'Direta';
+            document.getElementById('valorPersonalizado').value = '';
+            salvarDinamico('valorPersonalizado');
+            mostrarValorPersonalizado();
+        }
+        
+        calcular();
     }
 
     function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
@@ -1253,7 +1315,19 @@
     };
 
     window.onload = function() {
-        ids.forEach(function(id) {
+        // Inicializa o valor padrão dos inputs do modal no carregamento
+        document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
+        document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
+        document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
+        document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20";
+        document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100";
+        document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00";
+        document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
+        document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
+        document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+
+        var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
+        idsSave.forEach(function(id) {
             var el = document.getElementById(id);
             if (el && el.dataset && el.dataset.save) {
                 var saved = localStorage.getItem('3d4y_dark_' + id);
@@ -1277,9 +1351,9 @@
             if(el) {
                 var saved = localStorage.getItem('3d4y_dark_' + id);
                 if (saved !== null) { 
-                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
+                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCat') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
                     el.value = saved; 
-                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado') { aplicarMascara(el); }
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCat') { aplicarMascara(el); }
                     if (id === 'telefoneCliente') { mascaraTelefone(el); }
                 }
             }
@@ -1295,7 +1369,6 @@
         
         renderCoresExtras(); 
         
-        // Força a atualização visual inicial do slider
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
         
@@ -1333,7 +1406,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 1.5; 
+                const walk = (x - startX); 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1344,7 +1417,7 @@
     };
 
     function calcular() {
-        var idsSave = ['maquina', 'vidaUtil', 'consumoW', 'precoKwh', 'qa_aviso', 'precoFilamento', 'pesoPeca', 'tempoH', 'taxaSucesso', 'margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
+        var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
         idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { localStorage.setItem('3d4y_dark_' + id, el.type === 'checkbox' ? el.checked : el.value); } });
         
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
@@ -1404,6 +1477,7 @@
         else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
         else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
         else bestPAvg = pAvg4;
+        
         var totS = bestPAvg * totalQtd;
         
         var avgBaseML = vShopeeBase / totalQtd;
@@ -1930,7 +2004,7 @@
         if (catalogo.length > 0) {
             var dadosCatalogo = catalogo.map(c => {
                 var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
-                return { "Nome do Projeto": c.nome, "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
+                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
         }
