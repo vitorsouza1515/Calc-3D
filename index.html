@@ -107,7 +107,7 @@
         .btn-direta { background: var(--success); }
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; grid-column: span 3; }
+        .btn-orcamento { background: #4f46e5; grid-column: span 3; margin-top: 5px; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
         #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
@@ -120,13 +120,14 @@
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        .history-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
-        .history-item { background: #0f172a; border-radius: 12px; padding: 12px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
-        .history-item h4 { font-size: 0.85rem; color: var(--purple); margin-bottom: 5px; }
-        .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; color: var(--text-muted); }
+        .history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
+        .history-item { background: #0f172a; border-radius: 10px; padding: 10px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
+        .history-item h4 { font-size: 0.8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2;}
+        .history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.65rem; color: var(--text-muted); }
         .history-item .hist-vals b { color: var(--text-main); }
         
-        .status-select { font-size: 0.7rem; font-weight: 800; border-radius: 6px; padding: 6px 10px; border: none; outline: none; cursor: pointer; appearance: auto; -webkit-appearance: auto; text-transform: uppercase; max-width: 100%; }
+        .status-select { font-size: 0.65rem; font-weight: 800; border-radius: 6px; padding: 4px 8px; border: none; outline: none; cursor: pointer; appearance: auto; -webkit-appearance: auto; text-transform: uppercase; max-width: 100%; }
+        
         .status-orcamento { background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.4); }
         .status-fila { background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.4); }
         .status-imprimindo { background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.4); }
@@ -139,12 +140,17 @@
         .total-row span:first-child { flex: 1; line-height: 1.2; }
         .total-row b { color: var(--sky); font-family: monospace; font-size: 0.85rem; white-space: nowrap; text-align: right; }
 
+        .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-report { background: #334155; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.65rem; }
+        .btn-import { background: transparent; color: var(--sky); border: 1px dashed var(--sky); width: 100%; padding: 10px; border-radius: 12px; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 0.6rem; margin-top: 8px; }
+
         .modal { display: none; position: fixed; z-index: 4000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
-        .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
+        .modal-content { background-color: var(--card-bg); margin: 10% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
         
-        .busca-larga { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.9rem; outline: none; margin-bottom: 12px; transition: border-color 0.3s; }
-        .busca-larga:focus { border-color: var(--sky); }
+        /* Barra de pesquisa inline e compacta */
+        #buscaCliente { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 20px; color: var(--text-main); padding: 4px 10px; font-size: 0.7rem; outline: none; width: 110px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none;}
+        #buscaCliente:focus { width: 160px; border-color: var(--sky); }
     </style>
 </head>
 <body>
@@ -498,11 +504,11 @@
 
     <div class="col col-history">
         <div class="card">
-            <h2 class="section-title" style="cursor:pointer; flex-direction: column; align-items: stretch; gap: 10px;" onclick="toggleCard('wrap_hist_list', this, event)">
-                <div style="display:flex; align-items:center; justify-content: space-between;">
-                    <span>📂 Histórico de Vendas</span><span class="chevron">▼</span>
+            <h2 class="section-title" style="cursor:pointer;" onclick="toggleCard('wrap_hist_list', this, event)">
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    <span>📂 Histórico <span class="chevron">▼</span></span>
                 </div>
-                <input type="text" class="busca-larga" id="buscaCliente" placeholder="🔍 Buscar cliente ou peça..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
+                <input type="text" id="buscaCliente" placeholder="🔍 Pesquisar..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
             </h2>
             <div id="wrap_hist_list">
                 <div id="filtroHistorico" class="filter-container"></div>
@@ -547,6 +553,7 @@
         });
     }
 
+    // Fecha modais com ESC ou clique fora
     window.onclick = function(event) {
         if (event.target.classList.contains('modal')) { window.fecharModal(event.target.id); }
     };
@@ -1134,7 +1141,9 @@
     function carregarDoCatalogo() { 
         var id = document.getElementById('sel_catalogo').value; 
         
+        // Se a pessoa selecionou "-- Escolher produto cadastrado --" (ID vazio)
         if(!id) {
+            // Limpa os campos do projeto para voltar ao modo "Novo"
             document.getElementById('nomeProjeto').value = "";
             document.getElementById('qtdPecasProjeto').value = "1";
             document.getElementById('tempoH').value = "";
@@ -1161,12 +1170,14 @@
             if(boxPreco) boxPreco.style.display = 'none';
             document.getElementById('precoFixoCatMain').value = '';
             
+            // Remove do cache para não voltar se der F5
             ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'valorPersonalizado', 'precoFixoCatMain'].forEach(f => localStorage.removeItem('3d4y_dark_' + f));
             
             calcular();
             return;
         } 
         
+        // Se escolheu um produto real:
         aplicarDadosNoForm(id, false); 
         showToast("🏷️ Dados carregados!"); 
     }
@@ -1180,6 +1191,7 @@
         document.getElementById('catalogoModal').style.display = 'none'; showToast("✏️ Edite os dados e clique em Confirmar Alteração");
     }
 
+    // A função agora aceita um segundo parâmetro "isEditing" que diz se a caixa do preço fixo deve aparecer ou não
     function aplicarDadosNoForm(id, isEditing = false) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
         document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
@@ -1188,6 +1200,7 @@
         var elPrecoFixo = document.getElementById('precoFixoCatMain');
         var boxPreco = document.getElementById('boxPrecoFixo');
         
+        // Só exibe a caixa de Preço Fixo se estiver clicando no botão "Editar"
         if(isEditing) {
             if(elPrecoFixo && boxPreco) { 
                 boxPreco.style.display = 'flex';
@@ -1536,6 +1549,7 @@
         
         renderCoresExtras(); 
         
+        // Força a atualização visual do slider para bater com o valor numérico lido do cache/firebase
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
         
@@ -1575,7 +1589,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 1.5; 
+                const walk = (x - startX); 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1767,6 +1781,7 @@
         var item = historico.find(h => h.id === id);
         if (!item) return;
 
+        // Limpa o carrinho atual
         carrinho = [];
         document.getElementById('carrinho_container').style.display = 'none';
 
