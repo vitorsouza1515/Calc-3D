@@ -147,10 +147,10 @@
         <span class="close-modal" onclick="fecharModal('configModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; cursor:default;">⚙️ Base Operacional</h2>
         <div class="grid-2">
-            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" value="3.275" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" value="3.000" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" value="350" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" value="1,20" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Máquina (R$)</label><input type="text" inputmode="decimal" id="maquina" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Vida Útil (h)</label><input type="text" inputmode="decimal" id="vidaUtil" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+            <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
         </div>
         
         <div class="input-group" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
@@ -158,7 +158,7 @@
                 <label style="color:var(--purple); margin:0;">Aviso de Manutenção (a cada h):</label>
                 <button onclick="resetarQA()" style="background: var(--purple); border: none; color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer; font-weight:bold;">✅ ZERAR MANUTENÇÃO</button>
             </div>
-            <input type="text" inputmode="decimal" id="qa_aviso" value="100" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
+            <input type="text" inputmode="decimal" id="qa_aviso" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
             
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
                 <label style="color:var(--sky); margin:0;">Total Histórico (Odômetro):</label>
@@ -189,10 +189,10 @@
         </div>
         <div id="secao_logistica">
             <div class="grid-2">
-                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" value="0,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" value="0,00" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Deslocamento</label><input type="text" inputmode="decimal" id="custoDeslocamento" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Transportadora</label><select id="tipoEnvio" onchange="calcular()"><option value="Correios">Correios</option><option value="Loggi">Loggi</option><option value="JadLog">JadLog</option></select></div>
-                <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" value="0,00" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label style="color:var(--orange)">Valor Frete (R$)</label><input type="text" inputmode="decimal" id="valorFreteManual" style="border-color:var(--orange)" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
         <button class="btn btn-direta" onclick="fecharModal('logisticaModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
@@ -209,8 +209,8 @@
             <div class="grid-2">
                 <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
                 <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
-                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" value="17" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
-                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" value="6,75" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
         
@@ -233,12 +233,11 @@
         <span class="close-modal" onclick="fecharModal('catalogoModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--orange); cursor:default;">🏷️ Gerenciar Catálogo</h2>
         
-        <div class="input-group" style="margin-bottom: 8px;">
-            <label style="color: var(--orange);">Preço de Venda Fixo (Opcional - R$)</label>
-            <input type="text" inputmode="decimal" id="precoFixoCat" placeholder="Ex: 85,00" oninput="aplicarMascara(this); salvarDinamico('precoFixoCat')">
+        <div style="display:flex; gap:8px; margin-bottom: 15px;">
+            <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="flex: 1; background: var(--orange);">💾 Salvar no Catálogo</button>
+            <button class="btn" id="btn_cancelar_catalogo" onclick="cancelarEdicaoCatalogo()" style="display:none; background: var(--danger); width: 45px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
         </div>
         
-        <button class="btn" id="btn_salvar_catalogo" onclick="salvarNoCatalogo()" style="width: 100%; background: var(--orange); margin-bottom: 15px;">💾 Salvar no Catálogo</button>
         <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; border-top: 1px dashed var(--border); padding-top: 10px;">Produtos Salvos:</p>
         <div id="lista_catalogo" class="history-list" style="max-height: 400px;"></div>
     </div>
@@ -254,8 +253,11 @@
             <div class="input-group"><label>Marca</label><input type="text" id="est_marca" placeholder="Ex: Sunlu"></div>
         </div>
         <div class="grid-2">
-            <div class="input-group"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
-            <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="margin-top: 14px; background: var(--success);">➕ Salvar</button>
+            <div class="input-group" style="margin-bottom:0;"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
+            <div style="display:flex; gap:8px; align-items: flex-end;">
+                <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="flex:1; background: var(--success); height: 40px;">➕ Salvar</button>
+                <button class="btn" id="btn_cancelar_estoque" onclick="cancelarEdicaoEstoque()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
+            </div>
         </div>
         <div style="border-top: 1px dashed var(--border); margin-top: 15px; padding-top: 10px;">
             <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Filamentos Cadastrados:</p>
@@ -276,8 +278,11 @@
                 <div class="input-group" style="grid-column: span 2;"><label>Produto/Material</label><input type="text" id="desp_nome" placeholder="Ex: Fita Kapton"></div>
             </div>
             <div class="grid-2">
-                <div class="input-group"><label>Valor Total (R$)</label><input type="text" inputmode="decimal" id="desp_valor" placeholder="Ex: 25,00" oninput="aplicarMascara(this)"></div>
-                <button class="btn btn-direta" onclick="salvarDespesa()" style="margin-top: 14px; background: #ef4444;">➕ Adicionar</button>
+                <div class="input-group" style="margin-bottom:0;"><label>Valor Total (R$)</label><input type="text" inputmode="decimal" id="desp_valor" placeholder="Ex: 25,00" oninput="aplicarMascara(this)"></div>
+                <div style="display:flex; gap:8px; align-items: flex-end;">
+                    <button class="btn btn-direta" id="btn_salvar_despesa" onclick="salvarDespesa()" style="flex:1; background: #ef4444; height: 40px;">➕ Adicionar</button>
+                    <button class="btn" id="btn_cancelar_despesa" onclick="cancelarEdicaoDespesa()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
+                </div>
             </div>
             <div id="lista_despesas" class="history-list" style="margin-top: 12px; max-height: 400px;"></div>
         </div>
@@ -338,7 +343,10 @@
                     <option value="">-- Escolher produto cadastrado --</option>
                 </select>
             </div>
-            <button class="btn" id="btn_salvar_catalogo_main" onclick="document.getElementById('catalogoModal').style.display='block';" style="width: 100%; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn" id="btn_salvar_catalogo_main" onclick="document.getElementById('catalogoModal').style.display='block';" style="flex: 1; background: var(--orange); font-size: 0.65rem;">💾 Salvar Projeto Atual no Catálogo</button>
+                <button class="btn" id="btn_cancelar_catalogo_main" onclick="cancelarEdicaoCatalogo()" style="display:none; background: var(--danger); width: 40px; font-size: 1rem; padding: 0;" title="Cancelar Edição">❌</button>
+            </div>
         </div>
 
         <div class="card" style="margin-top: 12px;">
@@ -375,19 +383,25 @@
                 </div>
 
                 <div id="secao_multi_mat" style="display:none; padding-top: 8px;">
-                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
+                    <div class="input-group" style="margin-bottom: 12px;"><label style="color: var(--sky);">Quantas CORES/MATERIAIS EXTRAS?</label><input type="text" inputmode="numeric" id="qtdCoresExtras" value="1" data-save="true" style="border-color: var(--sky);" oninput="aplicarMascara(this); renderCoresExtras()"></div>
                     <div id="container_cores_extras"></div>
                 </div>
 
                 <div class="grid-2" style="margin-top: 8px;">
                     <div class="input-group"><label>Tempo Total (h)</label><input type="text" inputmode="decimal" id="tempoH" value="" oninput="aplicarMascara(this); salvarDinamico('tempoH'); calcular()"></div>
-                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" value="80" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
+                    <div class="input-group"><label>Sucesso (%)</label><input type="text" inputmode="decimal" id="taxaSucesso" data-save="true" oninput="aplicarMascara(this); calcular()" onchange="syncNuvem()"></div>
                 </div>
+                
+                <div id="boxPrecoFixo" style="display: none; margin-top: 15px; padding: 12px; border-radius: 12px; border: 2px dashed var(--orange); background: rgba(249, 115, 22, 0.05); flex-direction: column;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: var(--orange); text-transform: uppercase; margin-bottom: 8px;">Preço Fixo no Catálogo (R$)</label>
+                    <input type="text" inputmode="decimal" id="precoFixoCatMain" placeholder="Ex: 50,00" oninput="aplicarMascara(this); salvarDinamico('precoFixoCatMain');" style="background: #0f172a; padding: 10px; border: 1px solid var(--orange); border-radius: 10px; font-size: 1rem; font-weight: bold; color: #fff; width: 100%; outline: none;">
+                </div>
+
                 <div class="range-area">
                     <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
                     <div class="range-container">
-                        <input type="range" id="margemSlider" min="0" max="1000" value="80" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();">
-                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" value="80" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();"><span>%</span></div>
+                        <input type="range" id="margemSlider" min="0" max="1000" data-save="true" oninput="document.getElementById('margemInput').value = this.value; aplicarMascara(document.getElementById('margemInput')); updateSliderProgress(this); calcular();" onchange="syncNuvem()">
+                        <div class="margem-box"><input type="text" inputmode="decimal" id="margemInput" data-save="true" oninput="aplicarMascara(this); document.getElementById('margemSlider').value = pegaValor('margemInput'); updateSliderProgress(document.getElementById('margemSlider')); calcular();" onchange="syncNuvem()"><span>%</span></div>
                     </div>
                 </div>
             </div>
@@ -523,11 +537,17 @@
         });
     }
 
+    // Fecha modais com ESC ou clique fora
     window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) {
-            window.fecharModal(event.target.id);
-        }
+        if (event.target.classList.contains('modal')) { window.fecharModal(event.target.id); }
     };
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            document.querySelectorAll('.modal').forEach(function(modal) {
+                if (modal.style.display === 'block') { window.fecharModal(modal.id); }
+            });
+        }
+    });
 
     const firebaseConfig = {
       apiKey: "AIzaSyBHP744_ct0YNtEWT_s33Wpfv7udS9gSOg",
@@ -703,7 +723,7 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
-    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCat'];
+    var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
@@ -1024,9 +1044,22 @@
         else { setTimeout(() => alert("O projeto foi salvo, mas nenhuma venda antiga com esse nome exato foi encontrada."), 500); }
     }
 
+    window.cancelarEdicaoCatalogo = function() {
+        editCatalogoId = null;
+        var btnModal = document.getElementById('btn_salvar_catalogo'); if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
+        var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        document.getElementById('btn_cancelar_catalogo').style.display = "none";
+        document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
+        
+        ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
+        document.getElementById('boxPrecoFixo').style.display = 'none';
+        
+        showToast("❌ Edição cancelada");
+    };
+
     function salvarNoCatalogo() {
         var nome = pegaTexto('nomeProjeto'); if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
-        var precoFixo = pegaTexto('precoFixoCat');
+        var precoFixo = pegaTexto('precoFixoCatMain');
         var extras = []; var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
         
@@ -1036,15 +1069,22 @@
                 catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
                 if(confirm("Deseja atualizar as cores, pesos e tempo em todas as vendas passadas de '" + nome + "' no Histórico?")) { retroUpdateHistory(catalogo[idx]); }
             }
-            editCatalogoId = null; var btnModal = document.getElementById('btn_salvar_catalogo'); if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
-            var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
+            editCatalogoId = null; 
             showToast("🏷️ Produto atualizado no catálogo!");
         } else {
             var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
         }
-        document.getElementById('precoFixoCat').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCat');
+        
+        var btnModal = document.getElementById('btn_salvar_catalogo'); if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
+        var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        document.getElementById('btn_cancelar_catalogo').style.display = "none";
+        document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
+        
+        document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain');
+        document.getElementById('boxPrecoFixo').style.display = 'none';
         syncNuvem();
+        renderCatalogo();
     }
 
     function renderCatalogo() {
@@ -1082,18 +1122,38 @@
         aplicarDadosNoForm(id); editCatalogoId = id;
         var btnModal = document.getElementById('btn_salvar_catalogo'); if(btnModal) { btnModal.textContent = "💾 Confirmar Alteração no Catálogo"; btnModal.style.background = "var(--purple)"; }
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Confirmar Alteração no Catálogo"; btnMain.style.background = "var(--purple)"; }
+        
+        document.getElementById('btn_cancelar_catalogo').style.display = "block";
+        document.getElementById('btn_cancelar_catalogo_main').style.display = "block";
+        
         document.getElementById('catalogoModal').style.display = 'none'; showToast("✏️ Edite os dados e clique em Confirmar Alteração");
     }
 
     function aplicarDadosNoForm(id) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
         document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
-        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('precoFilamento').value = p.preco1 || "120,00"; document.getElementById('tempoH').value = p.tempo;
+        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('tempoH').value = p.tempo;
         
-        var elPrecoFixo = document.getElementById('precoFixoCat');
-        if(elPrecoFixo) { elPrecoFixo.value = p.precoFixo || ''; salvarDinamico('precoFixoCat'); }
+        var elPrecoFixo = document.getElementById('precoFixoCatMain');
+        var boxPreco = document.getElementById('boxPrecoFixo');
+        if(elPrecoFixo && boxPreco) { 
+            boxPreco.style.display = 'flex';
+            elPrecoFixo.value = p.precoFixo || ''; 
+            salvarDinamico('precoFixoCatMain'); 
+        }
 
-        var match1 = estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1 && e.marca === p.marca1); var sel1 = document.getElementById('sel_est_1'); if(sel1) { sel1.value = match1 ? match1.id : ""; }
+        var match1 = estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1 && e.marca === p.marca1) || estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1);
+        var sel1 = document.getElementById('sel_est_1'); 
+        
+        if(match1) { 
+            if(sel1) sel1.value = match1.id; 
+            document.getElementById('precoFilamento').value = match1.preco;
+            document.getElementById('marcaFilamento1').value = match1.marca;
+        } else {
+            if(sel1) sel1.value = "";
+            document.getElementById('precoFilamento').value = p.preco1 || "120,00";
+        }
+
         var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = p.multi; tMulti.dispatchEvent(new Event('change')); }
         
         if(p.multi) {
@@ -1102,8 +1162,20 @@
                 var i = idx + 2;
                 setTimeout(() => { 
                     if(document.getElementById('tipoFilamento'+i)) {
-                        document.getElementById('tipoFilamento'+i).value = ex.tipo; document.getElementById('corFilamento'+i).value = ex.cor; document.getElementById('marcaFilamento'+i).value = ex.marca; document.getElementById('precoFilamento'+i).value = ex.preco; document.getElementById('pesoPeca'+i).value = ex.peso;
-                        var matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca); var selI = document.getElementById('sel_est_'+i); if(selI) { selI.value = matchI ? matchI.id : ""; }
+                        document.getElementById('tipoFilamento'+i).value = ex.tipo; document.getElementById('corFilamento'+i).value = ex.cor; document.getElementById('pesoPeca'+i).value = ex.peso;
+                        
+                        var matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); 
+                        var selI = document.getElementById('sel_est_'+i); 
+                        
+                        if(matchI) { 
+                            if(selI) selI.value = matchI.id; 
+                            document.getElementById('precoFilamento'+i).value = matchI.preco;
+                            document.getElementById('marcaFilamento'+i).value = matchI.marca;
+                        } else {
+                            if(selI) selI.value = "";
+                            document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
+                            document.getElementById('marcaFilamento'+i).value = ex.marca;
+                        }
                         salvarDinamico('tipoFilamento'+i); salvarDinamico('corFilamento'+i); salvarDinamico('marcaFilamento'+i); salvarDinamico('precoFilamento'+i); salvarDinamico('pesoPeca'+i);
                     }
                 }, 50);
@@ -1112,7 +1184,6 @@
         ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','qtdCoresExtras'].forEach(field => salvarDinamico(field));
         document.getElementById('detalhes_1').style.display = 'block'; 
         
-        // Auto-preenche o campo Valor Personalizado se a peça tiver preço fixo salvo no catálogo
         if (p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0) {
             document.getElementById('canalVendaSelecionado').value = 'Personalizado';
             document.getElementById('valorPersonalizado').value = p.precoFixo;
@@ -1130,15 +1201,32 @@
 
     function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
 
+    window.cancelarEdicaoEstoque = function() {
+        editEstoqueId = null;
+        document.getElementById('est_tipo').value = "";
+        document.getElementById('est_cor').value = "";
+        document.getElementById('est_marca').value = "";
+        document.getElementById('est_preco').value = "";
+        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar";
+        document.getElementById('btn_cancelar_estoque').style.display = "none";
+        showToast("❌ Edição cancelada");
+    };
+
     function salvarItemEstoque() {
         var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value;
         if(!t || !p) { alert("Preencha pelo menos o Tipo e o Preço para salvar no estoque."); return; }
         if (editEstoqueId) {
             var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
             if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; }
-            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
-        } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); }
-        syncNuvem(); document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; showToast("📦 Estoque Atualizado!");
+            editEstoqueId = null; 
+            document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar";
+            document.getElementById('btn_cancelar_estoque').style.display = "none";
+        } else { 
+            estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); 
+        }
+        syncNuvem(); 
+        document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; 
+        showToast("📦 Estoque Atualizado!");
     }
 
     function renderEstoque() {
@@ -1168,7 +1256,15 @@
 
     function editarItemEstoque(id) {
         var item = estoque.find(function(e) { return e.id === id; });
-        if(item) { document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco; editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; }
+        if(item) { 
+            document.getElementById('est_tipo').value = item.tipo; 
+            document.getElementById('est_cor').value = item.cor; 
+            document.getElementById('est_marca').value = item.marca; 
+            document.getElementById('est_preco').value = item.preco; 
+            editEstoqueId = id; 
+            document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; 
+            document.getElementById('btn_cancelar_estoque').style.display = "block";
+        }
     }
 
     function atualizarDropdownsEstoque() {
@@ -1239,13 +1335,26 @@
         if(elM) elM.textContent = formatarMoeda(net.meli);
     }
 
+    window.cancelarEdicaoDespesa = function() {
+        editDespesaId = null;
+        document.getElementById('desp_qtd').value = "1";
+        document.getElementById('desp_nome').value = "";
+        document.getElementById('desp_valor').value = "";
+        document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar";
+        document.getElementById('btn_cancelar_despesa').style.display = "none";
+        showToast("❌ Edição cancelada");
+    };
+
     function salvarDespesa() {
         var qtd = parseInt(pegaValor('desp_qtd')) || 1; var nome = pegaTexto('desp_nome'); var val = document.getElementById('desp_valor').value;
         if(!nome || !val) { alert("Preencha o produto/material e o valor pago."); return; }
         if (editDespesaId) {
             var idx = despesas.findIndex(d => d.id === editDespesaId);
             if(idx > -1) { despesas[idx].qtd = qtd; despesas[idx].nome = nome; despesas[idx].valor = parseLocal(val); }
-            editDespesaId = null; document.querySelector('#secao_despesas button').textContent = "➕ Adicionar"; showToast("💸 Despesa Atualizada!");
+            editDespesaId = null; 
+            document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; 
+            document.getElementById('btn_cancelar_despesa').style.display = "none";
+            showToast("💸 Despesa Atualizada!");
         } else {
             despesas.unshift({ id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), qtd: qtd, nome: nome, valor: parseLocal(val) }); showToast("💸 Despesa Registrada!");
         }
@@ -1282,7 +1391,14 @@
 
     function editarDespesa(id) {
         var d = despesas.find(e => e.id === id);
-        if(d) { document.getElementById('desp_qtd').value = d.qtd; document.getElementById('desp_nome').value = d.nome; document.getElementById('desp_valor').value = formatarMoeda(d.valor); editDespesaId = id; document.querySelector('#secao_despesas button').textContent = "💾 Confirmar Edição"; document.getElementById('despesasModal').style.display = 'block'; }
+        if(d) { 
+            document.getElementById('desp_qtd').value = d.qtd; 
+            document.getElementById('desp_nome').value = d.nome; 
+            document.getElementById('desp_valor').value = formatarMoeda(d.valor); 
+            editDespesaId = id; 
+            document.getElementById('btn_salvar_despesa').textContent = "💾 Confirmar Edição"; 
+            document.getElementById('btn_cancelar_despesa').style.display = "block";
+        }
     }
 
     function atualizarLucroReal() {
@@ -1315,7 +1431,6 @@
     };
 
     window.onload = function() {
-        // Inicializa o valor padrão dos inputs do modal no carregamento
         document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
         document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
         document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
@@ -1351,9 +1466,9 @@
             if(el) {
                 var saved = localStorage.getItem('3d4y_dark_' + id);
                 if (saved !== null) { 
-                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCat') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
+                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
                     el.value = saved; 
-                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCat') { aplicarMascara(el); }
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); }
                     if (id === 'telefoneCliente') { mascaraTelefone(el); }
                 }
             }
@@ -1371,6 +1486,8 @@
         
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
+        
+        if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; }
         
         calcular(); mostrarValorPersonalizado();
         
@@ -1406,7 +1523,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX); 
+                const walk = (x - startX) * 1.5; 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1808,11 +1925,12 @@
 
     function resetarDados() {
         carrinho = []; renderCarrinho();
-        ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        ['pesoPeca', 'tempoH', 'nomeProjeto', 'nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+        
         var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
         
-        var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = "0,00";
-        var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = "0,00";
+        var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = window.configGlobais.custoEmbalagem || "0,00";
+        var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = window.configGlobais.custoDeslocamento || "0,00";
         var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
 
         ['tipoFilamento1', 'corFilamento1', 'marcaFilamento1'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
@@ -1821,8 +1939,12 @@
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
         
+        var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none';
+        
         editCatalogoId = null; var btnModal = document.getElementById('btn_salvar_catalogo'); if(btnModal) { btnModal.textContent = "💾 Salvar no Catálogo"; btnModal.style.background = "var(--orange)"; }
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Projeto Atual no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        var btnCancelCat = document.getElementById('btn_cancelar_catalogo'); if(btnCancelCat) btnCancelCat.style.display = "none";
+        var btnCancelCatMain = document.getElementById('btn_cancelar_catalogo_main'); if(btnCancelCatMain) btnCancelCatMain.style.display = "none";
 
         editHistoricoId = null; document.querySelector('.btn-save-hist').textContent = "💾 Salvar Venda"; document.querySelector('.btn-save-hist').style.background = "var(--purple)";
         editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
