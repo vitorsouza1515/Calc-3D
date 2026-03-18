@@ -328,7 +328,7 @@
                 </div>
             </h2>
             <div id="cc_crm">
-                <datalist id="listaClientes"></datalist>
+                 <datalist id="listaClientes"></datalist>
                 <div class="input-group">
                     <label>Nome do Projeto / Peça</label>
                     <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
@@ -378,7 +378,7 @@
                             <option value="">-- Puxar material do Estoque --</option>
                         </select>
                     </div>
-                    
+                 
                     <div id="detalhes_1" class="detalhes-material">
                         <div class="grid-3">
                             <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" readonly></div>
@@ -797,7 +797,6 @@
         ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
     }
 
-    // CENTRALIZANDO A LOGICA DE PREENCHIMENTO AQUI PARA HISTÓRICO E CARRINHO
     function preencherFormProjeto(prod) {
         var match = prod.nome.match(/^(\d+)x\s(.*)/);
         var qtd = match ? parseInt(match[1]) : (prod.qtd || 1);
@@ -1020,26 +1019,66 @@
         document.getElementById('boxPrecoFixo').style.display = 'none'; document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain');
         calcular(); showToast("❌ Edição cancelada");
     };
-
+    // --- MUDANÇAS 1 E 2 APLICADAS AQUI ---
     function salvarNoCatalogo() {
         var nome = pegaTexto('nomeProjeto'); if(!nome) { alert("Dê um nome ao projeto antes de salvar no catálogo."); return; }
         var precoFixo = pegaTexto('precoFixoCatMain');
         var extras = []; var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
         var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
+        
         if(editCatalogoId) {
+            // MUDANÇA 2: Atualização de vendas passadas
+            var nomeMinusculo = nome.toLowerCase().trim();
+            var vendasAfetadas = historico.filter(h => h.nome.toLowerCase().trim().includes(nomeMinusculo));
+
+            if (vendasAfetadas.length > 0) {
+                if (confirm(`Encontrei ${vendasAfetadas.length} venda(s) deste produto no histórico.\nDeseja atualizar o PESO e TEMPO delas com os novos valores e recalcular o LUCRO total?`)) {
+                    var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
+                    var custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh);
+                    var novoTempoUnit = pegaValor('tempoH');
+                    var novoPesoUnit = pegaValor('pesoPeca');
+                    var precoFilamentoUnit = pegaValor('precoFilamento') || 120;
+                    var taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
+                    
+                    vendasAfetadas.forEach(h => {
+                        var qtdItem = h.totalQtd || 1;
+                        h.tempo = novoTempoUnit * qtdItem;
+                        h.peso = novoPesoUnit * qtdItem;
+                        
+                        // Recalcula Custo
+                        h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso;
+                        
+                        // Recalcula Valor Líquido/Lucro
+                        var freteLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
+                        var taxas = descontarTaxas(h.valorBruto, qtdItem);
+                        
+                        if(h.canal === "Shopee") h.valorLiquido = taxas.shopee - freteLog;
+                        else if(h.canal === "Meli") h.valorLiquido = taxas.meli - freteLog;
+                        else h.valorLiquido = h.valorBruto - freteLog;
+                        
+                        if(h.valorLiquido < 0) h.valorLiquido = 0;
+                    });
+                    showToast("✅ Histórico e Cálculos atualizados!");
+                }
+            }
+
             if (existe && existe.id !== editCatalogoId) { alert("❌ Já existe outro projeto com este nome exato no seu catálogo.\nPor favor, mude o nome (ex: " + nome + " v2)."); return; }
             var idx = catalogo.findIndex(p => p.id === editCatalogoId);
             if(idx > -1) { catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras }; }
             editCatalogoId = null; showToast("🏷️ Produto atualizado no catálogo!");
         } else {
-            if (existe) { alert("❌ O projeto '" + nome + "' JÁ EXISTE no seu Catálogo de Produtos!\n\nSe você quiser alterar as configurações dele, use o botão azul '🏷️ Catálogo' no topo da tela e clique no Lápis ✏️ para editar o projeto."); return; }
+            if (existe) { alert("❌ O projeto '" + nome + "' JÁ EXISTE no seu Catálogo de Produtos!"); return; }
             var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
         }
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
         document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none';
+        
+        // MUDANÇA 1: Limpar a tela após salvar ou editar
+        resetarDados();
+
         syncNuvem(); renderCatalogo();
     }
 
@@ -1167,7 +1206,8 @@
     function puxarDoEstoque(indexStr) {
         var sel = document.getElementById('sel_est_' + indexStr), det = document.getElementById('detalhes_' + indexStr);
         if (!sel || !sel.value) { if(det) det.style.display = 'none'; return; } 
-        var item = estoque.find(e => e.id.toString() === sel.value); if (!item) return; var idx = parseInt(indexStr);
+        var item = estoque.find(e => e.id.toString() === sel.value); if (!item) return;
+        var idx = parseInt(indexStr);
         var sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx, sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx, sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx, sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx;
         var elT = document.getElementById(sTipo); if(elT) { elT.value = item.tipo; salvarDinamico(sTipo); }
         var elC = document.getElementById(sCor); if(elC) { elC.value = item.cor; salvarDinamico(sCor); }
@@ -1281,8 +1321,7 @@
     }
 
     window.cancelarEdicaoVenda = function() {
-        editHistoricoId = null;
-        document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; 
+        editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; 
         document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)";
         var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
         if(btnCancelVenda) btnCancelVenda.style.display = "none";
@@ -1309,7 +1348,6 @@
 
     window.onload = function() {
         document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
-
         var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
         idsSave.forEach(function(id) {
             var el = document.getElementById(id);
@@ -1329,7 +1367,6 @@
                 });
             }
         });
-
         dynIds.forEach(function(id) {
             var el = document.getElementById(id);
             if(el) {
@@ -1342,7 +1379,6 @@
                 }
             }
         });
-
         var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
 
         var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
@@ -1351,10 +1387,8 @@
         var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
         if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
         
-        renderCoresExtras(); 
-        
-        var mSli = document.getElementById('margemSlider');
-        if(mSli) { updateSliderProgress(mSli); }
+        renderCoresExtras();
+        var mSli = document.getElementById('margemSlider'); if(mSli) { updateSliderProgress(mSli); }
         if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; }
         calcular(); mostrarValorPersonalizado();
         
@@ -1387,7 +1421,6 @@
     function calcular() {
         var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
         idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { localStorage.setItem('3d4y_dark_' + id, el.type === 'checkbox' ? el.checked : el.value); } });
-        
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
 
@@ -1396,15 +1429,13 @@
         var pesoTotalPrincipal = pegaValor('pesoPeca') * qtdPecas;
         var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoTotal;
         var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoTotal;
-        
         var precoMat = pegaValor('precoFilamento'); if(precoMat === 0) precoMat = 120;
         var matTotal = (precoMat / 1000) * pesoTotalPrincipal;
-
         if (multiMatEnabled) { 
             var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 1; 
             for(var i = 2; i <= qtdExtras + 1; i++) { 
                 var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120;
-                matTotal += (precoE / 1000) * (pegaValor('pesoPeca' + i) * qtdPecas); 
+                matTotal += (precoE / 1000) * (pegaValor('pesoPeca' + i) * qtdPecas);
             } 
         }
 
@@ -1414,7 +1445,6 @@
         var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene); 
         var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal); 
         var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
-        
         var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado;
         var isCart = carrinho && carrinho.length > 0;
         var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
@@ -1422,7 +1452,6 @@
 
         var cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
         var frete = pegaValor('valorFreteManual');
-        
         var divResumoLog = document.getElementById('resumo_logistica');
         if (divResumoLog) {
             divResumoLog.style.display = 'block';
@@ -1435,17 +1464,12 @@
         var vShopeeBase = valorComLucro + cLog;
         
         var avgBase = vShopeeBase / totalQtd;
-        var pAvg1 = (avgBase + 4) / 0.80;
-        var pAvg2 = (avgBase + 16) / 0.86; 
-        var pAvg3 = (avgBase + 20) / 0.86;
-        var pAvg4 = (avgBase + 26) / 0.86; 
+        var pAvg1 = (avgBase + 4) / 0.80; var pAvg2 = (avgBase + 16) / 0.86; 
+        var pAvg3 = (avgBase + 20) / 0.86; var pAvg4 = (avgBase + 26) / 0.86; 
 
         var bestPAvg;
-        if (pAvg1 <= 79.991) bestPAvg = pAvg1;
-        else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
-        else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
-        else bestPAvg = pAvg4;
-        
+        if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
+        else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4;
         var totS = bestPAvg * totalQtd;
         
         var avgBaseML = vShopeeBase / totalQtd;
@@ -1456,7 +1480,6 @@
         var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd);
         var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS);
         var rVendaM = document.getElementById('r_vendaM'); if(rVendaM) rVendaM.textContent = formatarMoeda(totM);
-
         var lucroD = vd - custoProducao - cLog - frete;
         var netS = descontarTaxas(totS, totalQtd).shopee; var lucroS = netS - custoProducao - cLog - frete;
         var netM = descontarTaxas(totM, totalQtd).meli; var lucroM = netM - custoProducao - cLog - frete;
@@ -1465,6 +1488,7 @@
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
         var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
     }
+
     function salvarHistorico() {
         var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "";
         var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
@@ -1472,13 +1496,13 @@
         
         var isCart = carrinho && carrinho.length > 0;
         var nomeFinal = "", valorBruto = 0, custoProducaoFinal = 0, pesoFinal = 0, tempoFinal = 0, materiaisArray = [], cLog = 0, freteCalculado = 0, totalQtd = 1;
-
         if(isCart) {
             nomeFinal = carrinho.map(i => i.nome).join(' + ');
-            custoProducaoFinal = carrinho.reduce((a,b) => a + b.custo, 0); pesoFinal = carrinho.reduce((a,b) => a + b.peso, 0); tempoFinal = carrinho.reduce((a,b) => a + b.tempo, 0);
-            totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1;
+            custoProducaoFinal = carrinho.reduce((a,b) => a + b.custo, 0); pesoFinal = carrinho.reduce((a,b) => a + b.peso, 0);
+            tempoFinal = carrinho.reduce((a,b) => a + b.tempo, 0);
+            totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
+            if(totalQtd < 1) totalQtd = 1;
             carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
-            
             if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
             else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); } 
             else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); } 
@@ -1489,8 +1513,10 @@
         } else {
             var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
             var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1;
-            totalQtd = qtdPecas; nomeFinal = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
-            custoProducaoFinal = parseLocal(document.getElementById('r_gasto').textContent); tempoFinal = pegaValor('tempoH') * qtdPecas; pesoFinal = pegaValor('pesoPeca') * qtdPecas;
+            totalQtd = qtdPecas;
+            nomeFinal = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
+            custoProducaoFinal = parseLocal(document.getElementById('r_gasto').textContent);
+            tempoFinal = pegaValor('tempoH') * qtdPecas; pesoFinal = pegaValor('pesoPeca') * qtdPecas;
             
             var multiOn = document.getElementById('toggle_multi_mat').checked;
             if(multiOn) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); } }
@@ -1538,7 +1564,7 @@
 
         var cartToSave = [];
         if(isCart) { 
-            cartToSave = JSON.parse(JSON.stringify(carrinho)); 
+            cartToSave = JSON.parse(JSON.stringify(carrinho));
         } else { 
             cartToSave.push({ 
                 id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteCalculado - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais,
@@ -1550,7 +1576,7 @@
         var posFila = Date.now();
         var oldItem = null;
         if (editHistoricoId) { 
-            oldItem = historico.find(h => h.id === editHistoricoId); 
+            oldItem = historico.find(h => h.id === editHistoricoId);
             if(oldItem && oldItem.posicaoFila) posFila = oldItem.posicaoFila; 
         }
 
@@ -1571,19 +1597,17 @@
             valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteCalculado, logistica: cLog, 
             peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')) 
         };
-
         if (editHistoricoId) {
             var idx = historico.findIndex(h => h.id === editHistoricoId);
             if (idx > -1) { historico[idx] = novo; }
-            editHistoricoId = null; 
-            
+            editHistoricoId = null;
             document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; 
             document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)";
             
             var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
             if(btnCancelVenda) btnCancelVenda.style.display = "none";
         } else { 
-            historico.unshift(novo); 
+            historico.unshift(novo);
         }
 
         syncNuvem();
@@ -1596,7 +1620,8 @@
             }
         }
         
-        var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
+        var elPerso = document.getElementById('valorPersonalizado');
+        if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
         resetarDados(); showToast("✅ Venda Registrada!");
     }
 
@@ -1615,24 +1640,23 @@
             renderCarrinho();
             document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
         } else {
-            var matchOld = item.nome.match(/^(\d+)x\s(.*)/); 
+            var matchOld = item.nome.match(/^(\d+)x\s(.*)/);
             var qtdOld = matchOld ? parseInt(matchOld[1]) : (item.totalQtd || 1);
             prod = { nome: item.nome, qtd: qtdOld, tempo: item.tempo, peso: item.peso };
         }
 
         if (prod) {
-            var match = prod.nome.match(/^(\d+)x\s(.*)/); 
+            var match = prod.nome.match(/^(\d+)x\s(.*)/);
             var qtd = match ? parseInt(match[1]) : (prod.qtd || item.totalQtd || 1);
             var baseNome = match ? match[2] : prod.nome;
-
             document.getElementById('nomeProjeto').value = baseNome;
             document.getElementById('qtdPecasProjeto').value = qtd;
             document.getElementById('tempoH').value = formatarMoeda((prod.tempo || item.tempo) / qtd);
             document.getElementById('pesoPeca').value = formatarMoeda((prod.peso || item.peso) / qtd);
-            
             var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim());
             var selCat = document.getElementById('sel_catalogo');
-            if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
+            if(matchCat) { if(selCat) selCat.value = matchCat.id.toString();
+            } else { if(selCat) selCat.value = ""; }
 
             document.getElementById('tipoFilamento1').value = prod.tipo1 || "";
             document.getElementById('corFilamento1').value = prod.cor1 || "";
@@ -1640,18 +1664,18 @@
 
             var match1 = null;
             if(prod.tipo1) { match1 = estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1 && e.marca === prod.marca1) || estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1); }
-            var sel1 = document.getElementById('sel_est_1'); 
+            var sel1 = document.getElementById('sel_est_1');
             if(match1) { 
-                if(sel1) sel1.value = match1.id.toString(); 
+                if(sel1) sel1.value = match1.id.toString();
                 document.getElementById('marcaFilamento1').value = match1.marca;
                 document.getElementById('precoFilamento').value = match1.preco;
             } else {
                 if(sel1) sel1.value = "";
             }
             document.getElementById('detalhes_1').style.display = (prod.tipo1) ? 'block' : 'none';
-
             var tMulti = document.getElementById('toggle_multi_mat');
-            if(tMulti) { tMulti.checked = prod.multi || false; tMulti.dispatchEvent(new Event('change')); }
+            if(tMulti) { tMulti.checked = prod.multi || false; tMulti.dispatchEvent(new Event('change'));
+            }
 
             if(prod.multi && prod.extras) {
                 document.getElementById('qtdCoresExtras').value = prod.qtdCores || "1";
@@ -1684,12 +1708,10 @@
         }
 
         document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
-        
         var tUrgente = document.getElementById('toggle_urgente');
         if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
         
         var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
-        
         if (canalReal === "Personalizado") {
             document.getElementById('canalVendaSelecionado').value = "Personalizado";
             document.getElementById('canalPersonalizadoDestino').value = item.canal; 
@@ -1704,38 +1726,41 @@
         mostrarValorPersonalizado();
 
         if (item.logistica > 0 || item.frete > 0) {
-            document.getElementById('custoEmbalagem').value = formatarMoeda(item.logistica || 0); document.getElementById('custoDeslocamento').value = "0,00";
+            document.getElementById('custoEmbalagem').value = formatarMoeda(item.logistica || 0);
+            document.getElementById('custoDeslocamento').value = "0,00";
             var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
         }
 
         calcular(); editHistoricoId = id;
         
-        document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição de Venda"; 
+        document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição de Venda";
         document.getElementById('btn_salvar_venda_main').style.background = "var(--sky)";
         
         var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
         if(btnCancelVenda) btnCancelVenda.style.display = "block";
         
         showToast("✏️ Venda carregada para edição!");
-        var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
+    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id);
+        if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } 
+    }
 
     function renderHistorico() {
-        var lista = document.getElementById('listaHistorico'); if(!lista) return; 
+        var lista = document.getElementById('listaHistorico');
+        if(!lista) return; 
         var filtroDiv = document.getElementById('filtroHistorico');
 
         var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0;
         var totDevolvido = 0;
         
         var counts = { 'Todos': historico.length, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0, 'Devolução': 0 };
-        
         window.horasTotaisImpressasGlobal = 0;
 
         var campoBusca = document.getElementById('buscaCliente');
         var termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
-
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
@@ -1749,11 +1774,13 @@
                 var lucroItem = valLiq - custoItem - freteLogItem;
 
                 somaCusto += custoItem; somaLogistica += freteLogItem; somaBruto += valBruto; somaLiquido += valLiq; somaLucro += lucroItem; qtdValida++;
-                if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
+                if(canalStr === "Shopee") { somaShopee += valLiq;
+                qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
             }
 
             if (st === 'Devolução') {
-                var valLiqDev = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
+                var valLiqDev = item.valorLiquido !== undefined ?
+                parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
                 totDevolvido += valLiqDev;
             }
             
@@ -1764,12 +1791,12 @@
 
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
-
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
         
-        var qaAviso = pegaValor('qa_aviso'); if (qaAviso <= 0) qaAviso = 100;
+        var qaAviso = pegaValor('qa_aviso');
+        if (qaAviso <= 0) qaAviso = 100;
         
         var hrsAtuais = window.horasTotaisImpressasGlobal - (window.qaOffset || 0);
         if (hrsAtuais < 0) hrsAtuais = 0;
@@ -1782,13 +1809,13 @@
             barVida.style.width = pctQA + "%";
             
             if (pctQA < 50) { 
-                msgVida.textContent = "🟢 Saudável. A máquina está 100% livre!"; 
+                msgVida.textContent = "🟢 Saudável. A máquina está 100% livre!";
                 barVida.style.background = "var(--success)"; 
             } else if (pctQA < 85) { 
-                msgVida.textContent = "🟡 Requer Atenção: Agende uma manutenção/lubrificação em breve."; 
+                msgVida.textContent = "🟡 Requer Atenção: Agende uma manutenção/lubrificação em breve.";
                 barVida.style.background = "#facc15"; 
             } else { 
-                msgVida.textContent = "🔴 CUIDADO: Risco iminente de quebra ou perda de qualidade."; 
+                msgVida.textContent = "🔴 CUIDADO: Risco iminente de quebra ou perda de qualidade.";
                 barVida.style.background = "var(--danger)"; 
             }
         }
@@ -1810,24 +1837,23 @@
             var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; 
             var passaBusca = true;
             if (termoBusca !== '') {
-                var nomeC = (item.cliente || '').toLowerCase();
+                 var nomeC = (item.cliente || '').toLowerCase();
                 var nomeP = (item.nome || '').toLowerCase();
                 if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca)) {
                     passaBusca = false;
                 }
-            }
+             }
             return passaStatus && passaBusca;
         });
-
         var isFila = window.filtroStatusAtual === 'Na Fila';
         if (isFila) { 
-            // Ordenação estrita pela posição na fila
             itensFiltrados.sort((a, b) => { 
                 return (a.posicaoFila || a.id) - (b.posicaoFila || b.id); 
-            }); 
+            });
         }
 
-        lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado</p>' : '';
+        lista.innerHTML = itensFiltrados.length === 0 ?
+        '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado</p>' : '';
         
         itensFiltrados.forEach(function(item, index) {
             var custoItem = parseLocal(item.custo); var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0); var canalStr = item.canal || "Direta";
@@ -1837,23 +1863,25 @@
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             
-            var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
+            var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ?
+            'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
             
-            var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
+            var crmHtml = item.cliente ?
+            '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
             var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
             var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '';
             var bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);';
-            
             if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
-
             var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
-            
             var botoesHTML = `
-                ${isFila ? `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>` : ''}
-                <button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button>
-                <button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>
+                ${isFila ?
+                `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;"
+                title="Descer na Fila">⬇️</button>` : ''}
+                <button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;"
+                title="Editar">✎</button>
+                <button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;"
+                title="Excluir">×</button>
             `;
-
             lista.innerHTML += `
                 <div class="history-item" style="${bordaUrgente}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
@@ -1869,15 +1897,20 @@
                                     <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
                                 </select>
                             </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div>
+                         </div>
+                        <div style="display: flex;
+                        align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px;
+                        border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div>
                     </div>
                     ${crmHtml}
-                    <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
+                    <div class="hist-vals" style="margin-top: 5px;
+                        border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
                         <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                         <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span><span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
-                        <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
-                        <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
+                        <span style="grid-column: span 2;
+                        color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                        <span style="grid-column: span 2;
+                        font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
                     </div>
                 </div>`;
         });
@@ -1893,61 +1926,80 @@
         if(divDev) divDev.textContent = formatarMoeda(totDevolvido);
         
         document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
-        document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
+        document.getElementById('qtd_shopee').textContent = qtdShopee;
+        document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
         document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
         
         atualizarLucroReal();
     }
 
-    function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
-    function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
+    function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id);
+    syncNuvem(); } }
+    function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg;
+    t.className = "show"; setTimeout(() => t.className = "", 2000); } }
 
     function resetarDados() {
-        carrinho = []; renderCarrinho();
+        carrinho = [];
+        renderCarrinho();
         ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
-        
         var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = window.configGlobais.custoEmbalagem || "0,00";
         var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = window.configGlobais.custoDeslocamento || "0,00";
         var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
 
         var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
-        var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none';
+        var boxPreco = document.getElementById('boxPrecoFixo');
+        if(boxPreco) boxPreco.style.display = 'none';
         
         editCatalogoId = null; 
-        var btnMainCat = document.getElementById('btn_salvar_catalogo_main'); if(btnMainCat) { btnMainCat.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMainCat.style.background = "var(--orange)"; }
+        var btnMainCat = document.getElementById('btn_salvar_catalogo_main');
+        if(btnMainCat) { btnMainCat.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMainCat.style.background = "var(--orange)";
+        }
         var btnCancelCatMain = document.getElementById('btn_cancelar_catalogo_main'); if(btnCancelCatMain) btnCancelCatMain.style.display = "none";
 
-        editHistoricoId = null; 
-        var btnSaveMain = document.getElementById('btn_salvar_venda_main'); if(btnSaveMain) { btnSaveMain.textContent = "💾 Salvar Venda"; btnSaveMain.style.background = "var(--purple)"; }
+        editHistoricoId = null;
+        var btnSaveMain = document.getElementById('btn_salvar_venda_main'); if(btnSaveMain) { btnSaveMain.textContent = "💾 Salvar Venda"; btnSaveMain.style.background = "var(--purple)";
+        }
         var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none";
         
-        editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
-        if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
+        editandoCarrinhoId = null;
+        var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
+        if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)";
+        }
         if(btnCancel) btnCancel.style.display = "none";
 
-        var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente && tUrgente.checked) { tUrgente.checked = false; tUrgente.dispatchEvent(new Event('change')); }
+        var tUrgente = document.getElementById('toggle_urgente');
+        if (tUrgente && tUrgente.checked) { tUrgente.checked = false; tUrgente.dispatchEvent(new Event('change'));
+        }
         
         resetarInputProjeto();
-        calcular(); 
-        
+        calcular();
         setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100);
         var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function wpp(tipo) {
-        var txt = "*Orçamento 3D 4You*\n\n"; var valF = 0; var isCart = carrinho && carrinho.length > 0;
-        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado'; var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
+        var txt = "*Orçamento 3D 4You*\n\n";
+        var valF = 0; var isCart = carrinho && carrinho.length > 0;
+        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
+        var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
         if(isCart) {
-            txt += "*Itens do Pedido:*\n"; carrinho.forEach(i => { txt += "- " + i.nome + "\n"; });
-            valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
+            txt += "*Itens do Pedido:*\n";
+            carrinho.forEach(i => { txt += "- " + i.nome + "\n"; });
+            valF = tipo === 'direta' ?
+            document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
         } else {
-            var nProj = document.getElementById('nomeProjeto'); var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
-            var elQtd = document.getElementById('qtdPecasProjeto'); var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
+            var nProj = document.getElementById('nomeProjeto');
+            var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
+            var elQtd = document.getElementById('qtdPecasProjeto');
+            var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
             txt += "*Projeto:* " + qtd + nome + "\n";
-            valF = tipo === 'direta' ? document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
+            valF = tipo === 'direta' ?
+            document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
         }
-        if (isPersonalizado) { var vPerso = pegaTexto('valorPersonalizado'); if (vPerso) { if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) { valF = vPerso; } } }
+        if (isPersonalizado) { var vPerso = pegaTexto('valorPersonalizado');
+        if (vPerso) { if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) { valF = vPerso;
+        } } }
         txt += "\n*Valor Total:* R$ " + valF;
         var tCli = document.getElementById('telefoneCliente'); var tel = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : "";
         window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
@@ -1962,19 +2014,19 @@
 
         doc.setFontSize(12);
         doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 14, 30);
-        
         var cliNome = pegaTexto('nomeCliente') || "Cliente Balcão";
         doc.text("Cliente: " + cliNome, 14, 38);
-
         var isCart = carrinho && carrinho.length > 0;
         var valF = 0;
         var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
         var tipoCanal = document.getElementById('canalVendaSelecionado').value;
 
         if(isCart) {
-            valF = tipoCanal === 'Direta' ? document.getElementById('cart_tot_vd').textContent : (tipoCanal === 'Shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
+            valF = tipoCanal === 'Direta' ?
+            document.getElementById('cart_tot_vd').textContent : (tipoCanal === 'Shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
         } else {
-            valF = tipoCanal === 'Direta' ? document.getElementById('r_vendaD').textContent : (tipoCanal === 'Shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
+            valF = tipoCanal === 'Direta' ?
+            document.getElementById('r_vendaD').textContent : (tipoCanal === 'Shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
         }
         
         if (isPersonalizado) {
@@ -1990,7 +2042,8 @@
                 tableData.push([i.nome, "R$ " + formatarMoeda(i.valorComLucro)]);
             });
         } else {
-            var nProj = document.getElementById('nomeProjeto').value || "Peça 3D";
+            var nProj = document.getElementById('nomeProjeto').value ||
+            "Peça 3D";
             var qtd = document.getElementById('qtdPecasProjeto').value || "1";
             tableData.push([qtd + "x " + nProj, "R$ " + valF]);
         }
@@ -2002,7 +2055,6 @@
             theme: 'grid',
             headStyles: { fillColor: [59, 130, 246] }
         });
-
         let finalY = doc.lastAutoTable.finalY + 15;
         
         doc.setFontSize(16);
@@ -2024,20 +2076,17 @@
         }
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape'); 
-
+        const doc = new jsPDF('landscape');
         doc.setFontSize(16);
         doc.text("Relatório Financeiro Geral - 3D 4You", 14, 15);
         doc.setFontSize(9);
         doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
-
         let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0, somaLogistica = 0;
         let qtdDireta = 0, somaDireta = 0, qtdShopee = 0, somaShopee = 0, qtdMeli = 0, somaMeli = 0;
         let despesasTotais = despesas.reduce((acc, d) => acc + d.valor, 0);
         
         let totDevolvido = 0;
         const tableDataDevolucoes = [];
-
         const tableData = [];
         
         historico.forEach(h => {
@@ -2047,46 +2096,56 @@
             let custoItem = parseLocal(h.custo);
             let freteLogItem = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
             let canalStr = h.canal || "Direta";
+   
             let valLiq = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             let valBruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : valLiq;
             let lucroItem = valLiq - custoItem - freteLogItem;
             let horas = parseLocal(h.tempo || 0);
 
             if (st === 'Devolução') {
+   
                 totDevolvido += valLiq;
                 tableDataDevolucoes.push([
                     h.data, h.cliente || 'Balcão', h.nome, st, canalStr, "R$ " + formatarMoeda(valLiq), "R$ " + formatarMoeda(lucroItem), formatarMoeda(horas) + "h"
                 ]);
             } else {
+  
                 tableData.push([
-                    h.data, h.cliente || 'Balcão', h.nome, st, canalStr, "R$ " + formatarMoeda(valLiq), "R$ " + formatarMoeda(lucroItem), formatarMoeda(horas) + "h"
+                    h.data, h.cliente ||
+                    'Balcão', h.nome, st, canalStr, "R$ " + formatarMoeda(valLiq), "R$ " + formatarMoeda(lucroItem), formatarMoeda(horas) + "h"
                 ]);
-                
                 if (st !== 'Orçamento') {
-                    totVendas += (h.totalQtd || 1); totBruto += valBruto; totLiquido += valLiq; totCusto += custoItem; somaLogistica += freteLogItem; totLucro += lucroItem;
-                    if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
+                    totVendas += (h.totalQtd || 1);
+                    totBruto += valBruto; totLiquido += valLiq; totCusto += custoItem; somaLogistica += freteLogItem; totLucro += lucroItem;
+                    if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++;
+                    } else { somaDireta += valLiq; qtdDireta++; }
                 }
                 if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
                     totHoras += horas;
                 }
             }
         });
-
         let lucroReal = totLucro - despesasTotais;
         doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 48, 'F');
         
-        doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos e Devoluções):", 18, 32);
+        doc.setFontSize(10); doc.setFont(undefined, 'bold');
+        doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos e Devoluções):", 18, 32);
         
         doc.setFontSize(9); doc.setFont(undefined, 'normal');
-        doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totBruto)}`, 18, 40); doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
-        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 46); doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46);
+        doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totBruto)}`, 18, 40);
+        doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 46);
+        doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46);
         
         doc.setFont(undefined, 'bold');
-        doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54); doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 54);
+        doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54);
+        doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 54);
         doc.setTextColor(0, 150, 0); doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 54); doc.setTextColor(0, 0, 0);
 
-        doc.setFontSize(8); doc.setFont(undefined, 'normal');
-        doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64); doc.text(`Total M. Livre: R$ ${formatarMoeda(somaMeli)}`, 160, 64);
+        doc.setFontSize(8);
+        doc.setFont(undefined, 'normal');
+        doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64);
+        doc.text(`Total M. Livre: R$ ${formatarMoeda(somaMeli)}`, 160, 64);
 
         doc.setFont(undefined, 'bold');
         doc.setTextColor(239, 68, 68);
@@ -2094,18 +2153,20 @@
         doc.setTextColor(0, 0, 0);
 
         doc.autoTable({ startY: 76, head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor (Líq)', 'Lucro', 'Tempo']], body: tableData, theme: 'grid', headStyles: { fillColor: [59, 130, 246] }, styles: { fontSize: 8 } });
-        
         let currentY = doc.lastAutoTable.finalY + 15;
 
         if (tableDataDevolucoes.length > 0) {
-            if (currentY > 170) { doc.addPage(); currentY = 20; }
-            doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
+            if (currentY > 170) { doc.addPage();
+                currentY = 20; }
+            doc.setFontSize(12); doc.setFont(undefined, 'bold');
+            doc.setTextColor(239, 68, 68);
             doc.text("Histórico de Devoluções", 14, currentY);
             doc.autoTable({
                 startY: currentY + 5,
                 head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor Estornado', 'Lucro Nulo', 'Tempo']],
                 body: tableDataDevolucoes,
                 theme: 'grid',
+             
                 headStyles: { fillColor: [239, 68, 68] },
                 styles: { fontSize: 8 }
             });
@@ -2115,7 +2176,8 @@
         if (despesas.length > 0) {
             const tableDataDespesas = despesas.map(d => [ d.data, d.qtd + "x", d.nome, "R$ " + formatarMoeda(d.valor) ]);
             if (currentY > 170) { doc.addPage(); currentY = 20; }
-            doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
             doc.text("Histórico de Despesas / Compras", 14, currentY);
             doc.autoTable({
                 startY: currentY + 5,
@@ -2123,6 +2185,7 @@
                 body: tableDataDespesas,
                 theme: 'grid',
                 headStyles: { fillColor: [239, 68, 68] },
+    
                 styles: { fontSize: 8 }
             });
         }
@@ -2130,14 +2193,13 @@
         doc.save("Relatorio_Geral_3D4You.pdf");
         showToast("📄 Relatório PDF Gerado!");
     };
-
+    
     window.exportarExcel = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar");
+        return; }
         var wb = XLSX.utils.book_new();
-        
         var vendasValidas = historico.filter(h => h.status !== 'Devolução');
         var devolucoes = historico.filter(h => h.status === 'Devolução');
-
         if (vendasValidas.length > 0) {
             var dadosVendas = vendasValidas.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
@@ -2161,23 +2223,35 @@
         if (catalogo.length > 0) {
             var dadosCatalogo = catalogo.map(c => {
                 var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
-                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
+                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo 
+                || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
         }
 
         var dadosConfig = [{
-            "Máquina (R$)": window.configGlobais.maquina || "3.275",
-            "Vida Útil (h)": window.configGlobais.vidaUtil || "3.000",
-            "Consumo (W)": window.configGlobais.consumoW || "350",
-            "Preço kWh (R$)": window.configGlobais.precoKwh || "1,20",
-            "Aviso Manutenção (h)": window.configGlobais.qa_aviso || "100",
-            "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem || "0,00",
-            "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento || "0,00",
-            "Taxa M. Livre (%)": window.configGlobais.taxaMeli || "17",
-            "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli || "6,75",
-            "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso || "80",
-            "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro || "80"
+            "Máquina (R$)": window.configGlobais.maquina ||
+            "3.275",
+            "Vida Útil (h)": window.configGlobais.vidaUtil ||
+            "3.000",
+            "Consumo (W)": window.configGlobais.consumoW ||
+            "350",
+            "Preço kWh (R$)": window.configGlobais.precoKwh ||
+            "1,20",
+            "Aviso Manutenção (h)": window.configGlobais.qa_aviso ||
+            "100",
+            "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem ||
+            "0,00",
+            "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento ||
+            "0,00",
+            "Taxa M. Livre (%)": window.configGlobais.taxaMeli ||
+            "17",
+            "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli ||
+            "6,75",
+            "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso ||
+            "80",
+            "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro ||
+            "80"
         }];
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosConfig), "Configurações");
 
