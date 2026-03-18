@@ -15,8 +15,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     
@@ -34,9 +33,9 @@
         header h1 { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
         .nuvem-icon { font-size: 0.75rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: -5px 0 20px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5000; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: -5px 0 20px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 3000; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         .side-menu.open { right: 0; }
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 4999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 2999; display: none; opacity: 0; transition: opacity 0.3s; }
         .menu-overlay.open { display: block; opacity: 1; }
         .menu-btn { background: #0f172a; color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .menu-btn:active { transform: scale(0.98); border-color: var(--primary); }
@@ -104,21 +103,19 @@
         .btn-direta { background: var(--success); }
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; grid-column: span 3; margin-top: 5px; }
+        .btn-orcamento { background: #4f46e5; grid-column: span 3; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
-        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 6000; }
+        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
-        .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; transition: 0.3s; }
-        .btn-save-hist:active { transform: scale(0.97); }
-
+        .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
+        
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; cursor: grab; user-select: none; -webkit-user-select: none; }
         .filter-container:active { cursor: grabbing; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
-        /* LISTAS COMPACTAS (SLIM) */
         .history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
         .history-item { background: #0f172a; border-radius: 10px; padding: 10px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2;}
@@ -145,17 +142,6 @@
         
         .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
         .busca-larga:focus { width: 180px; border-color: var(--sky); }
-
-        /* Estilos Kanban */
-        .kanban-board { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; height: calc(100vh - 120px); align-items: flex-start; scroll-snap-type: x mandatory;}
-        .kanban-col { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; width: 280px; min-width: 280px; display: flex; flex-direction: column; max-height: 100%; scroll-snap-align: start;}
-        .kanban-header { padding: 12px; font-weight: 800; font-size: 0.85rem; text-align: center; border-bottom: 1px dashed var(--border); border-radius: 12px 12px 0 0; text-transform: uppercase;}
-        .kanban-items { padding: 10px; flex: 1; overflow-y: auto; min-height: 150px; display: flex; flex-direction: column; gap: 10px; }
-        .kb-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; cursor: grab; box-shadow: 0 4px 6px rgba(0,0,0,0.2); position: relative; }
-        .kb-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.98); }
-        .kb-card h4 { font-size: 0.8rem; margin-bottom: 5px; color: var(--text-main); line-height: 1.3;}
-        .kb-card .kb-cli { font-size: 0.65rem; color: var(--sky); margin-bottom: 5px; font-weight: bold;}
-        .kb-card .kb-det { font-size: 0.65rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 5px;}
     </style>
 </head>
 <body>
@@ -168,7 +154,6 @@
         <h2 style="font-size: 1.2rem; color: var(--sky); margin:0;">Navegação</h2>
         <span class="menu-close" onclick="fecharGaveta()" style="font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</span>
     </div>
-    <button class="menu-btn" style="background: var(--sky); color: #fff; border-color: var(--sky);" onclick="fecharGaveta(); abrirKanban()"><span style="font-size: 1.1rem;">🏭</span> Painel Fábrica (Kanban)</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('despesasModal').style.display='block'">💸 Despesas / Compras</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('logisticaModal').style.display='block'">🚚 Logística e Frete</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('marketplacesModal').style.display='block'">🛒 Taxas Marketplaces</button>
@@ -183,38 +168,6 @@
     <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel Completo</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
     <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
-</div>
-
-<div id="kanbanModal" class="modal">
-    <div class="modal-content" style="max-width: 100%; width: 100%; height: 100vh; margin: 0; border-radius: 0; background: var(--bg-color); padding: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2 class="section-title" style="border:none; margin:0; padding:0; color: var(--sky); cursor:default; font-size: 1.2rem;">🏭 Fábrica de Impressão</h2>
-            <span class="close-modal" style="position: relative; right: 0; top: 0;" onclick="fecharModal('kanbanModal'); renderHistorico();">&times;</span>
-        </div>
-        
-        <div class="kanban-board">
-            <div class="kanban-col">
-                <div class="kanban-header" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">🟡 Orçamentos</div>
-                <div class="kanban-items" id="kb-orcamento" data-status="Orçamento"></div>
-            </div>
-            <div class="kanban-col">
-                <div class="kanban-header" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔵 Fila de Produção</div>
-                <div class="kanban-items" id="kb-fila" data-status="Na Fila"></div>
-            </div>
-            <div class="kanban-col">
-                <div class="kanban-header" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🟣 Imprimindo (Abate Estoque)</div>
-                <div class="kanban-items" id="kb-imprimindo" data-status="Imprimindo"></div>
-            </div>
-            <div class="kanban-col">
-                <div class="kanban-header" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🟢 Finalizado</div>
-                <div class="kanban-items" id="kb-finalizado" data-status="Finalizado"></div>
-            </div>
-            <div class="kanban-col">
-                <div class="kanban-header" style="background: rgba(14, 165, 233, 0.15); color: var(--sky);">🚚 Enviado / Entregue</div>
-                <div class="kanban-items" id="kb-enviado" data-status="Enviado / Entregue"></div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div id="configModal" class="modal">
@@ -323,11 +276,10 @@
         </div>
         <div class="grid-2">
             <div class="input-group" style="margin-bottom:0;"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
-            <div class="input-group" style="margin-bottom:0;"><label style="color:var(--sky)">Peso Inicial (g)</label><input type="text" inputmode="numeric" id="est_peso_inicial" placeholder="Ex: 1000" style="border-color:var(--sky);"></div>
-        </div>
-        <div style="display:flex; gap:8px; align-items: flex-end; margin-top: 10px;">
-            <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="flex:1; background: var(--success); height: 40px;">➕ Salvar Material</button>
-            <button class="btn" id="btn_cancelar_estoque" onclick="cancelarEdicaoEstoque()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
+            <div style="display:flex; gap:8px; align-items: flex-end;">
+                <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="flex:1; background: var(--success); height: 40px;">➕ Salvar</button>
+                <button class="btn" id="btn_cancelar_estoque" onclick="cancelarEdicaoEstoque()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
+            </div>
         </div>
         <div style="border-top: 1px dashed var(--border); margin-top: 15px; padding-top: 10px;">
             <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Filamentos Cadastrados:</p>
@@ -559,11 +511,6 @@
                 <span style="display:flex; align-items:center;">📈 Resumo Financeiro <span class="chevron">▼</span></span>
             </h2>
             <div id="wrap_hist_totals">
-                
-                <div style="width: 100%; height: 200px; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; border: 1px solid var(--border);">
-                    <canvas id="chartFaturamento"></canvas>
-                </div>
-
                 <div class="total-summary">
                     <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                     <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
@@ -621,11 +568,6 @@
         document.getElementById('menuOverlay').classList.remove('open');
     }
 
-    window.abrirKanban = function() {
-        document.getElementById('kanbanModal').style.display = 'block';
-        renderKanban();
-    }
-
     const firebaseConfig = {
       apiKey: "AIzaSyBHP744_ct0YNtEWT_s33Wpfv7udS9gSOg",
       authDomain: "calculadora-3d-ed2c7.firebaseapp.com",
@@ -652,8 +594,6 @@
     var editandoCarrinhoId = null;
     var filtroStatusAtual = 'Todos';
     var clientesCadastrados = {};
-    
-    var meuGrafico = null; // Variável global para o Gráfico
     
     window.qaOffset = 0;
     window.horasTotaisImpressasGlobal = 0;
@@ -1031,6 +971,11 @@
         document.getElementById('tempoH').value = item.tempo1 || formatarMoeda(item.tempo / qtd);
         document.getElementById('pesoPeca').value = item.peso1 || formatarMoeda(item.peso / qtd);
 
+        // SYNC CATÁLOGO RÁPIDO
+        var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim());
+        var selCat = document.getElementById('sel_catalogo');
+        if(matchCat) { if(selCat) selCat.value = matchCat.id; } else { if(selCat) selCat.value = ""; }
+
         if (item.taxaSucesso) document.getElementById('taxaSucesso').value = item.taxaSucesso;
         if (item.margemLucro) {
             document.getElementById('margemInput').value = item.margemLucro;
@@ -1043,7 +988,11 @@
         document.getElementById('marcaFilamento1').value = item.marca1 || "";
         document.getElementById('precoFilamento').value = item.preco1 || "120,00";
 
-        var match1 = estoque.find(e => e.tipo === item.tipo1 && e.cor === item.cor1 && e.marca === item.marca1) || estoque.find(e => e.tipo === item.tipo1 && e.cor === item.cor1);
+        // SYNC ESTOQUE FILAMENTO 1
+        var match1 = null;
+        if(item.tipo1) {
+            match1 = estoque.find(e => e.tipo === item.tipo1 && e.cor === item.cor1 && e.marca === item.marca1) || estoque.find(e => e.tipo === item.tipo1 && e.cor === item.cor1);
+        }
         var sel1 = document.getElementById('sel_est_1'); 
         if(match1) { 
             if(sel1) sel1.value = match1.id; 
@@ -1067,11 +1016,14 @@
                 var i = idx + 2;
                 setTimeout(() => {
                     if(document.getElementById('tipoFilamento'+i)) {
-                        document.getElementById('tipoFilamento'+i).value = ex.tipo;
-                        document.getElementById('corFilamento'+i).value = ex.cor;
-                        document.getElementById('pesoPeca'+i).value = ex.peso;
+                        document.getElementById('tipoFilamento'+i).value = ex.tipo || "";
+                        document.getElementById('corFilamento'+i).value = ex.cor || "";
+                        document.getElementById('pesoPeca'+i).value = ex.peso || "";
                         
-                        var matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor);
+                        var matchI = null;
+                        if(ex.tipo) {
+                            matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor);
+                        }
                         var selI = document.getElementById('sel_est_'+i);
                         if(matchI) {
                             if(selI) selI.value = matchI.id;
@@ -1080,7 +1032,7 @@
                         } else {
                             if(selI) selI.value = "";
                             document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
-                            document.getElementById('marcaFilamento'+i).value = ex.marca;
+                            document.getElementById('marcaFilamento'+i).value = ex.marca || "";
                         }
                     }
                 }, 50);
@@ -1362,41 +1314,21 @@
         document.getElementById('est_cor').value = "";
         document.getElementById('est_marca').value = "";
         document.getElementById('est_preco').value = "";
-        document.getElementById('est_peso_inicial').value = "";
-        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar Material";
+        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar";
         document.getElementById('btn_cancelar_estoque').style.display = "none";
         showToast("❌ Edição cancelada");
     };
 
     function salvarItemEstoque() {
-        var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value, pesoIni = document.getElementById('est_peso_inicial').value || "1000";
+        var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value;
         if(!t || !p) { alert("Preencha pelo menos o Tipo e o Preço para salvar no estoque."); return; }
         if (editEstoqueId) {
             var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
-            if (itemIndex > -1) { 
-                estoque[itemIndex].tipo = t; 
-                estoque[itemIndex].cor = c; 
-                estoque[itemIndex].marca = m; 
-                estoque[itemIndex].preco = p; 
-                // Se ele editar o peso inicial e o atual estiver zerado ou vazio, atualiza o atual tbm.
-                if(!estoque[itemIndex].pesoAtual || parseFloat(estoque[itemIndex].pesoAtual) <= 0) {
-                    estoque[itemIndex].pesoAtual = pesoIni;
-                }
-                estoque[itemIndex].pesoInicial = pesoIni;
-            }
-            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar Material";
+            if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; }
+            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
             document.getElementById('btn_cancelar_estoque').style.display = "none";
-        } else { 
-            estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p, pesoInicial: pesoIni, pesoAtual: pesoIni }); 
-        }
-        document.getElementById('est_tipo').value = ""; 
-        document.getElementById('est_cor').value = ""; 
-        document.getElementById('est_marca').value = ""; 
-        document.getElementById('est_preco').value = ""; 
-        document.getElementById('est_peso_inicial').value = "";
-        syncNuvem(); 
-        renderEstoque();
-        showToast("📦 Estoque Atualizado!");
+        } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); }
+        syncNuvem(); document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; showToast("📦 Estoque Atualizado!");
     }
 
     function renderEstoque() {
@@ -1405,17 +1337,12 @@
         lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
         
         estoqueOrdenado.forEach(function(item) {
-            var pAtual = item.pesoAtual ? parseFloat(item.pesoAtual).toFixed(0) : (item.pesoInicial || "1000");
-            var corPeso = pAtual < 100 ? "color: var(--danger); font-weight: 900; animation: pulse 1.5s infinite;" : "color: var(--success);";
-            
             lista.innerHTML += `
             <div class="history-item">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                     <div style="flex: 1; min-width: 0;">
                         <h4 style="margin:0; line-height: 1.3; color:var(--success); word-wrap: break-word;">${item.tipo} ${item.cor} <span style="color:#fff">(${item.marca})</span></h4>
-                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">
-                            Preço: R$ ${item.preco} <span style="margin:0 5px;">|</span> Restam: <b style="${corPeso}">${pAtual}g</b>
-                        </div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Preço: R$ ${item.preco}</div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <button onclick="editarItemEstoque(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button>
@@ -1436,7 +1363,6 @@
             document.getElementById('est_cor').value = item.cor; 
             document.getElementById('est_marca').value = item.marca; 
             document.getElementById('est_preco').value = item.preco; 
-            document.getElementById('est_peso_inicial').value = item.pesoAtual || item.pesoInicial || "1000";
             editEstoqueId = id; 
             document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; 
             document.getElementById('btn_cancelar_estoque').style.display = "block";
@@ -1446,10 +1372,7 @@
     function atualizarDropdownsEstoque() {
         var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         var optionsHTML = '<option value="">-- Puxar material do Estoque --</option>';
-        estoqueOrdenado.forEach(function(item) { 
-            var pAtual = item.pesoAtual ? parseFloat(item.pesoAtual).toFixed(0) : (item.pesoInicial || "1000");
-            optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - ' + pAtual + 'g').trim()+'</option>'; 
-        });
+        estoqueOrdenado.forEach(function(item) { optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; });
         var s1 = document.getElementById('sel_est_1'); if (s1) { var val1 = s1.value; s1.innerHTML = optionsHTML; s1.value = val1; }
         var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
         for(var i=2; i<=qtd+1; i++) { var si = document.getElementById('sel_est_'+i); if (si) { var vali = si.value; si.innerHTML = optionsHTML; si.value = vali; } }
@@ -1628,163 +1551,6 @@
         window.filtroStatusAtual = status;
         renderHistorico();
     };
-    
-    // ATUALIZA O GRÁFICO NA TELA
-    function atualizarGrafico() {
-        var ctx = document.getElementById('chartFaturamento');
-        if(!ctx) return;
-
-        let meses = {};
-        historico.forEach(h => {
-            if(h.status !== 'Orçamento' && h.status !== 'Devolução') {
-                let parts = h.data.split('/');
-                if(parts.length === 3) {
-                    let mesAno = parts[1] + '/' + parts[2];
-                    if(!meses[mesAno]) meses[mesAno] = { bruto: 0, lucro: 0 };
-                    let valLiq = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
-                    let lucro = valLiq - parseLocal(h.custo) - (parseLocal(h.frete || 0) + parseLocal(h.logistica || 0));
-                    meses[mesAno].bruto += valLiq;
-                    meses[mesAno].lucro += lucro;
-                }
-            }
-        });
-
-        let labels = Object.keys(meses).sort((a,b) => {
-            let [m1, y1] = a.split('/'); let [m2, y2] = b.split('/');
-            return new Date(y1, m1-1) - new Date(y2, m2-1);
-        }).slice(-6); 
-
-        let dataBruto = labels.map(l => meses[l].bruto);
-        let dataLucro = labels.map(l => meses[l].lucro);
-
-        if(meuGrafico) meuGrafico.destroy();
-        meuGrafico = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    { label: 'Faturamento Bruto', data: dataBruto, backgroundColor: '#0ea5e9', borderRadius: 4 },
-                    { label: 'Lucro Líquido', data: dataLucro, backgroundColor: '#10b981', borderRadius: 4 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
-        });
-    }
-
-    // KANBAN RENDER E LÓGICA DE DRAG
-    function renderKanban() {
-        ['Orçamento', 'Na Fila', 'Imprimindo', 'Finalizado', 'Enviado / Entregue'].forEach(status => {
-            let colStatus = status === 'Orçamento' ? 'kb-orcamento' : status === 'Na Fila' ? 'kb-fila' : status === 'Imprimindo' ? 'kb-imprimindo' : status === 'Finalizado' ? 'kb-finalizado' : 'kb-enviado';
-            let container = document.getElementById(colStatus);
-            if(!container) return;
-            
-            container.innerHTML = '';
-            
-            let itens = historico.filter(h => (h.status || "Finalizado").replace('Enviado', 'Enviado / Entregue') === status);
-            
-            if (status === 'Na Fila') {
-                itens.sort((a, b) => (a.posicaoFila || a.id) - (b.posicaoFila || b.id));
-            }
-            
-            itens.forEach(item => {
-                let tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
-                let valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
-                
-                container.innerHTML += `
-                    <div class="kb-card" data-id="${item.id}">
-                        <div class="kb-cli">👤 ${item.cliente || 'Cliente Balcão'}</div>
-                        <h4>${item.nome} ${tagUrgente}</h4>
-                        <div class="kb-det">
-                            <span>Qtd: ${item.totalQtd || 1}x</span>
-                            <span style="color: var(--success); font-weight: bold;">R$ ${formatarMoeda(valLiq)}</span>
-                        </div>
-                    </div>
-                `;
-            });
-        });
-
-        // Inicializa o SortableJS (Drag and Drop)
-        ['kb-orcamento', 'kb-fila', 'kb-imprimindo', 'kb-finalizado', 'kb-enviado'].forEach(id => {
-            var el = document.getElementById(id);
-            if(el) {
-                new Sortable(el, {
-                    group: 'kanban',
-                    animation: 150,
-                    delay: 100, // Previne drag acidental no mobile ao rolar a tela
-                    delayOnTouchOnly: true,
-                    onEnd: function (evt) {
-                        var itemId = parseInt(evt.item.dataset.id);
-                        var newStatus = evt.to.dataset.status;
-                        
-                        var itemObj = historico.find(h => h.id === itemId);
-                        if(itemObj && itemObj.status !== newStatus) {
-                            mudarStatus(itemId, newStatus);
-                        }
-                    },
-                });
-            }
-        });
-    }
-
-    // NOVA FUNÇÃO: BAIXA DE ESTOQUE AUTOMÁTICA
-    function efetuarBaixaEstoque(hId) {
-        let h = historico.find(x => x.id === hId);
-        if (!h || h.estoqueDescontado) return; // Se já descontou antes, não desconta de novo
-
-        if(confirm("Deseja abater os filamentos deste projeto do seu Estoque agora?")) {
-            let descontouAlgo = false;
-            let itensParaAbater = h.cartItems && h.cartItems.length > 0 ? h.cartItems : [h];
-
-            itensParaAbater.forEach(item => {
-                let abater = (tipo, cor, marca, pesoTotal) => {
-                    if(!tipo || !pesoTotal) return;
-                    
-                    let est = estoque.find(e => e.tipo === tipo && e.cor === cor && e.marca === marca);
-                    if(!est) est = estoque.find(e => e.tipo === tipo && e.cor === cor);
-                    
-                    if(est) {
-                        let pesoAtualFloat = parseFloat(est.pesoAtual || est.pesoInicial || 1000);
-                        est.pesoAtual = (pesoAtualFloat - parseFloat(pesoTotal)).toString();
-                        descontouAlgo = true;
-                    }
-                };
-
-                let peso1 = item.peso1 ? parseLocal(item.peso1) * (item.qtd || 1) : parseLocal(item.peso);
-                abater(item.tipo1, item.cor1, item.marca1, peso1);
-
-                if(item.multi && item.extras) {
-                    item.extras.forEach(ex => {
-                        let pesoE = parseLocal(ex.peso) * (item.qtd || 1);
-                        abater(ex.tipo, ex.cor, ex.marca, pesoE);
-                    });
-                }
-            });
-
-            if(descontouAlgo) {
-                h.estoqueDescontado = true;
-                syncNuvem();
-                renderEstoque();
-                showToast("📉 Estoque abatido com sucesso!");
-            } else {
-                showToast("⚠️ Nenhum filamento compatível achado no estoque.");
-            }
-        }
-    }
-
-    function mudarStatus(id, novoStatus) { 
-        var index = historico.findIndex(h => h.id === id); 
-        if (index > -1) { 
-            historico[index].status = novoStatus; 
-            
-            if(novoStatus === 'Imprimindo' && !historico[index].estoqueDescontado) {
-                efetuarBaixaEstoque(id);
-            } else {
-                syncNuvem(); 
-            }
-            renderHistorico(); 
-            renderKanban();
-        } 
-    }
 
     window.onload = function() {
         document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
@@ -1879,7 +1645,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX); 
+                const walk = (x - startX) * 1.5; 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1887,9 +1653,6 @@
                 }
             });
         }
-        
-        // Renderiza o Gráfico após 1 segundo para garantir que o DOM carregou
-        setTimeout(atualizarGrafico, 500);
     };
 
     function calcular() {
