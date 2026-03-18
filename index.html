@@ -140,8 +140,8 @@
         .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: 20px; border: 1px solid var(--border); border-radius: 16px; width: 95%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.5); position: relative; }
         .close-modal { color: var(--text-muted); position: absolute; right: 15px; top: 15px; font-size: 24px; font-weight: bold; cursor: pointer; line-height: 1; z-index: 10; }
         
-        .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 100%; transition: border-color 0.3s; font-weight: normal; text-transform: none; }
-        .busca-larga:focus { border-color: var(--sky); }
+        .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
+        .busca-larga:focus { width: 180px; border-color: var(--sky); }
     </style>
 </head>
 <body>
@@ -496,9 +496,9 @@
 
     <div class="col col-history">
         <div class="card">
-            <h2 class="section-title" style="cursor:pointer; flex-direction: column; align-items: stretch; gap: 10px;" onclick="toggleCard('wrap_hist_list', this, event)">
-                <div style="display:flex; align-items:center; justify-content: space-between;">
-                    <span>📂 Histórico de Vendas</span><span class="chevron">▼</span>
+            <h2 class="section-title" style="cursor:pointer; display: flex; flex-direction: row; align-items: center; justify-content: space-between;" onclick="toggleCard('wrap_hist_list', this, event)">
+                <div style="display:flex; align-items:center; gap: 5px;">
+                    <span>📂 HISTÓRICO</span><span class="chevron">▼</span>
                 </div>
                 <input type="text" class="busca-larga" id="buscaCliente" placeholder="🔍 Buscar cliente ou peça..." onclick="event.stopPropagation()" oninput="renderHistorico()" autocomplete="off">
             </h2>
@@ -739,115 +739,65 @@
     function pegaTexto(id) { var el = document.getElementById(id); if (el) { return el.value || ''; } return ''; }
     function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 
+    function salvarDinamico(idCampo) { var el = document.getElementById(idCampo); if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); } }
+    function salvarDinamicoValor(idCampo, valor) { var el = document.getElementById(idCampo); if (el) el.value = valor; localStorage.setItem('3d4y_dark_' + idCampo, valor); }
+
     var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain'];
 
     function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
     window.abrirConfigModal = function() {
-        window.oldBaseVals = {
-            maq: pegaValor('maquina'),
-            vid: pegaValor('vidaUtil'),
-            con: pegaValor('consumoW'),
-            kwh: pegaValor('precoKwh')
-        };
+        window.oldBaseVals = { maq: pegaValor('maquina'), vid: pegaValor('vidaUtil'), con: pegaValor('consumoW'), kwh: pegaValor('precoKwh') };
         document.getElementById('configModal').style.display='block';
     }
 
     window.fecharModal = function(idModal) {
         document.getElementById(idModal).style.display = 'none';
-        
         if (idModal === 'configModal') {
             var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
-            
             if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) {
-                var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n" +
-                          "[ OK ] Atualiza TODAS as vendas do histórico com o novo custo.\n" +
-                          "[ CANCELAR ] O novo custo valerá apenas para as próximas vendas novas.";
-                          
+                var msg = "⚠️ Você alterou dados de Custo Operacional.\n\n[ OK ] Atualiza TODAS as vendas do histórico com o novo custo.\n[ CANCELAR ] O novo custo valerá apenas para as próximas vendas novas.";
                 if(confirm(msg)) {
-                    var oldDep = window.oldBaseVals.maq / (window.oldBaseVals.vid || 1);
-                    var oldEne = (window.oldBaseVals.con / 1000) * window.oldBaseVals.kwh;
-                    var newDep = nMaq / (nVid || 1);
-                    var newEne = (nCon / 1000) * nKwh;
-                    var deltaPorHora = (newDep + newEne) - (oldDep + oldEne);
-                    
+                    var oldDep = window.oldBaseVals.maq / (window.oldBaseVals.vid || 1); var oldEne = (window.oldBaseVals.con / 1000) * window.oldBaseVals.kwh;
+                    var newDep = nMaq / (nVid || 1); var newEne = (nCon / 1000) * nKwh; var deltaPorHora = (newDep + newEne) - (oldDep + oldEne);
                     if (!isNaN(deltaPorHora) && isFinite(deltaPorHora)) {
                         historico.forEach(h => {
-                            var hTempo = parseLocal(h.tempo) || 0;
-                            h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo);
-                            if(h.custo < 0) h.custo = 0;
-                            
-                            if(h.cartItems) {
-                                h.cartItems.forEach(ci => {
-                                    var ciTempo = parseLocal(ci.tempo) || 0;
-                                    ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo);
-                                    if(ci.custo < 0) ci.custo = 0;
-                                });
-                            }
+                            var hTempo = parseLocal(h.tempo) || 0; h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo); if(h.custo < 0) h.custo = 0;
+                            if(h.cartItems) { h.cartItems.forEach(ci => { var ciTempo = parseLocal(ci.tempo) || 0; ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo); if(ci.custo < 0) ci.custo = 0; }); }
                         });
                         showToast("✅ Passado Atualizado com Sucesso!");
                     }
                 }
             }
         }
-
-        syncNuvem();
-        renderHistorico();
-        calcular();
+        syncNuvem(); renderHistorico(); calcular();
     }
 
     window.resetarQA = function() {
         if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) {
-            window.qaOffset = window.horasTotaisImpressasGlobal;
-            syncNuvem();
-            renderHistorico();
-            document.getElementById('configModal').style.display='none';
-            showToast("🔧 Manutenção Registrada e Zerada!");
+            window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!");
         }
     }
 
     function descontarTaxas(valorBruto, qtdTotal) {
-        var avgBruto = valorBruto / qtdTotal;
-        var feeShpUnit = 0;
-        if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4;
-        else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16;
-        else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20; 
-        else feeShpUnit = (avgBruto * 0.14) + 26;
-        var netShopee = valorBruto - (feeShpUnit * qtdTotal); 
-        if (netShopee < 0) netShopee = 0;
-
-        var txMl = pegaValor('taxaMeli') / 100;
-        var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
-        var feeMlUnit = (avgBruto * txMl) + fixMl;
-        var netMeli = valorBruto - (feeMlUnit * qtdTotal);
-        if (netMeli < 0) netMeli = 0;
-
+        var avgBruto = valorBruto / qtdTotal; var feeShpUnit = 0;
+        if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4; else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16; else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20; else feeShpUnit = (avgBruto * 0.14) + 26;
+        var netShopee = valorBruto - (feeShpUnit * qtdTotal); if (netShopee < 0) netShopee = 0;
+        var txMl = pegaValor('taxaMeli') / 100; var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
+        var feeMlUnit = (avgBruto * txMl) + fixMl; var netMeli = valorBruto - (feeMlUnit * qtdTotal); if (netMeli < 0) netMeli = 0;
         return { shopee: netShopee, meli: netMeli };
     }
 
     function resetarInputProjeto() {
-        document.getElementById('nomeProjeto').value = "";
-        document.getElementById('qtdPecasProjeto').value = "1";
-        document.getElementById('tempoH').value = "";
-        document.getElementById('pesoPeca').value = "";
-        
+        document.getElementById('nomeProjeto').value = ""; document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
         var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = "";
-        document.getElementById('tipoFilamento1').value = "";
-        document.getElementById('corFilamento1').value = "";
-        document.getElementById('marcaFilamento1').value = "";
-        document.getElementById('precoFilamento').value = "120,00";
+        document.getElementById('tipoFilamento1').value = ""; document.getElementById('corFilamento1').value = ""; document.getElementById('marcaFilamento1').value = ""; document.getElementById('precoFilamento').value = "120,00";
         document.getElementById('detalhes_1').style.display = 'none';
-        
-        var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti && tMulti.checked) {
-            tMulti.checked = false;
-            tMulti.dispatchEvent(new Event('change'));
-        }
-        
+        var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti && tMulti.checked) { tMulti.checked = false; tMulti.dispatchEvent(new Event('change')); }
         ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
     }
 
-    // NOVA FUNÇÃO: Preenche toda a tela ao editar um item no Histórico ou no Carrinho
+    // CENTRALIZANDO A LOGICA DE PREENCHIMENTO AQUI PARA HISTÓRICO E CARRINHO
     function preencherFormProjeto(prod) {
         var match = prod.nome.match(/^(\d+)x\s(.*)/);
         var qtd = match ? parseInt(match[1]) : (prod.qtd || 1);
@@ -855,12 +805,24 @@
 
         document.getElementById('nomeProjeto').value = baseNome;
         document.getElementById('qtdPecasProjeto').value = qtd;
-        document.getElementById('tempoH').value = prod.tempo1 || formatarMoeda((prod.tempo || 0) / qtd);
-        document.getElementById('pesoPeca').value = prod.peso1 || formatarMoeda((prod.peso || 0) / qtd);
-
+        
         var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim());
         var selCat = document.getElementById('sel_catalogo');
         if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
+
+        var p_tipo1 = prod.tipo1 || (matchCat ? matchCat.tipo1 : "");
+        var p_cor1 = prod.cor1 || (matchCat ? matchCat.cor1 : "");
+        var p_marca1 = prod.marca1 || (matchCat ? matchCat.marca1 : "");
+        var p_preco1 = prod.preco1 || (matchCat ? matchCat.preco1 : "120,00");
+        var p_multi = prod.multi !== undefined ? prod.multi : (matchCat ? matchCat.multi : false);
+        var p_qtdCores = prod.qtdCores || (matchCat ? matchCat.qtdCores : "1");
+        var p_extras = prod.extras || (matchCat ? matchCat.extras : []);
+        
+        var t_tempo = prod.tempo1 || (prod.tempo ? formatarMoeda((prod.tempo) / qtd) : (matchCat ? matchCat.tempo : ""));
+        var t_peso = prod.peso1 || (prod.peso ? formatarMoeda((prod.peso) / qtd) : (matchCat ? matchCat.peso1 : ""));
+
+        document.getElementById('tempoH').value = t_tempo;
+        document.getElementById('pesoPeca').value = t_peso;
 
         if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso;
         if (prod.margemLucro) {
@@ -869,54 +831,63 @@
             updateSliderProgress(document.getElementById('margemSlider'));
         }
 
-        document.getElementById('tipoFilamento1').value = prod.tipo1 || "";
-        document.getElementById('corFilamento1').value = prod.cor1 || "";
-        document.getElementById('marcaFilamento1').value = prod.marca1 || "";
-        document.getElementById('precoFilamento').value = prod.preco1 || "120,00";
+        document.getElementById('tipoFilamento1').value = p_tipo1;
+        document.getElementById('corFilamento1').value = p_cor1;
+        document.getElementById('marcaFilamento1').value = p_marca1;
+        document.getElementById('precoFilamento').value = p_preco1;
 
         var match1 = null;
-        if(prod.tipo1) { match1 = estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1 && e.marca === prod.marca1) || estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1); }
+        if(p_tipo1) { match1 = estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1 && e.marca === p_marca1) || estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1); }
         var sel1 = document.getElementById('sel_est_1'); 
         if(match1) { 
             if(sel1) sel1.value = match1.id.toString(); 
             document.getElementById('marcaFilamento1').value = match1.marca;
+            document.getElementById('precoFilamento').value = match1.preco;
         } else {
             if(sel1) sel1.value = "";
         }
-        document.getElementById('detalhes_1').style.display = (prod.tipo1) ? 'block' : 'none';
+        
+        document.getElementById('detalhes_1').style.display = (p_tipo1) ? 'block' : 'none';
 
         var tMulti = document.getElementById('toggle_multi_mat');
-        if(tMulti) { tMulti.checked = prod.multi || false; tMulti.dispatchEvent(new Event('change')); }
+        if(tMulti) { tMulti.checked = p_multi; tMulti.dispatchEvent(new Event('change')); }
 
-        if(prod.multi && prod.extras) {
-            document.getElementById('qtdCoresExtras').value = prod.qtdCores || "1";
+        if(p_multi && p_extras && p_extras.length > 0) {
+            document.getElementById('qtdCoresExtras').value = p_qtdCores;
+            
+            p_extras.forEach((ex, idx) => {
+                var i = idx + 2;
+                salvarDinamicoValor('tipoFilamento'+i, ex.tipo || "");
+                salvarDinamicoValor('corFilamento'+i, ex.cor || "");
+                salvarDinamicoValor('marcaFilamento'+i, ex.marca || "");
+                salvarDinamicoValor('precoFilamento'+i, ex.preco || "120,00");
+                salvarDinamicoValor('pesoPeca'+i, ex.peso || "");
+            });
+
             renderCoresExtras();
-            prod.extras.forEach((ex, idx) => {
+            
+            p_extras.forEach((ex, idx) => {
                 var i = idx + 2;
                 setTimeout(() => {
-                    if(document.getElementById('tipoFilamento'+i)) {
-                        document.getElementById('tipoFilamento'+i).value = ex.tipo || "";
-                        document.getElementById('corFilamento'+i).value = ex.cor || "";
-                        document.getElementById('pesoPeca'+i).value = ex.peso || "";
-                        
-                        var matchI = null;
-                        if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); }
-                        var selI = document.getElementById('sel_est_'+i);
-                        if(matchI) {
-                            if(selI) selI.value = matchI.id.toString();
-                            document.getElementById('precoFilamento'+i).value = matchI.preco;
-                            document.getElementById('marcaFilamento'+i).value = matchI.marca;
-                        } else {
-                            if(selI) selI.value = "";
-                            document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
-                            document.getElementById('marcaFilamento'+i).value = ex.marca || "";
-                        }
+                    var matchI = null;
+                    if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); }
+                    var selI = document.getElementById('sel_est_'+i);
+                    if(matchI) {
+                        if(selI) selI.value = matchI.id.toString();
+                        document.getElementById('precoFilamento'+i).value = matchI.preco;
+                        document.getElementById('marcaFilamento'+i).value = matchI.marca;
+                    } else {
+                        if(selI) selI.value = "";
                     }
                 }, 50);
             });
+        } else {
+            if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1";
+            renderCoresExtras();
         }
         
         ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id));
+        calcular();
     }
 
     function adicionarAoCarrinho() {
@@ -955,11 +926,7 @@
                 if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
                 if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)');
 
-                extras.push({
-                    tipo: ti, cor: ci, marca: mi, 
-                    preco: pegaTexto('precoFilamento'+i), 
-                    peso: pegaTexto('pesoPeca'+i)
-                });
+                extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) });
             } 
         }
 
@@ -972,31 +939,16 @@
 
         var novoItem = {
             id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000),
-            nome: nomeItem,
-            qtd: qtdPecas,
-            custo: custoItemCalc,
-            valorComLucro: vDCalc, 
-            tempo: tempoItem,
-            peso: pesoItem,
-            materiais: stringMateriais,
-            
-            tipo1: t1, cor1: c1, marca1: m1,
-            preco1: document.getElementById('precoFilamento').value,
-            peso1: document.getElementById('pesoPeca').value,
-            tempo1: document.getElementById('tempoH').value,
-            multi: multiMatEnabled,
-            qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1",
-            extras: extras,
-            taxaSucesso: document.getElementById('taxaSucesso').value,
-            margemLucro: document.getElementById('margemInput').value
+            nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, tempo: tempoItem, peso: pesoItem, materiais: stringMateriais,
+            tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value,
+            multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value
         };
 
         if (editandoCarrinhoId) {
             var idx = carrinho.findIndex(i => i.id === editandoCarrinhoId);
             if (idx > -1) carrinho[idx] = novoItem;
             editandoCarrinhoId = null;
-            var btnAdd = document.getElementById('btn_add_carrinho');
-            var btnCancel = document.getElementById('btn_cancelar_edicao');
+            var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
             if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
             if(btnCancel) btnCancel.style.display = "none";
             showToast("🛒 Item atualizado no Pedido!");
@@ -1005,121 +957,68 @@
             showToast("🛒 Item adicionado ao Pedido!");
         }
 
-        resetarInputProjeto();
-        renderCarrinho();
-        calcular();
+        resetarInputProjeto(); renderCarrinho(); calcular();
     }
 
     function cancelarEdicaoCarrinho() {
         editandoCarrinhoId = null;
-        var btnAdd = document.getElementById('btn_add_carrinho');
-        var btnCancel = document.getElementById('btn_cancelar_edicao');
+        var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
         if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
         if(btnCancel) btnCancel.style.display = "none";
-        
-        resetarInputProjeto();
-        calcular();
-        showToast("❌ Edição cancelada");
+        resetarInputProjeto(); calcular(); showToast("❌ Edição cancelada");
     }
 
-    function removerDoCarrinho(id) {
-        carrinho = carrinho.filter(i => i.id !== id);
-        renderCarrinho();
-    }
+    function removerDoCarrinho(id) { carrinho = carrinho.filter(i => i.id !== id); renderCarrinho(); }
 
     function editarItemCarrinho(id) {
-        var item = carrinho.find(i => i.id === id);
-        if(!item) return;
-
+        var item = carrinho.find(i => i.id === id); if(!item) return;
         preencherFormProjeto(item);
-
         editandoCarrinhoId = id;
-        var btnAdd = document.getElementById('btn_add_carrinho');
-        var btnCancel = document.getElementById('btn_cancelar_edicao');
+        var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
         if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; }
         if(btnCancel) btnCancel.style.display = "block";
-
-        calcular(); showToast("✏️ Item carregado para edição!");
-        var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        showToast("✏️ Item carregado para edição!");
+        var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderCarrinho() {
-        var container = document.getElementById('carrinho_container');
-        var lista = document.getElementById('lista_itens_carrinho');
+        var container = document.getElementById('carrinho_container'); var lista = document.getElementById('lista_itens_carrinho');
         if(!container || !lista) return;
 
-        if(carrinho.length === 0) {
-            container.style.display = 'none';
-            return;
-        }
-
-        container.style.display = 'block';
-        lista.innerHTML = '';
+        if(carrinho.length === 0) { container.style.display = 'none'; return; }
+        container.style.display = 'block'; lista.innerHTML = '';
         var totCusto = 0, totValorComLucro = 0;
 
         carrinho.forEach(item => {
-            totCusto += item.custo;
-            totValorComLucro += item.valorComLucro; 
-
+            totCusto += item.custo; totValorComLucro += item.valorComLucro; 
             lista.innerHTML += `
                 <div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border);">
                     <button onclick="editarItemCarrinho(${item.id})" style="position: absolute; right: 35px; top: 5px; background: none; border: none; color: var(--sky); font-size: 1rem; cursor: pointer;">✎</button>
                     <button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-size: 1rem; font-weight: bold; cursor: pointer;">×</button>
                     <div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 50px;">${item.nome}</div>
                     <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div>
-                </div>
-            `;
+                </div>`;
         });
 
-        var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
-        if(totalQtd < 1) totalQtd = 1;
-
-        var cLog = pegaValor('custoEmbalagem') * totalQtd + pegaValor('custoDeslocamento');
-        var frete = pegaValor('valorFreteManual');
-
-        var totD = totValorComLucro + cLog + frete;
-        var vShopeeBase = totValorComLucro + cLog;
-        
-        var avgBase = vShopeeBase / totalQtd;
-        var pAvg1 = (avgBase + 4) / 0.80;
-        var pAvg2 = (avgBase + 16) / 0.86; 
-        var pAvg3 = (avgBase + 20) / 0.86;
-        var pAvg4 = (avgBase + 26) / 0.86; 
-
-        var bestPAvg;
-        if (pAvg1 <= 79.991) bestPAvg = pAvg1;
-        else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
-        else if (pAvg3 <= 199.991) bestPAvg = pAvg3;
-        else bestPAvg = pAvg4;
-        
+        var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1;
+        var cLog = pegaValor('custoEmbalagem') * totalQtd + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual');
+        var totD = totValorComLucro + cLog + frete; var vShopeeBase = totValorComLucro + cLog;
+        var avgBase = vShopeeBase / totalQtd; var pAvg1 = (avgBase + 4) / 0.80; var pAvg2 = (avgBase + 16) / 0.86; var pAvg3 = (avgBase + 20) / 0.86; var pAvg4 = (avgBase + 26) / 0.86; 
+        var bestPAvg; if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2; else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4;
         var totS = bestPAvg * totalQtd;
-        
-        var avgBaseML = vShopeeBase / totalQtd;
-        var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100));
-        var pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100));
-        var totM = pAvgML * totalQtd;
+        var avgBaseML = vShopeeBase / totalQtd; var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100)); var pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100)); var totM = pAvgML * totalQtd;
 
-        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto);
-        document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD);
-        document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS);
-        document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
+        document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD);
+        document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS); document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
     }
 
     window.cancelarEdicaoCatalogo = function() {
         editCatalogoId = null;
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
-        
-        resetarInputProjeto();
-        document.getElementById('sel_catalogo').value = "";
-        
-        document.getElementById('boxPrecoFixo').style.display = 'none';
-        document.getElementById('precoFixoCatMain').value = "";
-        localStorage.removeItem('3d4y_dark_precoFixoCatMain');
-        
-        calcular();
-        showToast("❌ Edição cancelada");
+        resetarInputProjeto(); document.getElementById('sel_catalogo').value = "";
+        document.getElementById('boxPrecoFixo').style.display = 'none'; document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain');
+        calcular(); showToast("❌ Edição cancelada");
     };
 
     function salvarNoCatalogo() {
@@ -1127,38 +1026,21 @@
         var precoFixo = pegaTexto('precoFixoCatMain');
         var extras = []; var multiOn = document.getElementById('toggle_multi_mat').checked;
         if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
-        
         var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
-        
         if(editCatalogoId) {
-            if (existe && existe.id !== editCatalogoId) {
-                alert("❌ Já existe outro projeto com este nome exato no seu catálogo.\nPor favor, mude o nome (ex: " + nome + " v2).");
-                return;
-            }
-            
+            if (existe && existe.id !== editCatalogoId) { alert("❌ Já existe outro projeto com este nome exato no seu catálogo.\nPor favor, mude o nome (ex: " + nome + " v2)."); return; }
             var idx = catalogo.findIndex(p => p.id === editCatalogoId);
-            if(idx > -1) {
-                catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
-            }
-            editCatalogoId = null; 
-            showToast("🏷️ Produto atualizado no catálogo!");
+            if(idx > -1) { catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras }; }
+            editCatalogoId = null; showToast("🏷️ Produto atualizado no catálogo!");
         } else {
-            if (existe) {
-                alert("❌ O projeto '" + nome + "' JÁ EXISTE no seu Catálogo de Produtos!\n\nSe você quiser alterar as configurações dele, use o botão azul '🏷️ Catálogo' no topo da tela e clique no Lápis ✏️ para editar o projeto.");
-                return; 
-            }
-            
+            if (existe) { alert("❌ O projeto '" + nome + "' JÁ EXISTE no seu Catálogo de Produtos!\n\nSe você quiser alterar as configurações dele, use o botão azul '🏷️ Catálogo' no topo da tela e clique no Lápis ✏️ para editar o projeto."); return; }
             var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras };
             catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
         }
-        
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
-        
-        document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain');
-        document.getElementById('boxPrecoFixo').style.display = 'none';
-        syncNuvem();
-        renderCatalogo();
+        document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none';
+        syncNuvem(); renderCatalogo();
     }
 
     function renderCatalogo() {
@@ -1166,13 +1048,10 @@
         var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
         var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>';
         var htmlLista = catalogoOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>' : '';
-        
         catalogoOrdenado.forEach(function(p) {
             htmlSel += `<option value="${p.id}">${p.nome}</option>`;
             var pesoTotal = parseLocal(p.peso1); if(p.multi && p.extras && p.extras.length > 0) { p.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
-            var pesoStr = formatarMoeda(pesoTotal) + 'g';
-            var htmlPrecoFixo = p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0 ? ' | Venda Fixo: R$ ' + p.precoFixo : '';
-            
+            var pesoStr = formatarMoeda(pesoTotal) + 'g'; var htmlPrecoFixo = p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0 ? ' | Venda Fixo: R$ ' + p.precoFixo : '';
             htmlLista += `
             <div class="history-item">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
@@ -1192,121 +1071,45 @@
 
     function carregarDoCatalogo() { 
         var id = document.getElementById('sel_catalogo').value; 
-        
         if(!id) {
-            resetarInputProjeto();
-            document.getElementById('canalVendaSelecionado').value = "Direta";
-            document.getElementById('valorPersonalizado').value = "";
-            mostrarValorPersonalizado();
-            
-            var boxPreco = document.getElementById('boxPrecoFixo');
-            if(boxPreco) boxPreco.style.display = 'none';
-            document.getElementById('precoFixoCatMain').value = '';
-            
-            calcular();
-            return;
+            resetarInputProjeto(); document.getElementById('canalVendaSelecionado').value = "Direta"; document.getElementById('valorPersonalizado').value = ""; mostrarValorPersonalizado();
+            var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none'; document.getElementById('precoFixoCatMain').value = '';
+            calcular(); return;
         } 
-        
-        aplicarDadosNoForm(id, false); 
-        showToast("🏷️ Dados carregados!"); 
+        aplicarDadosNoForm(id, false); showToast("🏷️ Dados carregados!"); 
     }
 
     function editarDoCatalogo(id) {
         aplicarDadosNoForm(id, true); editCatalogoId = id;
         var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Confirmar Alteração no Catálogo"; btnMain.style.background = "var(--purple)"; }
-        
-        document.getElementById('btn_cancelar_catalogo_main').style.display = "block";
-        
-        document.getElementById('catalogoModal').style.display = 'none'; showToast("✏️ Edite os dados e clique em Confirmar Alteração");
+        document.getElementById('btn_cancelar_catalogo_main').style.display = "block"; document.getElementById('catalogoModal').style.display = 'none'; showToast("✏️ Edite os dados e clique em Confirmar Alteração");
     }
 
     function aplicarDadosNoForm(id, isEditing = false) {
         var p = catalogo.find(e => e.id.toString() === id.toString()); if(!p) return;
-        document.getElementById('nomeProjeto').value = p.nome; document.getElementById('pesoPeca').value = p.peso1; document.getElementById('tipoFilamento1').value = p.tipo1;
-        document.getElementById('corFilamento1').value = p.cor1; document.getElementById('marcaFilamento1').value = p.marca1; document.getElementById('tempoH').value = p.tempo;
-        
-        var elPrecoFixo = document.getElementById('precoFixoCatMain');
-        var boxPreco = document.getElementById('boxPrecoFixo');
-        
+        var fakeProd = { nome: p.nome, qtd: 1, tempo1: p.tempo, peso1: p.peso1, tipo1: p.tipo1, cor1: p.cor1, marca1: p.marca1, preco1: p.preco1, multi: p.multi, qtdCores: p.qtdCores, extras: p.extras };
+        preencherFormProjeto(fakeProd);
+
+        var elPrecoFixo = document.getElementById('precoFixoCatMain'); var boxPreco = document.getElementById('boxPrecoFixo');
         if(isEditing) {
-            if(elPrecoFixo && boxPreco) { 
-                boxPreco.style.display = 'flex';
-                elPrecoFixo.value = p.precoFixo || ''; 
-                salvarDinamico('precoFixoCatMain'); 
-            }
+            if(elPrecoFixo && boxPreco) { boxPreco.style.display = 'flex'; elPrecoFixo.value = p.precoFixo || ''; salvarDinamico('precoFixoCatMain'); }
         } else {
-            if(boxPreco) boxPreco.style.display = 'none';
-            if(elPrecoFixo) { elPrecoFixo.value = ''; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); }
+            if(boxPreco) boxPreco.style.display = 'none'; if(elPrecoFixo) { elPrecoFixo.value = ''; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); }
         }
-
-        var match1 = estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1 && e.marca === p.marca1) || estoque.find(e => e.tipo === p.tipo1 && e.cor === p.cor1);
-        var sel1 = document.getElementById('sel_est_1'); 
-        
-        if(match1) { 
-            if(sel1) sel1.value = match1.id.toString(); 
-            document.getElementById('precoFilamento').value = match1.preco;
-            document.getElementById('marcaFilamento1').value = match1.marca; 
-        } else {
-            if(sel1) sel1.value = "";
-            document.getElementById('precoFilamento').value = p.preco1 || "120,00";
-        }
-
-        var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = p.multi; tMulti.dispatchEvent(new Event('change')); }
-        
-        if(p.multi) {
-            document.getElementById('qtdCoresExtras').value = p.qtdCores; renderCoresExtras();
-            p.extras.forEach((ex, idx) => {
-                var i = idx + 2;
-                setTimeout(() => { 
-                    if(document.getElementById('tipoFilamento'+i)) {
-                        document.getElementById('tipoFilamento'+i).value = ex.tipo; document.getElementById('corFilamento'+i).value = ex.cor; document.getElementById('pesoPeca'+i).value = ex.peso;
-                        
-                        var matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); 
-                        var selI = document.getElementById('sel_est_'+i); 
-                        
-                        if(matchI) { 
-                            if(selI) selI.value = matchI.id.toString(); 
-                            document.getElementById('precoFilamento'+i).value = matchI.preco;
-                            document.getElementById('marcaFilamento'+i).value = matchI.marca;
-                        } else {
-                            if(selI) selI.value = "";
-                            document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
-                            document.getElementById('marcaFilamento'+i).value = ex.marca;
-                        }
-                        salvarDinamico('tipoFilamento'+i); salvarDinamico('corFilamento'+i); salvarDinamico('marcaFilamento'+i); salvarDinamico('precoFilamento'+i); salvarDinamico('pesoPeca'+i);
-                    }
-                }, 50);
-            });
-        }
-        ['nomeProjeto','pesoPeca','tipoFilamento1','corFilamento1','marcaFilamento1','precoFilamento','tempoH','qtdCoresExtras'].forEach(field => salvarDinamico(field));
-        document.getElementById('detalhes_1').style.display = 'block'; 
         
         if (p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0) {
-            document.getElementById('canalVendaSelecionado').value = 'Personalizado';
-            document.getElementById('valorPersonalizado').value = p.precoFixo;
-            salvarDinamico('valorPersonalizado');
-            mostrarValorPersonalizado();
+            document.getElementById('canalVendaSelecionado').value = 'Personalizado'; document.getElementById('valorPersonalizado').value = p.precoFixo; salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado();
         } else {
-            document.getElementById('canalVendaSelecionado').value = 'Direta';
-            document.getElementById('valorPersonalizado').value = '';
-            salvarDinamico('valorPersonalizado');
-            mostrarValorPersonalizado();
+            document.getElementById('canalVendaSelecionado').value = 'Direta'; document.getElementById('valorPersonalizado').value = ''; salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado();
         }
-        
         calcular();
     }
 
     function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); } }
 
     window.cancelarEdicaoEstoque = function() {
-        editEstoqueId = null;
-        document.getElementById('est_tipo').value = "";
-        document.getElementById('est_cor').value = "";
-        document.getElementById('est_marca').value = "";
-        document.getElementById('est_preco').value = "";
-        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar";
-        document.getElementById('btn_cancelar_estoque').style.display = "none";
-        showToast("❌ Edição cancelada");
+        editEstoqueId = null; document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = "";
+        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar"; document.getElementById('btn_cancelar_estoque').style.display = "none"; showToast("❌ Edição cancelada");
     };
 
     function salvarItemEstoque() {
@@ -1315,8 +1118,7 @@
         if (editEstoqueId) {
             var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
             if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; }
-            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar";
-            document.getElementById('btn_cancelar_estoque').style.display = "none";
+            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar"; document.getElementById('btn_cancelar_estoque').style.display = "none";
         } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); }
         syncNuvem(); document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; showToast("📦 Estoque Atualizado!");
     }
@@ -1325,7 +1127,6 @@
         var lista = document.getElementById('lista_estoque'); if(!lista) return;
         var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
-        
         estoqueOrdenado.forEach(function(item) {
             lista.innerHTML += `
             <div class="history-item">
@@ -1349,13 +1150,8 @@
     function editarItemEstoque(id) {
         var item = estoque.find(function(e) { return e.id === id; });
         if(item) { 
-            document.getElementById('est_tipo').value = item.tipo; 
-            document.getElementById('est_cor').value = item.cor; 
-            document.getElementById('est_marca').value = item.marca; 
-            document.getElementById('est_preco').value = item.preco; 
-            editEstoqueId = id; 
-            document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; 
-            document.getElementById('btn_cancelar_estoque').style.display = "block";
+            document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco; 
+            editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; document.getElementById('btn_cancelar_estoque').style.display = "block";
         }
     }
 
@@ -1408,8 +1204,6 @@
         atualizarDropdownsEstoque(); calcular();
     }
 
-    function salvarDinamico(idCampo) { var el = document.getElementById(idCampo); if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); } }
-    
     function mostrarValorPersonalizado() { 
         var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); 
         if (seletor && divPersonalizado) { divPersonalizado.style.display = seletor.value === 'Personalizado' ? 'block' : 'none'; } 
@@ -1421,20 +1215,14 @@
         var isCart = carrinho && carrinho.length > 0;
         var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
         if (totalQtd < 1) totalQtd = 1;
-
         var net = descontarTaxas(vVenda, totalQtd);
         if(elS) elS.textContent = formatarMoeda(net.shopee); 
         if(elM) elM.textContent = formatarMoeda(net.meli);
     }
 
     window.cancelarEdicaoDespesa = function() {
-        editDespesaId = null;
-        document.getElementById('desp_qtd').value = "1";
-        document.getElementById('desp_nome').value = "";
-        document.getElementById('desp_valor').value = "";
-        document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar";
-        document.getElementById('btn_cancelar_despesa').style.display = "none";
-        showToast("❌ Edição cancelada");
+        editDespesaId = null; document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = "";
+        document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("❌ Edição cancelada");
     };
 
     function salvarDespesa() {
@@ -1443,14 +1231,11 @@
         if (editDespesaId) {
             var idx = despesas.findIndex(d => d.id === editDespesaId);
             if(idx > -1) { despesas[idx].qtd = qtd; despesas[idx].nome = nome; despesas[idx].valor = parseLocal(val); }
-            editDespesaId = null; 
-            document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; 
-            document.getElementById('btn_cancelar_despesa').style.display = "none";
-            showToast("💸 Despesa Atualizada!");
+            editDespesaId = null; document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("💸 Despesa Atualizada!");
         } else {
             despesas.unshift({ id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), qtd: qtd, nome: nome, valor: parseLocal(val) }); showToast("💸 Despesa Registrada!");
         }
-        syncNuvem(); document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = "";
+        syncNuvem(); document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = ""; renderDespesas();
     }
 
     function renderDespesas() {
@@ -1479,17 +1264,13 @@
         atualizarLucroReal();
     }
 
-    function removerDespesa(id) { if(confirm("Deseja apagar esta despesa?")) { despesas = despesas.filter(d => d.id !== id); syncNuvem(); } }
+    function removerDespesa(id) { if(confirm("Deseja apagar esta despesa?")) { despesas = despesas.filter(d => d.id !== id); syncNuvem(); renderDespesas(); } }
 
     function editarDespesa(id) {
         var d = despesas.find(e => e.id === id);
         if(d) { 
-            document.getElementById('desp_qtd').value = d.qtd; 
-            document.getElementById('desp_nome').value = d.nome; 
-            document.getElementById('desp_valor').value = formatarMoeda(d.valor); 
-            editDespesaId = id; 
-            document.getElementById('btn_salvar_despesa').textContent = "💾 Confirmar Edição"; 
-            document.getElementById('btn_cancelar_despesa').style.display = "block";
+            document.getElementById('desp_qtd').value = d.qtd; document.getElementById('desp_nome').value = d.nome; document.getElementById('desp_valor').value = formatarMoeda(d.valor); 
+            editDespesaId = id; document.getElementById('btn_salvar_despesa').textContent = "💾 Confirmar Edição"; document.getElementById('btn_cancelar_despesa').style.display = "block";
         }
     }
 
@@ -1505,33 +1286,17 @@
         document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)";
         var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
         if(btnCancelVenda) btnCancelVenda.style.display = "none";
-        
-        resetarDados();
-        showToast("❌ Edição de venda cancelada");
+        resetarDados(); showToast("❌ Edição de venda cancelada");
     }
 
     window.moverFila = function(id, direcao) {
         var filaItems = historico.filter(h => h.status === 'Na Fila').sort((a, b) => (a.posicaoFila || a.id) - (b.posicaoFila || b.id));
-        
-        var index = filaItems.findIndex(h => h.id === id); 
-        if (index < 0) return;
-        
-        var swapIndex = index + direcao; 
-        if (swapIndex < 0 || swapIndex >= filaItems.length) return;
-        
-        var itemAtual = filaItems[index]; 
-        var itemTroca = filaItems[swapIndex];
-        
-        var posAtual = itemAtual.posicaoFila || itemAtual.id; 
-        var posTroca = itemTroca.posicaoFila || itemTroca.id;
-        
-        if (posAtual === posTroca) {
-            if(direcao === -1) posTroca -= 1; else posTroca += 1;
-        }
-        
-        itemAtual.posicaoFila = posTroca; 
-        itemTroca.posicaoFila = posAtual;
-        
+        var index = filaItems.findIndex(h => h.id === id); if (index < 0) return;
+        var swapIndex = index + direcao; if (swapIndex < 0 || swapIndex >= filaItems.length) return;
+        var itemAtual = filaItems[index]; var itemTroca = filaItems[swapIndex];
+        var posAtual = itemAtual.posicaoFila || itemAtual.id; var posTroca = itemTroca.posicaoFila || itemTroca.id;
+        if (posAtual === posTroca) { if(direcao === -1) posTroca -= 1; else posTroca += 1; }
+        itemAtual.posicaoFila = posTroca; itemTroca.posicaoFila = posAtual;
         syncNuvem(); renderHistorico();
     };
 
@@ -1543,15 +1308,7 @@
     };
 
     window.onload = function() {
-        document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
-        document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
-        document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
-        document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20";
-        document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100";
-        document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00";
-        document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
-        document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
-        document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+        document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
 
         var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
         idsSave.forEach(function(id) {
@@ -1598,16 +1355,12 @@
         
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
-        
         if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; }
-        
         calcular(); mostrarValorPersonalizado();
         
         clientesCadastrados = {};
         historico.forEach(function(item) {
-            if (item.cliente && item.cliente.trim() !== '') {
-                if (!clientesCadastrados[item.cliente] && item.telefone) { clientesCadastrados[item.cliente] = item.telefone; }
-            }
+            if (item.cliente && item.cliente.trim() !== '') { if (!clientesCadastrados[item.cliente] && item.telefone) { clientesCadastrados[item.cliente] = item.telefone; } }
         });
         var dl = document.getElementById('listaClientes');
         if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
@@ -1617,30 +1370,16 @@
         if(sliderFiltro) {
             sliderFiltro.style.cursor = 'grab';
             sliderFiltro.addEventListener('mousedown', (e) => {
-                isDown = true;
-                window.isDraggingFiltro = false; 
-                sliderFiltro.style.cursor = 'grabbing';
-                startX = e.pageX - sliderFiltro.offsetLeft;
-                scrollLeft = sliderFiltro.scrollLeft;
+                isDown = true; window.isDraggingFiltro = false; sliderFiltro.style.cursor = 'grabbing';
+                startX = e.pageX - sliderFiltro.offsetLeft; scrollLeft = sliderFiltro.scrollLeft;
             });
-            sliderFiltro.addEventListener('mouseleave', () => {
-                isDown = false;
-                sliderFiltro.style.cursor = 'grab';
-            });
-            sliderFiltro.addEventListener('mouseup', () => {
-                isDown = false;
-                sliderFiltro.style.cursor = 'grab';
-                setTimeout(() => window.isDraggingFiltro = false, 50); 
-            });
+            sliderFiltro.addEventListener('mouseleave', () => { isDown = false; sliderFiltro.style.cursor = 'grab'; });
+            sliderFiltro.addEventListener('mouseup', () => { isDown = false; sliderFiltro.style.cursor = 'grab'; setTimeout(() => window.isDraggingFiltro = false, 50); });
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
-                const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 1.5; 
+                const x = e.pageX - sliderFiltro.offsetLeft; const walk = (x - startX) * 1.5; 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
-                if (window.isDraggingFiltro) {
-                    e.preventDefault();
-                    sliderFiltro.scrollLeft = scrollLeft - walk;
-                }
+                if (window.isDraggingFiltro) { e.preventDefault(); sliderFiltro.scrollLeft = scrollLeft - walk; }
             });
         }
     };
@@ -1726,7 +1465,6 @@
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
         var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
     }
-
     function salvarHistorico() {
         var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "";
         var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
@@ -1787,9 +1525,27 @@
         if(valorVendaFinal < 0) valorVendaFinal = 0;
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
         
+        var multiOnSave = document.getElementById('toggle_multi_mat').checked;
+        var extrasArrSave = [];
+        if(multiOnSave) {
+            var qtdExSave = parseInt(pegaValor('qtdCoresExtras')) || 1;
+            for(var i=2; i<=qtdExSave+1; i++) {
+                extrasArrSave.push({
+                    tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i)
+                });
+            }
+        }
+
         var cartToSave = [];
-        if(isCart) { cartToSave = JSON.parse(JSON.stringify(carrinho)); } 
-        else { cartToSave.push({ id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteCalculado - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais }); }
+        if(isCart) { 
+            cartToSave = JSON.parse(JSON.stringify(carrinho)); 
+        } else { 
+            cartToSave.push({ 
+                id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteCalculado - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais,
+                tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'),
+                multi: multiOnSave, qtdCores: pegaTexto('qtdCoresExtras'), extras: extrasArrSave
+            }); 
+        }
         
         var posFila = Date.now();
         var oldItem = null;
@@ -1844,7 +1600,6 @@
         resetarDados(); showToast("✅ Venda Registrada!");
     }
 
-    // AQUI OCORRE A SINCRONIZAÇÃO QUANDO EDITA 1 ITEM OU O CARRINHO
     function editarItemHistorico(id) {
         var item = historico.find(h => h.id === id);
         if (!item) return;
@@ -1852,45 +1607,47 @@
         carrinho = [];
         document.getElementById('carrinho_container').style.display = 'none';
 
+        var prod;
         if (item.cartItems && item.cartItems.length === 1) {
-            var prod = item.cartItems[0];
+            prod = item.cartItems[0];
+        } else if (item.cartItems && item.cartItems.length > 1) {
+            carrinho = JSON.parse(JSON.stringify(item.cartItems));
+            renderCarrinho();
+            document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
+        } else {
+            var matchOld = item.nome.match(/^(\d+)x\s(.*)/); 
+            var qtdOld = matchOld ? parseInt(matchOld[1]) : (item.totalQtd || 1);
+            prod = { nome: item.nome, qtd: qtdOld, tempo: item.tempo, peso: item.peso };
+        }
+
+        if (prod) {
             var match = prod.nome.match(/^(\d+)x\s(.*)/); 
             var qtd = match ? parseInt(match[1]) : (prod.qtd || item.totalQtd || 1);
             var baseNome = match ? match[2] : prod.nome;
 
             document.getElementById('nomeProjeto').value = baseNome;
             document.getElementById('qtdPecasProjeto').value = qtd;
-            document.getElementById('tempoH').value = prod.tempo1 || formatarMoeda((prod.tempo || item.tempo) / qtd);
-            document.getElementById('pesoPeca').value = prod.peso1 || formatarMoeda((prod.peso || item.peso) / qtd);
+            document.getElementById('tempoH').value = formatarMoeda((prod.tempo || item.tempo) / qtd);
+            document.getElementById('pesoPeca').value = formatarMoeda((prod.peso || item.peso) / qtd);
             
-            // Sincronia Catálogo
             var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim());
             var selCat = document.getElementById('sel_catalogo');
             if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
 
-            if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso;
-            if (prod.margemLucro) {
-                document.getElementById('margemInput').value = prod.margemLucro;
-                document.getElementById('margemSlider').value = prod.margemLucro;
-                updateSliderProgress(document.getElementById('margemSlider'));
-            }
-
             document.getElementById('tipoFilamento1').value = prod.tipo1 || "";
             document.getElementById('corFilamento1').value = prod.cor1 || "";
             document.getElementById('marcaFilamento1').value = prod.marca1 || "";
-            document.getElementById('precoFilamento').value = prod.preco1 || "120,00";
 
-            // Sincronia Estoque - O SEGREDO ESTÁ AQUI (O .toString() arruma o JS que não casava String com Número)
             var match1 = null;
             if(prod.tipo1) { match1 = estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1 && e.marca === prod.marca1) || estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1); }
             var sel1 = document.getElementById('sel_est_1'); 
             if(match1) { 
                 if(sel1) sel1.value = match1.id.toString(); 
                 document.getElementById('marcaFilamento1').value = match1.marca;
+                document.getElementById('precoFilamento').value = match1.preco;
             } else {
                 if(sel1) sel1.value = "";
             }
-            
             document.getElementById('detalhes_1').style.display = (prod.tipo1) ? 'block' : 'none';
 
             var tMulti = document.getElementById('toggle_multi_mat');
@@ -1923,20 +1680,6 @@
                     }, 50);
                 });
             }
-            
-            ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id));
-
-        } else if (item.cartItems && item.cartItems.length > 1) {
-            carrinho = JSON.parse(JSON.stringify(item.cartItems));
-            renderCarrinho();
-            document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
-        } else {
-            var match = item.nome.match(/^(\d+)x\s(.*)/); var qtd = match ? parseInt(match[1]) : (item.totalQtd || 1);
-            var baseNome = match ? match[2] : item.nome;
-            document.getElementById('nomeProjeto').value = baseNome;
-            document.getElementById('qtdPecasProjeto').value = qtd;
-            document.getElementById('tempoH').value = formatarMoeda((item.tempo) / qtd);
-            document.getElementById('pesoPeca').value = formatarMoeda((item.peso) / qtd);
             salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
         }
 
