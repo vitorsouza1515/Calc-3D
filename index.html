@@ -15,7 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     
@@ -33,9 +34,9 @@
         header h1 { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
         .nuvem-icon { font-size: 0.75rem; margin-left: 5px; vertical-align: super; color: var(--success); }
 
-        .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: -5px 0 20px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 3000; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+        .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: -5px 0 20px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 5000; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         .side-menu.open { right: 0; }
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 2999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); z-index: 4999; display: none; opacity: 0; transition: opacity 0.3s; }
         .menu-overlay.open { display: block; opacity: 1; }
         .menu-btn { background: #0f172a; color: var(--text-main); border: 1px solid var(--border); padding: 12px; border-radius: 12px; font-size: 0.85rem; font-weight: 700; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
         .menu-btn:active { transform: scale(0.98); border-color: var(--primary); }
@@ -103,19 +104,21 @@
         .btn-direta { background: var(--success); }
         .btn-shopee { background: var(--shopee); }
         .btn-meli { background: #ca8a04; }
-        .btn-orcamento { background: #4f46e5; grid-column: span 3; }
+        .btn-orcamento { background: #4f46e5; grid-column: span 3; margin-top: 5px; }
         .btn-reset { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); width: 100%; padding: 12px; font-weight: 700; border-radius: 12px; margin-top: 10px; cursor: pointer; }
 
-        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 5000; }
+        #toast { visibility: hidden; background: var(--primary); color: white; padding: 12px 24px; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); border-radius: 30px; font-weight: 700; z-index: 6000; }
         #toast.show { visibility: visible; animation: fadein 0.5s; }
-        .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
-        
+        .btn-save-hist { background: var(--purple); width: 100%; padding: 14px; border-radius: 12px; color: white; border: none; font-weight: 800; text-transform: uppercase; cursor: pointer; margin-top: 5px; transition: 0.3s; }
+        .btn-save-hist:active { transform: scale(0.97); }
+
         .filter-container { display: flex; overflow-x: auto; gap: 8px; margin-bottom: 12px; padding-bottom: 5px; scrollbar-width: none; -ms-overflow-style: none; max-width: 100%; cursor: grab; user-select: none; -webkit-user-select: none; }
         .filter-container:active { cursor: grabbing; }
         .filter-container::-webkit-scrollbar { display: none; }
         .filter-btn { flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 0.65rem; font-weight: 800; cursor: pointer; white-space: nowrap; border: 1px solid var(--border); background: #0f172a; color: var(--text-muted); transition: 0.2s; outline: none; text-transform: uppercase; user-select: none; -webkit-user-select: none; }
         .filter-btn.active { border-color: var(--sky); color: #fff; background: rgba(14, 165, 233, 0.15); box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
 
+        /* LISTAS COMPACTAS (SLIM) */
         .history-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-width: 100%; padding-right: 5px; max-height: 500px;}
         .history-item { background: #0f172a; border-radius: 10px; padding: 10px; position: relative; max-width: 100%; word-break: break-word; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05);}
         .history-item h4 { font-size: 0.8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2;}
@@ -142,6 +145,17 @@
         
         .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
         .busca-larga:focus { width: 180px; border-color: var(--sky); }
+
+        /* Estilos Kanban */
+        .kanban-board { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; height: calc(100vh - 120px); align-items: flex-start; scroll-snap-type: x mandatory;}
+        .kanban-col { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; width: 280px; min-width: 280px; display: flex; flex-direction: column; max-height: 100%; scroll-snap-align: start;}
+        .kanban-header { padding: 12px; font-weight: 800; font-size: 0.85rem; text-align: center; border-bottom: 1px dashed var(--border); border-radius: 12px 12px 0 0; text-transform: uppercase;}
+        .kanban-items { padding: 10px; flex: 1; overflow-y: auto; min-height: 150px; display: flex; flex-direction: column; gap: 10px; }
+        .kb-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; cursor: grab; box-shadow: 0 4px 6px rgba(0,0,0,0.2); position: relative; }
+        .kb-card:active { cursor: grabbing; opacity: 0.8; transform: scale(0.98); }
+        .kb-card h4 { font-size: 0.8rem; margin-bottom: 5px; color: var(--text-main); line-height: 1.3;}
+        .kb-card .kb-cli { font-size: 0.65rem; color: var(--sky); margin-bottom: 5px; font-weight: bold;}
+        .kb-card .kb-det { font-size: 0.65rem; color: var(--text-muted); display: flex; justify-content: space-between; margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 5px;}
     </style>
 </head>
 <body>
@@ -154,6 +168,7 @@
         <h2 style="font-size: 1.2rem; color: var(--sky); margin:0;">Navegação</h2>
         <span class="menu-close" onclick="fecharGaveta()" style="font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</span>
     </div>
+    <button class="menu-btn" style="background: var(--sky); color: #fff; border-color: var(--sky);" onclick="fecharGaveta(); abrirKanban()"><span style="font-size: 1.1rem;">🏭</span> Painel Fábrica (Kanban)</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('despesasModal').style.display='block'">💸 Despesas / Compras</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('logisticaModal').style.display='block'">🚚 Logística e Frete</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('marketplacesModal').style.display='block'">🛒 Taxas Marketplaces</button>
@@ -168,6 +183,38 @@
     <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel Completo</button>
     <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
     <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
+</div>
+
+<div id="kanbanModal" class="modal">
+    <div class="modal-content" style="max-width: 100%; width: 100%; height: 100vh; margin: 0; border-radius: 0; background: var(--bg-color); padding: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 class="section-title" style="border:none; margin:0; padding:0; color: var(--sky); cursor:default; font-size: 1.2rem;">🏭 Fábrica de Impressão</h2>
+            <span class="close-modal" style="position: relative; right: 0; top: 0;" onclick="fecharModal('kanbanModal'); renderHistorico();">&times;</span>
+        </div>
+        
+        <div class="kanban-board">
+            <div class="kanban-col">
+                <div class="kanban-header" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">🟡 Orçamentos</div>
+                <div class="kanban-items" id="kb-orcamento" data-status="Orçamento"></div>
+            </div>
+            <div class="kanban-col">
+                <div class="kanban-header" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">🔵 Fila de Produção</div>
+                <div class="kanban-items" id="kb-fila" data-status="Na Fila"></div>
+            </div>
+            <div class="kanban-col">
+                <div class="kanban-header" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🟣 Imprimindo (Abate Estoque)</div>
+                <div class="kanban-items" id="kb-imprimindo" data-status="Imprimindo"></div>
+            </div>
+            <div class="kanban-col">
+                <div class="kanban-header" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🟢 Finalizado</div>
+                <div class="kanban-items" id="kb-finalizado" data-status="Finalizado"></div>
+            </div>
+            <div class="kanban-col">
+                <div class="kanban-header" style="background: rgba(14, 165, 233, 0.15); color: var(--sky);">🚚 Enviado / Entregue</div>
+                <div class="kanban-items" id="kb-enviado" data-status="Enviado / Entregue"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="configModal" class="modal">
@@ -276,10 +323,11 @@
         </div>
         <div class="grid-2">
             <div class="input-group" style="margin-bottom:0;"><label>Preço Pago (R$)</label><input type="text" inputmode="decimal" id="est_preco" placeholder="Ex: 85,00" oninput="aplicarMascara(this)"></div>
-            <div style="display:flex; gap:8px; align-items: flex-end;">
-                <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="flex:1; background: var(--success); height: 40px;">➕ Salvar</button>
-                <button class="btn" id="btn_cancelar_estoque" onclick="cancelarEdicaoEstoque()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
-            </div>
+            <div class="input-group" style="margin-bottom:0;"><label style="color:var(--sky)">Peso Inicial (g)</label><input type="text" inputmode="numeric" id="est_peso_inicial" placeholder="Ex: 1000" style="border-color:var(--sky);"></div>
+        </div>
+        <div style="display:flex; gap:8px; align-items: flex-end; margin-top: 10px;">
+            <button class="btn btn-direta" id="btn_salvar_estoque" onclick="salvarItemEstoque()" style="flex:1; background: var(--success); height: 40px;">➕ Salvar Material</button>
+            <button class="btn" id="btn_cancelar_estoque" onclick="cancelarEdicaoEstoque()" style="display:none; background: var(--danger); width: 40px; height: 40px; padding: 0; font-size: 1.1rem;" title="Cancelar Edição">❌</button>
         </div>
         <div style="border-top: 1px dashed var(--border); margin-top: 15px; padding-top: 10px;">
             <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Filamentos Cadastrados:</p>
@@ -511,6 +559,11 @@
                 <span style="display:flex; align-items:center;">📈 Resumo Financeiro <span class="chevron">▼</span></span>
             </h2>
             <div id="wrap_hist_totals">
+                
+                <div style="width: 100%; height: 200px; margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; border: 1px solid var(--border);">
+                    <canvas id="chartFaturamento"></canvas>
+                </div>
+
                 <div class="total-summary">
                     <div class="total-row"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS (QTD):</span><b id="tot_qtd" style="color: #fff; font-size: 1rem;">0</b></div>
                     <div class="total-row"><span style="font-weight: bold; color: #fff;">FATURAMENTO TOTAL (BRUTO):</span><b style="color: #fff; font-size: 1rem;">R$ <span id="tot_faturamento_bruto">0,00</span></b></div>
@@ -558,6 +611,7 @@
         }
     });
     
+    // Funções do Menu Lateral Gaveta
     window.abrirGaveta = function() {
         document.getElementById('sideMenu').classList.add('open');
         document.getElementById('menuOverlay').classList.add('open');
@@ -565,6 +619,11 @@
     window.fecharGaveta = function() {
         document.getElementById('sideMenu').classList.remove('open');
         document.getElementById('menuOverlay').classList.remove('open');
+    }
+
+    window.abrirKanban = function() {
+        document.getElementById('kanbanModal').style.display = 'block';
+        renderKanban();
     }
 
     const firebaseConfig = {
@@ -593,6 +652,8 @@
     var editandoCarrinhoId = null;
     var filtroStatusAtual = 'Todos';
     var clientesCadastrados = {};
+    
+    var meuGrafico = null; // Variável global para o Gráfico
     
     window.qaOffset = 0;
     window.horasTotaisImpressasGlobal = 0;
@@ -1301,27 +1362,38 @@
         document.getElementById('est_cor').value = "";
         document.getElementById('est_marca').value = "";
         document.getElementById('est_preco').value = "";
-        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar";
+        document.getElementById('est_peso_inicial').value = "";
+        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar Material";
         document.getElementById('btn_cancelar_estoque').style.display = "none";
         showToast("❌ Edição cancelada");
     };
 
     function salvarItemEstoque() {
-        var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value;
+        var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value, pesoIni = document.getElementById('est_peso_inicial').value || "1000";
         if(!t || !p) { alert("Preencha pelo menos o Tipo e o Preço para salvar no estoque."); return; }
         if (editEstoqueId) {
             var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; });
-            if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; }
-            editEstoqueId = null; 
-            document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar";
+            if (itemIndex > -1) { 
+                estoque[itemIndex].tipo = t; 
+                estoque[itemIndex].cor = c; 
+                estoque[itemIndex].marca = m; 
+                estoque[itemIndex].preco = p; 
+                // Se ele editar o peso inicial e o atual estiver zerado ou vazio, atualiza o atual tbm.
+                if(!estoque[itemIndex].pesoAtual || parseFloat(estoque[itemIndex].pesoAtual) <= 0) {
+                    estoque[itemIndex].pesoAtual = pesoIni;
+                }
+                estoque[itemIndex].pesoInicial = pesoIni;
+            }
+            editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar Material";
             document.getElementById('btn_cancelar_estoque').style.display = "none";
         } else { 
-            estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); 
+            estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p, pesoInicial: pesoIni, pesoAtual: pesoIni }); 
         }
         document.getElementById('est_tipo').value = ""; 
         document.getElementById('est_cor').value = ""; 
         document.getElementById('est_marca').value = ""; 
         document.getElementById('est_preco').value = ""; 
+        document.getElementById('est_peso_inicial').value = "";
         syncNuvem(); 
         renderEstoque();
         showToast("📦 Estoque Atualizado!");
@@ -1333,12 +1405,17 @@
         lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : '';
         
         estoqueOrdenado.forEach(function(item) {
+            var pAtual = item.pesoAtual ? parseFloat(item.pesoAtual).toFixed(0) : (item.pesoInicial || "1000");
+            var corPeso = pAtual < 100 ? "color: var(--danger); font-weight: 900; animation: pulse 1.5s infinite;" : "color: var(--success);";
+            
             lista.innerHTML += `
             <div class="history-item">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                     <div style="flex: 1; min-width: 0;">
                         <h4 style="margin:0; line-height: 1.3; color:var(--success); word-wrap: break-word;">${item.tipo} ${item.cor} <span style="color:#fff">(${item.marca})</span></h4>
-                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Preço: R$ ${item.preco}</div>
+                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">
+                            Preço: R$ ${item.preco} <span style="margin:0 5px;">|</span> Restam: <b style="${corPeso}">${pAtual}g</b>
+                        </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                         <button onclick="editarItemEstoque(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button>
@@ -1359,6 +1436,7 @@
             document.getElementById('est_cor').value = item.cor; 
             document.getElementById('est_marca').value = item.marca; 
             document.getElementById('est_preco').value = item.preco; 
+            document.getElementById('est_peso_inicial').value = item.pesoAtual || item.pesoInicial || "1000";
             editEstoqueId = id; 
             document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; 
             document.getElementById('btn_cancelar_estoque').style.display = "block";
@@ -1368,7 +1446,10 @@
     function atualizarDropdownsEstoque() {
         var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || ""));
         var optionsHTML = '<option value="">-- Puxar material do Estoque --</option>';
-        estoqueOrdenado.forEach(function(item) { optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; });
+        estoqueOrdenado.forEach(function(item) { 
+            var pAtual = item.pesoAtual ? parseFloat(item.pesoAtual).toFixed(0) : (item.pesoInicial || "1000");
+            optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - ' + pAtual + 'g').trim()+'</option>'; 
+        });
         var s1 = document.getElementById('sel_est_1'); if (s1) { var val1 = s1.value; s1.innerHTML = optionsHTML; s1.value = val1; }
         var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1;
         for(var i=2; i<=qtd+1; i++) { var si = document.getElementById('sel_est_'+i); if (si) { var vali = si.value; si.innerHTML = optionsHTML; si.value = vali; } }
@@ -1456,11 +1537,7 @@
         } else {
             despesas.unshift({ id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), qtd: qtd, nome: nome, valor: parseLocal(val) }); showToast("💸 Despesa Registrada!");
         }
-        document.getElementById('desp_qtd').value = "1"; 
-        document.getElementById('desp_nome').value = ""; 
-        document.getElementById('desp_valor').value = "";
-        syncNuvem(); 
-        renderDespesas();
+        syncNuvem(); document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = "";
     }
 
     function renderDespesas() {
@@ -1551,6 +1628,163 @@
         window.filtroStatusAtual = status;
         renderHistorico();
     };
+    
+    // ATUALIZA O GRÁFICO NA TELA
+    function atualizarGrafico() {
+        var ctx = document.getElementById('chartFaturamento');
+        if(!ctx) return;
+
+        let meses = {};
+        historico.forEach(h => {
+            if(h.status !== 'Orçamento' && h.status !== 'Devolução') {
+                let parts = h.data.split('/');
+                if(parts.length === 3) {
+                    let mesAno = parts[1] + '/' + parts[2];
+                    if(!meses[mesAno]) meses[mesAno] = { bruto: 0, lucro: 0 };
+                    let valLiq = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
+                    let lucro = valLiq - parseLocal(h.custo) - (parseLocal(h.frete || 0) + parseLocal(h.logistica || 0));
+                    meses[mesAno].bruto += valLiq;
+                    meses[mesAno].lucro += lucro;
+                }
+            }
+        });
+
+        let labels = Object.keys(meses).sort((a,b) => {
+            let [m1, y1] = a.split('/'); let [m2, y2] = b.split('/');
+            return new Date(y1, m1-1) - new Date(y2, m2-1);
+        }).slice(-6); 
+
+        let dataBruto = labels.map(l => meses[l].bruto);
+        let dataLucro = labels.map(l => meses[l].lucro);
+
+        if(meuGrafico) meuGrafico.destroy();
+        meuGrafico = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Faturamento Bruto', data: dataBruto, backgroundColor: '#0ea5e9', borderRadius: 4 },
+                    { label: 'Lucro Líquido', data: dataLucro, backgroundColor: '#10b981', borderRadius: 4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#fff' } } } }
+        });
+    }
+
+    // KANBAN RENDER E LÓGICA DE DRAG
+    function renderKanban() {
+        ['Orçamento', 'Na Fila', 'Imprimindo', 'Finalizado', 'Enviado / Entregue'].forEach(status => {
+            let colStatus = status === 'Orçamento' ? 'kb-orcamento' : status === 'Na Fila' ? 'kb-fila' : status === 'Imprimindo' ? 'kb-imprimindo' : status === 'Finalizado' ? 'kb-finalizado' : 'kb-enviado';
+            let container = document.getElementById(colStatus);
+            if(!container) return;
+            
+            container.innerHTML = '';
+            
+            let itens = historico.filter(h => (h.status || "Finalizado").replace('Enviado', 'Enviado / Entregue') === status);
+            
+            if (status === 'Na Fila') {
+                itens.sort((a, b) => (a.posicaoFila || a.id) - (b.posicaoFila || b.id));
+            }
+            
+            itens.forEach(item => {
+                let tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
+                let valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
+                
+                container.innerHTML += `
+                    <div class="kb-card" data-id="${item.id}">
+                        <div class="kb-cli">👤 ${item.cliente || 'Cliente Balcão'}</div>
+                        <h4>${item.nome} ${tagUrgente}</h4>
+                        <div class="kb-det">
+                            <span>Qtd: ${item.totalQtd || 1}x</span>
+                            <span style="color: var(--success); font-weight: bold;">R$ ${formatarMoeda(valLiq)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        // Inicializa o SortableJS (Drag and Drop)
+        ['kb-orcamento', 'kb-fila', 'kb-imprimindo', 'kb-finalizado', 'kb-enviado'].forEach(id => {
+            var el = document.getElementById(id);
+            if(el) {
+                new Sortable(el, {
+                    group: 'kanban',
+                    animation: 150,
+                    delay: 100, // Previne drag acidental no mobile ao rolar a tela
+                    delayOnTouchOnly: true,
+                    onEnd: function (evt) {
+                        var itemId = parseInt(evt.item.dataset.id);
+                        var newStatus = evt.to.dataset.status;
+                        
+                        var itemObj = historico.find(h => h.id === itemId);
+                        if(itemObj && itemObj.status !== newStatus) {
+                            mudarStatus(itemId, newStatus);
+                        }
+                    },
+                });
+            }
+        });
+    }
+
+    // NOVA FUNÇÃO: BAIXA DE ESTOQUE AUTOMÁTICA
+    function efetuarBaixaEstoque(hId) {
+        let h = historico.find(x => x.id === hId);
+        if (!h || h.estoqueDescontado) return; // Se já descontou antes, não desconta de novo
+
+        if(confirm("Deseja abater os filamentos deste projeto do seu Estoque agora?")) {
+            let descontouAlgo = false;
+            let itensParaAbater = h.cartItems && h.cartItems.length > 0 ? h.cartItems : [h];
+
+            itensParaAbater.forEach(item => {
+                let abater = (tipo, cor, marca, pesoTotal) => {
+                    if(!tipo || !pesoTotal) return;
+                    
+                    let est = estoque.find(e => e.tipo === tipo && e.cor === cor && e.marca === marca);
+                    if(!est) est = estoque.find(e => e.tipo === tipo && e.cor === cor);
+                    
+                    if(est) {
+                        let pesoAtualFloat = parseFloat(est.pesoAtual || est.pesoInicial || 1000);
+                        est.pesoAtual = (pesoAtualFloat - parseFloat(pesoTotal)).toString();
+                        descontouAlgo = true;
+                    }
+                };
+
+                let peso1 = item.peso1 ? parseLocal(item.peso1) * (item.qtd || 1) : parseLocal(item.peso);
+                abater(item.tipo1, item.cor1, item.marca1, peso1);
+
+                if(item.multi && item.extras) {
+                    item.extras.forEach(ex => {
+                        let pesoE = parseLocal(ex.peso) * (item.qtd || 1);
+                        abater(ex.tipo, ex.cor, ex.marca, pesoE);
+                    });
+                }
+            });
+
+            if(descontouAlgo) {
+                h.estoqueDescontado = true;
+                syncNuvem();
+                renderEstoque();
+                showToast("📉 Estoque abatido com sucesso!");
+            } else {
+                showToast("⚠️ Nenhum filamento compatível achado no estoque.");
+            }
+        }
+    }
+
+    function mudarStatus(id, novoStatus) { 
+        var index = historico.findIndex(h => h.id === id); 
+        if (index > -1) { 
+            historico[index].status = novoStatus; 
+            
+            if(novoStatus === 'Imprimindo' && !historico[index].estoqueDescontado) {
+                efetuarBaixaEstoque(id);
+            } else {
+                syncNuvem(); 
+            }
+            renderHistorico(); 
+            renderKanban();
+        } 
+    }
 
     window.onload = function() {
         document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
@@ -1606,7 +1840,6 @@
         
         renderCoresExtras(); 
         
-        // Força a atualização visual do slider para bater com o valor numérico lido do cache/firebase
         var mSli = document.getElementById('margemSlider');
         if(mSli) { updateSliderProgress(mSli); }
         
@@ -1646,7 +1879,7 @@
             sliderFiltro.addEventListener('mousemove', (e) => {
                 if (!isDown) return;
                 const x = e.pageX - sliderFiltro.offsetLeft;
-                const walk = (x - startX) * 1.5; 
+                const walk = (x - startX); 
                 if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
                 if (window.isDraggingFiltro) {
                     e.preventDefault();
@@ -1654,6 +1887,9 @@
                 }
             });
         }
+        
+        // Renderiza o Gráfico após 1 segundo para garantir que o DOM carregou
+        setTimeout(atualizarGrafico, 500);
     };
 
     function calcular() {
@@ -1737,661 +1973,6 @@
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
         var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
     }
-
-    function salvarHistorico() {
-        var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "";
-        var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
-        var isUrgente = document.getElementById('toggle_urgente').checked;
-        
-        var isCart = carrinho && carrinho.length > 0;
-        var nomeFinal = "", valorBruto = 0, custoProducaoFinal = 0, pesoFinal = 0, tempoFinal = 0, materiaisArray = [], cLog = 0, freteCalculado = 0, totalQtd = 1;
-
-        if(isCart) {
-            nomeFinal = carrinho.map(i => i.nome).join(' + ');
-            custoProducaoFinal = carrinho.reduce((a,b) => a + b.custo, 0); pesoFinal = carrinho.reduce((a,b) => a + b.peso, 0); tempoFinal = carrinho.reduce((a,b) => a + b.tempo, 0);
-            totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1;
-            carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
-            
-            if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
-            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); } 
-            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); } 
-            else { valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); }
-            
-            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
-            freteCalculado = pegaValor('valorFreteManual');
-        } else {
-            var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
-            var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1;
-            totalQtd = qtdPecas; nomeFinal = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
-            custoProducaoFinal = parseLocal(document.getElementById('r_gasto').textContent); tempoFinal = pegaValor('tempoH') * qtdPecas; pesoFinal = pegaValor('pesoPeca') * qtdPecas;
-            
-            var multiOn = document.getElementById('toggle_multi_mat').checked;
-            if(multiOn) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); } }
-
-            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
-            freteCalculado = pegaValor('valorFreteManual');
-
-            var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
-            if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); }
-            if (multiOn) { 
-                var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
-                for(var i = 2; i <= qtdExtras + 1; i++) { 
-                    var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
-                    if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
-                    if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } 
-                } 
-            }
-
-            if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
-            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('r_vendaD').textContent); } 
-            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('r_vendaS').textContent); } 
-            else { valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); }
-        }
-
-        var net = descontarTaxas(valorBruto, totalQtd);
-        var valorVendaFinal = 0;
-
-        if(canal === "Shopee") { valorVendaFinal = net.shopee - freteCalculado - cLog; } 
-        else if(canal === "Meli") { valorVendaFinal = net.meli - freteCalculado - cLog; } 
-        else { valorVendaFinal = valorBruto - freteCalculado - cLog; }
-
-        if(valorVendaFinal < 0) valorVendaFinal = 0;
-        var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
-        
-        var cartToSave = [];
-        if(isCart) { cartToSave = JSON.parse(JSON.stringify(carrinho)); } 
-        else { cartToSave.push({ id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteCalculado - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais }); }
-        
-        var posFila = Date.now();
-        var oldItem = null;
-        if (editHistoricoId) { 
-            oldItem = historico.find(h => h.id === editHistoricoId); 
-            if(oldItem && oldItem.posicaoFila) posFila = oldItem.posicaoFila; 
-        }
-
-        // Se marcou como urgente agora, joga direto pro topo da fila
-        if (isUrgente && (!editHistoricoId || (oldItem && !oldItem.urgente))) {
-            var fila = historico.filter(h => h.status === 'Na Fila');
-            if (fila.length > 0) {
-                var minPos = Math.min(...fila.map(h => h.posicaoFila || h.id));
-                if(isFinite(minPos)) {
-                    posFila = minPos - 1000;
-                }
-            } else {
-                posFila = Date.now() - 10000;
-            }
-        }
-
-        var novo = { 
-            id: editHistoricoId ? editHistoricoId : Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteCalculado, logistica: cLog, 
-            peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')) 
-        };
-
-        if (editHistoricoId) {
-            var idx = historico.findIndex(h => h.id === editHistoricoId);
-            if (idx > -1) { historico[idx] = novo; }
-            editHistoricoId = null; 
-            
-            document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; 
-            document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)";
-            
-            var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
-            if(btnCancelVenda) btnCancelVenda.style.display = "none";
-        } else { 
-            historico.unshift(novo); 
-        }
-
-        syncNuvem();
-        
-        if (cliNome.trim() !== '') {
-            if (!clientesCadastrados[cliNome] && cliTel) {
-                clientesCadastrados[cliNome] = cliTel;
-                var dl = document.getElementById('listaClientes');
-                if (dl) { dl.innerHTML += `<option value="${cliNome}">`; }
-            }
-        }
-        
-        var elPerso = document.getElementById('valorPersonalizado'); if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
-        resetarDados(); showToast("✅ Venda Registrada!");
-    }
-
-    function editarItemHistorico(id) {
-        var item = historico.find(h => h.id === id);
-        if (!item) return;
-
-        // Limpa o carrinho atual
-        carrinho = [];
-        document.getElementById('carrinho_container').style.display = 'none';
-
-        // Garante que todo item editado vá direto pro carrinho para permitir múltiplas adições e edições finas
-        if (item.cartItems && item.cartItems.length > 0) {
-            carrinho = JSON.parse(JSON.stringify(item.cartItems));
-        } else {
-            var match = item.nome.match(/^(\d+)x\s(.*)/); 
-            var qtd = match ? parseInt(match[1]) : (item.totalQtd || 1);
-            var baseNome = match ? match[2] : item.nome;
-            
-            carrinho.push({
-                id: Date.now(),
-                nome: item.nome,
-                qtd: qtd,
-                custo: item.custo,
-                valorComLucro: (item.valorBruto || item.valorVenda) - (item.frete || 0) - (item.logistica || 0),
-                peso: item.peso || 0,
-                tempo: item.tempo || 0,
-                materiais: item.materiais || ""
-            });
-        }
-        
-        resetarInputProjeto();
-        renderCarrinho();
-
-        document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
-        
-        var tUrgente = document.getElementById('toggle_urgente');
-        if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
-        
-        var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
-        
-        if (canalReal === "Personalizado") {
-            document.getElementById('canalVendaSelecionado').value = "Personalizado";
-            document.getElementById('canalPersonalizadoDestino').value = item.canal; 
-        } else {
-            document.getElementById('canalVendaSelecionado').value = item.canal;
-        }
-
-        var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
-        document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar); 
-        salvarDinamico('valorPersonalizado');
-        
-        mostrarValorPersonalizado();
-
-        if (item.logistica > 0 || item.frete > 0) {
-            document.getElementById('custoEmbalagem').value = formatarMoeda(item.logistica || 0); document.getElementById('custoDeslocamento').value = "0,00";
-            var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
-        }
-
-        calcular(); 
-        editHistoricoId = id;
-        
-        document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição de Venda"; 
-        document.getElementById('btn_salvar_venda_main').style.background = "var(--sky)";
-        
-        var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
-        if(btnCancelVenda) btnCancelVenda.style.display = "block";
-        
-        showToast("✏️ Venda carregada no carrinho!");
-        var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
-
-    function renderHistorico() {
-        var lista = document.getElementById('listaHistorico'); if(!lista) return; 
-        var filtroDiv = document.getElementById('filtroHistorico');
-
-        var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0;
-        var totDevolvido = 0;
-        
-        var counts = { 'Todos': historico.length, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0, 'Devolução': 0 };
-        
-        window.horasTotaisImpressasGlobal = 0;
-
-        var campoBusca = document.getElementById('buscaCliente');
-        var termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
-
-        historico.forEach(function(item) {
-            var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
-            counts[st] = (counts[st] || 0) + 1;
-
-            if (st !== 'Orçamento' && st !== 'Devolução') {
-                var custoItem = parseLocal(item.custo); 
-                var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0);
-                var canalStr = item.canal || "Direta";
-                var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
-                var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
-                var lucroItem = valLiq - custoItem - freteLogItem;
-
-                somaCusto += custoItem; somaLogistica += freteLogItem; somaBruto += valBruto; somaLiquido += valLiq; somaLucro += lucroItem; qtdValida++;
-                if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
-            }
-
-            if (st === 'Devolução') {
-                var valLiqDev = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
-                totDevolvido += valLiqDev;
-            }
-            
-            if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
-                window.horasTotaisImpressasGlobal += (item.tempo || 0);
-            }
-        });
-
-        var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
-        if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
-
-        var txtVida = document.getElementById('txt_vida_util');
-        var barVida = document.getElementById('bar_vida_util');
-        var msgVida = document.getElementById('msg_vida_util');
-        
-        var qaAviso = pegaValor('qa_aviso'); if (qaAviso <= 0) qaAviso = 100;
-        
-        var hrsAtuais = window.horasTotaisImpressasGlobal - (window.qaOffset || 0);
-        if (hrsAtuais < 0) hrsAtuais = 0;
-        
-        var pctQA = (hrsAtuais / qaAviso) * 100;
-        if(pctQA > 100) pctQA = 100;
-        
-        if (txtVida && barVida && msgVida) {
-            txtVida.textContent = formatarMoeda(hrsAtuais) + "h / " + qaAviso + "h";
-            barVida.style.width = pctQA + "%";
-            
-            if (pctQA < 50) { 
-                msgVida.textContent = "🟢 Saudável. A máquina está 100% livre!"; 
-                barVida.style.background = "var(--success)"; 
-            } else if (pctQA < 85) { 
-                msgVida.textContent = "🟡 Requer Atenção: Agende uma manutenção/lubrificação em breve."; 
-                barVida.style.background = "#facc15"; 
-            } else { 
-                msgVida.textContent = "🔴 CUIDADO: Risco iminente de quebra ou perda de qualidade."; 
-                barVida.style.background = "var(--danger)"; 
-            }
-        }
-
-        if (filtroDiv) {
-            filtroDiv.innerHTML = `
-                <button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button>
-                <button class="filter-btn ${window.filtroStatusAtual === 'Devolução' ? 'active' : ''}" onclick="mudarFiltro('Devolução')">❌ Devol. (${counts['Devolução']})</button>
-            `;
-        }
-
-        var itensFiltrados = historico.filter(function(item) { 
-            var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; 
-            var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; 
-            var passaBusca = true;
-            if (termoBusca !== '') {
-                var nomeC = (item.cliente || '').toLowerCase();
-                var nomeP = (item.nome || '').toLowerCase();
-                if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca)) {
-                    passaBusca = false;
-                }
-            }
-            return passaStatus && passaBusca;
-        });
-
-        var isFila = window.filtroStatusAtual === 'Na Fila';
-        if (isFila) { 
-            // Ordenação estrita pela posição na fila
-            itensFiltrados.sort((a, b) => { 
-                return (a.posicaoFila || a.id) - (b.posicaoFila || b.id); 
-            }); 
-        }
-
-        lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado</p>' : '';
-        
-        itensFiltrados.forEach(function(item, index) {
-            var custoItem = parseLocal(item.custo); var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0); var canalStr = item.canal || "Direta";
-            var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
-            var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq; var lucroItem = valLiq - custoItem - freteLogItem;
-            
-            var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
-            var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
-            
-            var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
-            
-            var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
-            var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
-            var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '';
-            var bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);';
-            
-            if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
-
-            var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
-            
-            var botoesHTML = `
-                ${isFila ? `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>` : ''}
-                <button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button>
-                <button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>
-            `;
-
-            lista.innerHTML += `
-                <div class="history-item" style="${bordaUrgente}">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
-                        <div style="flex: 1; min-width: 0;">
-                            <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}</h4>
-                            <div style="margin-top: 6px;">
-                                <select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)">
-                                    <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
-                                    <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
-                                    <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
-                                    <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
-                                    <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
-                                    <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div>
-                    </div>
-                    ${crmHtml}
-                    <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
-                        <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
-                        <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span><span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
-                        <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
-                        <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
-                    </div>
-                </div>`;
-        });
-        
-        document.getElementById('tot_qtd').textContent = qtdValida; 
-        document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); 
-        document.getElementById('tot_logistica').textContent = formatarMoeda(somaLogistica); 
-        document.getElementById('tot_faturamento_bruto').textContent = formatarMoeda(somaBruto); 
-        document.getElementById('tot_faturamento').textContent = formatarMoeda(somaLiquido); 
-        document.getElementById('tot_lucro').textContent = formatarMoeda(somaLucro); 
-        
-        var divDev = document.getElementById('tot_devolucoes');
-        if(divDev) divDev.textContent = formatarMoeda(totDevolvido);
-        
-        document.getElementById('qtd_direta').textContent = qtdDireta; document.getElementById('tot_direta').textContent = formatarMoeda(somaDireta); 
-        document.getElementById('qtd_shopee').textContent = qtdShopee; document.getElementById('tot_shopee').textContent = formatarMoeda(somaShopee); 
-        document.getElementById('qtd_meli').textContent = qtdMeli; document.getElementById('tot_meli').textContent = formatarMoeda(somaMeli);
-        
-        atualizarLucroReal();
-    }
-
-    function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
-    function showToast(msg) { var t = document.getElementById("toast"); if(t) { t.textContent = msg; t.className = "show"; setTimeout(() => t.className = "", 2000); } }
-
-    function resetarDados() {
-        carrinho = []; renderCarrinho();
-        ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
-        
-        var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = window.configGlobais.custoEmbalagem || "0,00";
-        var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = window.configGlobais.custoDeslocamento || "0,00";
-        var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
-
-        var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = "";
-        var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none';
-        
-        editCatalogoId = null; 
-        var btnMainCat = document.getElementById('btn_salvar_catalogo_main'); if(btnMainCat) { btnMainCat.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMainCat.style.background = "var(--orange)"; }
-        var btnCancelCatMain = document.getElementById('btn_cancelar_catalogo_main'); if(btnCancelCatMain) btnCancelCatMain.style.display = "none";
-
-        editHistoricoId = null; 
-        var btnSaveMain = document.getElementById('btn_salvar_venda_main'); if(btnSaveMain) { btnSaveMain.textContent = "💾 Salvar Venda"; btnSaveMain.style.background = "var(--purple)"; }
-        var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none";
-        
-        editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
-        if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; }
-        if(btnCancel) btnCancel.style.display = "none";
-
-        var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente && tUrgente.checked) { tUrgente.checked = false; tUrgente.dispatchEvent(new Event('change')); }
-        
-        resetarInputProjeto();
-        calcular(); 
-        
-        setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100);
-        var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function wpp(tipo) {
-        var txt = "*Orçamento 3D 4You*\n\n"; var valF = 0; var isCart = carrinho && carrinho.length > 0;
-        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado'; var canalPerso = document.getElementById('canalPersonalizadoDestino').value;
-        if(isCart) {
-            txt += "*Itens do Pedido:*\n"; carrinho.forEach(i => { txt += "- " + i.nome + "\n"; });
-            valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
-        } else {
-            var nProj = document.getElementById('nomeProjeto'); var nome = nProj && nProj.value ? nProj.value : "Peça 3D";
-            var elQtd = document.getElementById('qtdPecasProjeto'); var qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : "";
-            txt += "*Projeto:* " + qtd + nome + "\n";
-            valF = tipo === 'direta' ? document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
-        }
-        if (isPersonalizado) { var vPerso = pegaTexto('valorPersonalizado'); if (vPerso) { if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) { valF = vPerso; } } }
-        txt += "\n*Valor Total:* R$ " + valF;
-        var tCli = document.getElementById('telefoneCliente'); var tel = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : "";
-        window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
-    }
-
-    // GERA O ORÇAMENTO PARA O CLIENTE
-    window.gerarOrcamentoPDF = function() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.setFontSize(20);
-        doc.text("ORÇAMENTO - 3D 4You", 14, 20);
-
-        doc.setFontSize(12);
-        doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 14, 30);
-        
-        var cliNome = pegaTexto('nomeCliente') || "Cliente Balcão";
-        doc.text("Cliente: " + cliNome, 14, 38);
-
-        var isCart = carrinho && carrinho.length > 0;
-        var valF = 0;
-        var isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado';
-        var tipoCanal = document.getElementById('canalVendaSelecionado').value;
-
-        // Puxa o valor final da tela
-        if(isCart) {
-            valF = tipoCanal === 'Direta' ? document.getElementById('cart_tot_vd').textContent : (tipoCanal === 'Shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent);
-        } else {
-            valF = tipoCanal === 'Direta' ? document.getElementById('r_vendaD').textContent : (tipoCanal === 'Shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent);
-        }
-        
-        if (isPersonalizado) {
-            var vPerso = pegaTexto('valorPersonalizado');
-            if (vPerso) valF = vPerso;
-        }
-
-        let startY = 50;
-        let tableData = [];
-
-        if(isCart) {
-            carrinho.forEach(i => {
-                tableData.push([i.nome, "R$ " + formatarMoeda(i.valorComLucro)]);
-            });
-        } else {
-            var nProj = document.getElementById('nomeProjeto').value || "Peça 3D";
-            var qtd = document.getElementById('qtdPecasProjeto').value || "1";
-            tableData.push([qtd + "x " + nProj, "R$ " + valF]);
-        }
-
-        doc.autoTable({
-            startY: startY,
-            head: [['Descrição do Item', 'Valor Estimado']],
-            body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [59, 130, 246] }
-        });
-
-        let finalY = doc.lastAutoTable.finalY + 15;
-        
-        doc.setFontSize(16);
-        doc.setFont(undefined, 'bold');
-        doc.text("VALOR TOTAL: R$ " + valF, 14, finalY);
-
-        doc.setFontSize(10);
-        doc.setFont(undefined, 'normal');
-        doc.text("Orçamento sujeito a alteração. Válido por 7 dias.", 14, finalY + 10);
-
-        doc.save("Orcamento_Cliente_3D4You.pdf");
-        showToast("📄 Orçamento PDF Gerado!");
-    }
-
-    // GERA O RELATÓRIO GERAL DA EMPRESA (Oculto no Menu)
-    window.gerarRelatorioGeral = function() {
-        if (historico.length === 0) {
-            showToast("⚠️ Nenhum dado para exportar");
-            return;
-        }
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('landscape'); 
-
-        doc.setFontSize(16);
-        doc.text("Relatório Financeiro Geral - 3D 4You", 14, 15);
-        doc.setFontSize(9);
-        doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
-
-        let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0, somaLogistica = 0;
-        let qtdDireta = 0, somaDireta = 0, qtdShopee = 0, somaShopee = 0, qtdMeli = 0, somaMeli = 0;
-        let despesasTotais = despesas.reduce((acc, d) => acc + d.valor, 0);
-        
-        let totDevolvido = 0;
-        const tableDataDevolucoes = [];
-
-        const tableData = [];
-        
-        historico.forEach(h => {
-            let st = h.status || "Finalizado"; 
-            if (st === 'Enviado') st = 'Enviado / Entregue';
-
-            let custoItem = parseLocal(h.custo);
-            let freteLogItem = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
-            let canalStr = h.canal || "Direta";
-            let valLiq = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
-            let valBruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : valLiq;
-            let lucroItem = valLiq - custoItem - freteLogItem;
-            let horas = parseLocal(h.tempo || 0);
-
-            if (st === 'Devolução') {
-                totDevolvido += valLiq;
-                tableDataDevolucoes.push([
-                    h.data, h.cliente || 'Balcão', h.nome, st, canalStr, "R$ " + formatarMoeda(valLiq), "R$ " + formatarMoeda(lucroItem), formatarMoeda(horas) + "h"
-                ]);
-            } else {
-                tableData.push([
-                    h.data, h.cliente || 'Balcão', h.nome, st, canalStr, "R$ " + formatarMoeda(valLiq), "R$ " + formatarMoeda(lucroItem), formatarMoeda(horas) + "h"
-                ]);
-                
-                if (st !== 'Orçamento') {
-                    totVendas += (h.totalQtd || 1); totBruto += valBruto; totLiquido += valLiq; totCusto += custoItem; somaLogistica += freteLogItem; totLucro += lucroItem;
-                    if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
-                }
-                if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
-                    totHoras += horas;
-                }
-            }
-        });
-
-        let lucroReal = totLucro - despesasTotais;
-        doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 48, 'F');
-        
-        doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos e Devoluções):", 18, 32);
-        
-        doc.setFontSize(9); doc.setFont(undefined, 'normal');
-        doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totBruto)}`, 18, 40); doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
-        doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 46); doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46);
-        
-        doc.setFont(undefined, 'bold');
-        doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54); doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 54);
-        doc.setTextColor(0, 150, 0); doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 54); doc.setTextColor(0, 0, 0);
-
-        doc.setFontSize(8); doc.setFont(undefined, 'normal');
-        doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64); doc.text(`Total M. Livre: R$ ${formatarMoeda(somaMeli)}`, 160, 64);
-
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(239, 68, 68);
-        doc.text(`Devoluções (Retornou p/ Estoque): R$ ${formatarMoeda(totDevolvido)}`, 215, 64);
-        doc.setTextColor(0, 0, 0);
-
-        doc.autoTable({ startY: 76, head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor (Líq)', 'Lucro', 'Tempo']], body: tableData, theme: 'grid', headStyles: { fillColor: [59, 130, 246] }, styles: { fontSize: 8 } });
-        
-        let currentY = doc.lastAutoTable.finalY + 15;
-
-        if (tableDataDevolucoes.length > 0) {
-            if (currentY > 170) { doc.addPage(); currentY = 20; }
-            doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
-            doc.text("Histórico de Devoluções", 14, currentY);
-            doc.autoTable({
-                startY: currentY + 5,
-                head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor Estornado', 'Lucro Nulo', 'Tempo']],
-                body: tableDataDevolucoes,
-                theme: 'grid',
-                headStyles: { fillColor: [239, 68, 68] },
-                styles: { fontSize: 8 }
-            });
-            currentY = doc.lastAutoTable.finalY + 15;
-        }
-
-        if (despesas.length > 0) {
-            const tableDataDespesas = despesas.map(d => [ d.data, d.qtd + "x", d.nome, "R$ " + formatarMoeda(d.valor) ]);
-            if (currentY > 170) { doc.addPage(); currentY = 20; }
-            doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68);
-            doc.text("Histórico de Despesas / Compras", 14, currentY);
-            doc.autoTable({
-                startY: currentY + 5,
-                head: [['Data', 'Qtd', 'Descrição', 'Valor Total']],
-                body: tableDataDespesas,
-                theme: 'grid',
-                headStyles: { fillColor: [239, 68, 68] },
-                styles: { fontSize: 8 }
-            });
-        }
-
-        doc.save("Relatorio_Geral_3D4You.pdf");
-        showToast("📄 Relatório PDF Gerado!");
-    };
-
-    window.exportarExcel = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
-        var wb = XLSX.utils.book_new();
-        
-        var vendasValidas = historico.filter(h => h.status !== 'Devolução');
-        var devolucoes = historico.filter(h => h.status === 'Devolução');
-
-        if (vendasValidas.length > 0) {
-            var dadosVendas = vendasValidas.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd }));
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
-        }
-        
-        if (devolucoes.length > 0) {
-            var dadosDev = devolucoes.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Canal Estornado": h.canal, "Valor Estornado (R$)": h.valorLiquido || h.valorVenda, "Materiais": h.materiais, "Qtd Devolvida": h.totalQtd }));
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDev), "Devoluções");
-        }
-
-        if (despesas.length > 0) {
-            var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Quantidade": d.qtd, "Descrição": d.nome, "Valor Total (R$)": d.valor }));
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDespesas), "Despesas");
-        }
-        
-        if (estoque.length > 0) {
-            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço Pago (R$)": e.preco }));
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), "Estoque");
-        }
-        
-        if (catalogo.length > 0) {
-            var dadosCatalogo = catalogo.map(c => {
-                var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
-                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
-            });
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
-        }
-
-        var dadosConfig = [{
-            "Máquina (R$)": window.configGlobais.maquina || "3.275",
-            "Vida Útil (h)": window.configGlobais.vidaUtil || "3.000",
-            "Consumo (W)": window.configGlobais.consumoW || "350",
-            "Preço kWh (R$)": window.configGlobais.precoKwh || "1,20",
-            "Aviso Manutenção (h)": window.configGlobais.qa_aviso || "100",
-            "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem || "0,00",
-            "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento || "0,00",
-            "Taxa M. Livre (%)": window.configGlobais.taxaMeli || "17",
-            "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli || "6,75",
-            "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso || "80",
-            "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro || "80"
-        }];
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosConfig), "Configurações");
-
-        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
-        showToast("📊 Backup Excel baixado!");
-    };
 </script>
 </body>
 </html>
