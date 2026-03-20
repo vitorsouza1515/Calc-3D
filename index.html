@@ -28,7 +28,7 @@
 
 <div id="loading-screen">
     <div class="spinner"></div>
-    <h2 style="color: var(--sky); margin-top: 20px; font-size: 1.2rem;">Carregando o Sistema...</h2>
+    <h2 style="color: var(--sky); margin-top: 20px; font-size: 1.2rem; text-align: center; padding: 0 20px;">Carregando o Sistema...</h2>
 </div>
 
 <div id="login-screen">
@@ -316,6 +316,17 @@
                     <input type="text" inputmode="decimal" id="precoFixoCatMain" placeholder="Ex: 50,00" oninput="aplicarMascara(this); salvarDinamico('precoFixoCatMain');" style="background: #0f172a; padding: 10px; border: 1px solid var(--orange); border-radius: 10px; font-size: 1rem; font-weight: bold; color: #fff; width: 100%; outline: none;">
                 </div>
 
+                <div class="input-group" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 15px;">
+                    <label style="color: var(--sky);">🖼️ Foto do Produto (Opcional)</label>
+                    <input type="file" id="inputFotoProjeto" accept="image/*" style="display:none;" onchange="uploadFotoImgBB(this)">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <button class="btn" style="background: #334155; font-size: 0.75rem; flex:1; padding: 12px;" onclick="document.getElementById('inputFotoProjeto').click()">📷 Anexar Foto</button>
+                        <div id="previewFoto" style="width:40px; height:40px; border-radius:8px; border:1px solid var(--border); background-size:cover; background-position:center; display:none; flex-shrink:0;"></div>
+                        <button id="btnRemoverFoto" class="btn" style="background: var(--danger); display:none; padding:5px 15px;" onclick="removerFoto()" title="Remover Foto">❌</button>
+                    </div>
+                    <input type="hidden" id="fotoUrlProjeto">
+                </div>
+
                 <div class="range-area">
                     <label style="font-size: 0.7rem; font-weight: 800; color: var(--sky); text-transform: uppercase; display: block; margin-bottom: 10px;">Margem de Lucro</label>
                     <div class="range-container">
@@ -444,6 +455,5 @@
 </div>
 
 <script src="app.js"></script>
-
 </body>
 </html>
