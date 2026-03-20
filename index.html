@@ -32,7 +32,7 @@
         
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0; padding-bottom: 8px; border-bottom: 1px dashed var(--border); }
         header h1 { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
-        .nuvem-icon { font-size: 0.75rem; margin-left: 5px; vertical-align: super; color: var(--success); }
+        .nuvem-icon { font-size: 0.75 margin-left: 5px; vertical-align: super; color: var(--success); }
 
         .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--card-bg); box-shadow: -5px 0 20px rgba(0,0,0,0.5); transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 3000; padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
         .side-menu.open { right: 0; }
@@ -1136,7 +1136,7 @@
         var cLog = pegaValor('custoEmbalagem') * totalQtd + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual');
         
         var totD = totValorComLucro + cLog + frete; 
-        var vShopeeBase = totValorComLucro + cLog + frete; 
+        var vShopeeBase = totValorComLucro + cLog; 
         
         var avgBase = vShopeeBase / totalQtd; var pAvg1 = (avgBase + 4) / 0.80; var pAvg2 = (avgBase + 16) / 0.86; var pAvg3 = (avgBase + 20) / 0.86; var pAvg4 = (avgBase + 26) / 0.86; 
         var bestPAvg; if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2; else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4;
@@ -1602,11 +1602,11 @@
             var totCartVenda = carrinho.reduce((a,b)=>a+b.valorComLucro, 0);
             custoProducaoTotal = totCartCusto;
             vd = totCartVenda + cLog + frete;
-            vShopeeBase = totCartVenda + cLog + frete;
+            vShopeeBase = totCartVenda + cLog;
         } else {
             custoProducaoTotal = custoProducao;
             vd = valorComLucro + cLog + frete;
-            vShopeeBase = valorComLucro + cLog + frete;
+            vShopeeBase = valorComLucro + cLog;
         }
 
         var avgBase = vShopeeBase / totalQtd;
@@ -1628,8 +1628,8 @@
         var rVendaM = document.getElementById('r_vendaM'); if(rVendaM) rVendaM.textContent = formatarMoeda(totM);
         
         var lucroD = vd - custoProducaoTotal - cLog - frete;
-        var netS = descontarTaxas(totS, totalQtd).shopee; var lucroS = netS - custoProducaoTotal - cLog - frete;
-        var netM = descontarTaxas(totM, totalQtd).meli; var lucroM = netM - custoProducaoTotal - cLog - frete;
+        var netS = descontarTaxas(totS, totalQtd).shopee; var lucroS = netS - custoProducaoTotal - cLog;
+        var netM = descontarTaxas(totM, totalQtd).meli; var lucroM = netM - custoProducaoTotal - cLog;
 
         var tagD = document.getElementById('tag_lucroD'); if(tagD) tagD.textContent = "Lucro: R$ " + formatarMoeda(lucroD);
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
@@ -1652,9 +1652,9 @@
             carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
             
             if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
-            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('r_vendaD').textContent); } 
-            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('r_vendaS').textContent); } 
-            else { valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); }
+            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); } 
+            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); } 
+            else { valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); }
             
             cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
             freteCalculado = pegaValor('valorFreteManual');
@@ -1689,6 +1689,8 @@
             else { valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); }
         }
 
+        var freteFinal = (canal === "Shopee" || canal === "Meli") ? 0 : freteCalculado;
+        
         var net = descontarTaxas(valorBruto, totalQtd);
         var valorVendaFinal = 0;
 
@@ -1715,7 +1717,7 @@
             cartToSave = JSON.parse(JSON.stringify(carrinho));
         } else { 
             cartToSave.push({ 
-                id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteCalculado - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais,
+                id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteFinal - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais,
                 tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'),
                 multi: multiOnSave, qtdCores: pegaTexto('qtdCoresExtras'), extras: extrasArrSave
             }); 
@@ -1742,7 +1744,7 @@
 
         var novo = { 
             id: editHistoricoId ? editHistoricoId : Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, 
-            valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteCalculado, logistica: cLog, 
+            valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteFinal, logistica: cLog, 
             peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')) 
         };
         
