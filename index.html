@@ -17,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
@@ -28,7 +27,7 @@
 
 <div id="loading-screen">
     <div class="spinner"></div>
-    <h2 style="color: var(--sky); margin-top: 20px; font-size: 1.2rem;">Carregando o Sistema...</h2>
+    <h2 style="color: var(--sky); margin-top: 20px; font-size: 1.2rem; text-align: center; padding: 0 20px;">Carregando o Sistema...</h2>
 </div>
 
 <div id="login-screen">
@@ -85,20 +84,17 @@
             <div class="input-group"><label>Consumo (W)</label><input type="text" inputmode="decimal" id="consumoW" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             <div class="input-group"><label>kWh (R$)</label><input type="text" inputmode="decimal" id="precoKwh" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
         </div>
-        
         <div class="input-group" style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
                 <label style="color:var(--purple); margin:0;">Aviso de Manutenção (a cada h):</label>
                 <button onclick="resetarQA()" style="background: var(--purple); border: none; color: #fff; border-radius: 6px; font-size: 0.6rem; padding: 4px 8px; cursor: pointer; font-weight:bold;">✅ ZERAR MANUTENÇÃO</button>
             </div>
             <input type="text" inputmode="decimal" id="qa_aviso" data-save="true" style="border-color: var(--purple);" oninput="aplicarMascara(this); renderHistorico()">
-            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
                 <label style="color:var(--sky); margin:0;">Total Histórico (Odômetro):</label>
                 <span id="lbl_horas_totais_maquina" style="color:#fff; font-weight:bold; font-size:0.8rem;">0h</span>
             </div>
         </div>
-
         <div class="total-summary" style="border-color: var(--purple); margin-top: 12px; margin-bottom: 0; position: relative;">
             <div style="display:flex; justify-content: space-between; margin-bottom: 8px;">
                 <span style="font-size: 0.75rem; font-weight: 800; color: var(--purple);">🔧 STATUS DA MÁQUINA</span>
@@ -109,7 +105,6 @@
             </div>
             <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 8px; text-align: right; font-weight: bold;" id="msg_vida_util">...</div>
         </div>
-        
         <button class="btn btn-direta" onclick="fecharModal('configModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
@@ -117,9 +112,7 @@
 <div id="logisticaModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="fecharModal('logisticaModal')">&times;</span>
-        <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--sky); cursor:default;">
-            <span>🚚 Logística</span>
-        </div>
+        <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--sky); cursor:default;"><span>🚚 Logística</span></div>
         <div id="secao_logistica">
             <div class="grid-2">
                 <div class="input-group"><label>Embalagem</label><input type="text" inputmode="decimal" id="custoEmbalagem" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
@@ -135,18 +128,15 @@
 <div id="marketplacesModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="fecharModal('marketplacesModal')">&times;</span>
-        <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--primary); cursor:default;">
-            <span>🛒 Taxas Marketplaces</span>
-        </div>
+        <div class="section-title" style="border:none; margin-bottom:15px; padding: 0 40px 0 0; color: var(--primary); cursor:default;"><span>🛒 Taxas Marketplaces</span></div>
         <div id="secao_marketplaces">
             <div class="grid-2">
-                <div class="input-group"><label>Shopee (%) <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
-                <div class="input-group"><label>Fixo Shopee <span style="color:var(--shopee); font-size:0.6rem;">(AUTO)</span></label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
+                <div class="input-group"><label>Shopee (%)</label><input type="text" id="taxaShopee" value="Varia de 14% a 20%" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
+                <div class="input-group"><label>Fixo Shopee</label><input type="text" id="fixaShopee" value="R$ 4 a R$ 26" readonly style="opacity: 0.6; cursor: not-allowed; border-color: var(--shopee); font-size: 0.75rem; text-align: center;"></div>
                 <div class="input-group"><label>M. Livre (%)</label><input type="text" inputmode="decimal" id="taxaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
                 <div class="input-group"><label>Fixo ML</label><input type="text" inputmode="decimal" id="fixaMeli" data-save="true" oninput="aplicarMascara(this); calcular()"></div>
             </div>
         </div>
-        
         <div class="section-title" style="margin-top: 15px; border-top: 1px dashed var(--border); padding-top: 10px; border-bottom: none; cursor:default; padding-right: 40px;">
             <span style="font-size: 0.75rem;">🧮 SIMULADOR DE LUCRO</span>
         </div>
@@ -165,7 +155,23 @@
     <div class="modal-content">
         <span class="close-modal" onclick="fecharModal('catalogoModal')">&times;</span>
         <h2 class="section-title" style="border:none; margin-bottom:15px; padding:0; color: var(--orange); cursor:default;">🏷️ Gerenciar Catálogo</h2>
-        <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Produtos Salvos (Use a tela principal para editar/adicionar):</p>
+        
+        <div id="boxEditCat" style="display:none; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px dashed var(--orange); margin-bottom: 15px;">
+            <p style="font-size: 0.75rem; color: var(--orange); font-weight: bold; margin-bottom: 8px;">Editando Produto:</p>
+            <div class="input-group">
+                <label>🖼️ Foto do Produto</label>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <button class="btn" style="background: #334155; font-size: 0.7rem; padding: 10px;" onclick="document.getElementById('inputFotoCat').click()">📷 Mudar Foto</button>
+                    <div id="previewFotoCat" style="width:40px; height:40px; border-radius:8px; border:1px solid var(--border); background-size:cover; background-position:center; display:none; flex-shrink:0;"></div>
+                    <button id="btnRemoverFotoCat" class="btn" style="background: var(--danger); display:none; padding:5px 15px;" onclick="removerFotoCat()" title="Remover Foto">❌</button>
+                </div>
+                <input type="hidden" id="fotoUrlCat">
+                <input type="file" id="inputFotoCat" accept="image/*" style="display:none;" onchange="handleUploadCat(this)">
+            </div>
+            <button class="btn btn-direta" onclick="confirmarEdicaoCatImagem()" style="width:100%; margin-top:8px;">✅ Concluído</button>
+        </div>
+
+        <p style="font-size: 0.65rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Produtos Salvos (Use a tela principal para adicionar novos):</p>
         <div id="lista_catalogo" class="history-list"></div>
     </div>
 </div>
@@ -224,6 +230,7 @@
         <button onclick="abrirGaveta()" style="background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">☰ MENU</button>
     </div>
 </header>
+
 <div class="dashboard">
     <div class="col col-input">
         <div class="card">
@@ -240,12 +247,10 @@
                     <label>Nome do Projeto / Peça</label>
                     <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
                 </div>
-                
                 <div class="input-group">
                     <label style="color: var(--sky);">Qtd. de Peças</label>
                     <input type="text" inputmode="numeric" id="qtdPecasProjeto" value="1" placeholder="Ex: 5" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('qtdPecasProjeto'); calcular()">
                 </div>
-
                 <div class="grid-2">
                     <div class="input-group"><label>Cliente (Opcional)</label><input type="text" id="nomeCliente" list="listaClientes" placeholder="Ex: João Silva" oninput="salvarDinamico('nomeCliente'); checarClienteAutoFill()"></div>
                     <div class="input-group"><label>WhatsApp (Opcional)</label><input type="tel" inputmode="tel" id="telefoneCliente" placeholder="(11) 99999-9999" oninput="mascaraTelefone(this); salvarDinamico('telefoneCliente')"></div>
@@ -257,11 +262,17 @@
             <div class="section-title" style="color: var(--orange); border-bottom: none; padding-bottom: 0; margin-bottom: 8px; cursor: default;">
                 <span>🏷️ Catálogo Rápido</span>
             </div>
-            <div class="input-group" style="margin-bottom: 8px;">
-                <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
-                    <option value="">-- Escolher produto cadastrado --</option>
-                </select>
+            
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 8px;">
+                <div id="previewFotoMain" style="width:45px; height:45px; border-radius:8px; border:1px solid var(--border); background-size:cover; background-position:center; display:none; flex-shrink:0;"></div>
+                <input type="hidden" id="fotoUrlProjeto">
+                <div class="input-group" style="margin-bottom: 0; flex: 1;">
+                    <select id="sel_catalogo" style="border-color: var(--orange); color: var(--orange); background: rgba(249, 115, 22, 0.05);" onchange="carregarDoCatalogo()">
+                        <option value="">-- Escolher produto cadastrado --</option>
+                    </select>
+                </div>
             </div>
+            
             <div style="display: flex; gap: 8px;">
                 <button class="btn" id="btn_salvar_catalogo_main" onclick="salvarNoCatalogo()" style="flex: 1; background: var(--orange); font-size: 0.65rem;">💾 Salvar Novo Projeto no Catálogo</button>
                 <button class="btn" id="btn_cancelar_catalogo_main" onclick="cancelarEdicaoCatalogo()" style="display:none; background: var(--danger); width: 40px; font-size: 1rem; padding: 0;" title="Cancelar Edição">❌</button>
@@ -285,7 +296,6 @@
                             <option value="">-- Puxar material do Estoque --</option>
                         </select>
                     </div>
-                 
                     <div id="detalhes_1" class="detalhes-material">
                         <div class="grid-3">
                             <div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento1" placeholder="Ex: PLA" readonly></div>
@@ -294,7 +304,6 @@
                         </div>
                         <div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento" value="120,00" readonly></div>
                     </div>
-
                     <div class="input-group" style="margin-top: 10px;">
                         <label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label>
                         <input type="text" inputmode="decimal" id="pesoPeca" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca'); calcular()">
@@ -444,6 +453,5 @@
 </div>
 
 <script src="app.js"></script>
-
 </body>
 </html>
