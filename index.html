@@ -554,7 +554,6 @@
             fecharGaveta();
         }
     });
-    
     window.abrirGaveta = function() {
         document.getElementById('sideMenu').classList.add('open');
         document.getElementById('menuOverlay').classList.add('open');
@@ -629,7 +628,6 @@
             estoque = data.estoque || [];
             catalogo = data.catalogo || [];
             despesas = data.despesas || [];
-  
             window.qaOffset = data.qaOffset || 0; 
             window.configGlobais = data.configGlobais || window.configGlobais;
 
@@ -642,7 +640,6 @@
             document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
             document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
             document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
-            
             document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
             document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
             document.getElementById('margemSlider').value = pegaValor('margemInput');
@@ -669,7 +666,7 @@
             renderEstoque();
             renderCatalogo();
             renderDespesas();
-            atualizarDropdownsEstoque(); 
+            atualizarDropdownsEstoque();
             calcular(); 
         } else {
             if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0 || despesas.length > 0) {
@@ -754,7 +751,6 @@
 
     window.fecharModal = function(idModal) {
         document.getElementById(idModal).style.display = 'none';
-        
         if (idModal === 'configModal') {
             var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
             if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) {
@@ -772,34 +768,16 @@
                 }
             }
         }
-
-        // UPDATE LOGISTICS FOR PAST SALES
-        if (idModal === 'logisticaModal') {
-            var nEmb = pegaValor('custoEmbalagem'), nDes = pegaValor('custoDeslocamento');
-            var oldEmb = parseLocal(window.configGlobais.custoEmbalagem || "0"), oldDes = parseLocal(window.configGlobais.custoDeslocamento || "0");
-            
-            if (nEmb !== oldEmb || nDes !== oldDes) {
-                if(confirm("⚠️ Você alterou os custos Fixos de Logística (Embalagem/Deslocamento).\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) {
-                    historico.forEach(h => {
-                        var q = h.totalQtd || 1;
-                        var novoLog = (nEmb * q) + nDes;
-                        var logAntigo = parseLocal(h.logistica || 0);
-                        var deltaLogistica = novoLog - logAntigo;
-                        h.logistica = novoLog;
-                        h.valorLiquido = (parseLocal(h.valorLiquido) || 0) - deltaLogistica;
-                        if (h.valorLiquido < 0) h.valorLiquido = 0;
-                    });
-                    showToast("✅ Logística Atualizada no Histórico!");
-                }
-            }
-        }
-
         syncNuvem(); renderHistorico(); calcular();
     }
 
     window.resetarQA = function() {
         if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) {
-            window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!");
+            window.qaOffset = window.horasTotaisImpressasGlobal; 
+            syncNuvem(); 
+            renderHistorico(); 
+            document.getElementById('configModal').style.display='none'; 
+            showToast("🔧 Manutenção Registrada e Zerada!");
         }
     }
 
@@ -1052,7 +1030,6 @@
         var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
         
         if(editCatalogoId) {
-            // UPDATE PAST SALES LOGIC
             var nomeMinusculo = nome.toLowerCase().trim();
             var vendasAfetadas = historico.filter(h => h.nome.toLowerCase().trim().includes(nomeMinusculo));
 
@@ -1069,6 +1046,7 @@
                         var qtdItem = h.totalQtd || 1;
                         h.tempo = novoTempoUnit * qtdItem;
                         h.peso = novoPesoUnit * qtdItem;
+                        
                         h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso;
                         
                         var freteLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
@@ -1097,7 +1075,6 @@
         document.getElementById('btn_cancelar_catalogo_main').style.display = "none";
         document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none';
         
-        // RESET SCREEN
         resetarDados();
 
         syncNuvem(); renderCatalogo();
@@ -1769,6 +1746,7 @@
         if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } 
     }
 
+    // --- CORREÇÃO DA BARRA DE MANUTENÇÃO ---
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico');
         if(!lista) return; 
@@ -1782,6 +1760,7 @@
 
         var campoBusca = document.getElementById('buscaCliente');
         var termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
+        
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
@@ -1805,25 +1784,30 @@
                 totDevolvido += valLiqDev;
             }
             
+            // Garantindo que some sempre um número válido
             if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
-                window.horasTotaisImpressasGlobal += (item.tempo || 0);
+                window.horasTotaisImpressasGlobal += parseLocal(item.tempo);
             }
         });
 
+        // Correção de bugs com NaN e lógicas de percentual
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
+        
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
         
         var qaAviso = pegaValor('qa_aviso');
-        if (qaAviso <= 0) qaAviso = 100;
+        if (qaAviso <= 0 || isNaN(qaAviso)) qaAviso = 100;
         
-        var hrsAtuais = window.horasTotaisImpressasGlobal - (window.qaOffset || 0);
-        if (hrsAtuais < 0) hrsAtuais = 0;
+        var offset = parseFloat(window.qaOffset) || 0;
+        var hrsAtuais = window.horasTotaisImpressasGlobal - offset;
+        if (hrsAtuais < 0 || isNaN(hrsAtuais)) hrsAtuais = 0;
         
         var pctQA = (hrsAtuais / qaAviso) * 100;
-        if(pctQA > 100) pctQA = 100;
+        if (isNaN(pctQA) || pctQA < 0) pctQA = 0;
+        if (pctQA > 100) pctQA = 100;
         
         if (txtVida && barVida && msgVida) {
             txtVida.textContent = formatarMoeda(hrsAtuais) + "h / " + qaAviso + "h";
@@ -2093,6 +2077,7 @@
         showToast("📄 Orçamento PDF Gerado!");
     }
 
+    // --- ADIÇÃO DO MATERIAL GASTO NO PDF ---
     window.gerarRelatorioGeral = function() {
         if (historico.length === 0) {
             showToast("⚠️ Nenhum dado para exportar");
@@ -2105,7 +2090,7 @@
         doc.text("Relatório Financeiro Geral - 3D 4You", 14, 15);
         doc.setFontSize(9);
         doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR'), 14, 21);
-        let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0, somaLogistica = 0;
+        let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0, somaLogistica = 0, totPeso = 0;
         let qtdDireta = 0, somaDireta = 0, qtdShopee = 0, somaShopee = 0, qtdMeli = 0, somaMeli = 0;
         let despesasTotais = despesas.reduce((acc, d) => acc + d.valor, 0);
         
@@ -2124,7 +2109,9 @@
             let valLiq = h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : (h.valorVenda !== undefined ? parseLocal(h.valorVenda) : parseLocal(h.pix));
             let valBruto = h.valorBruto !== undefined ? parseLocal(h.valorBruto) : valLiq;
             let lucroItem = valLiq - custoItem - freteLogItem;
+            
             let horas = parseLocal(h.tempo || 0);
+            let peso = parseLocal(h.peso || 0);
 
             if (st === 'Devolução') {
    
@@ -2144,22 +2131,28 @@
                     if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++;
                     } else { somaDireta += valLiq; qtdDireta++; }
                 }
+                
                 if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
                     totHoras += horas;
+                    totPeso += peso;
                 }
             }
         });
+        
         let lucroReal = totLucro - despesasTotais;
-        doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 48, 'F');
+        doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 52, 'F');
         
         doc.setFontSize(10); doc.setFont(undefined, 'bold');
         doc.text("RESUMO FINANCEIRO (Excluindo Orçamentos e Devoluções):", 18, 32);
         
         doc.setFontSize(9); doc.setFont(undefined, 'normal');
         doc.text(`Faturamento Bruto: R$ ${formatarMoeda(totBruto)}`, 18, 40);
-        doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); 
+        doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
+        
         doc.text(`Faturamento Líquido: R$ ${formatarMoeda(totLiquido)}`, 18, 46);
         doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46);
+        doc.text(`Material Gasto: ${formatarMoeda(totPeso)}g (${formatarMoeda(totPeso/1000)}kg)`, 160, 46);
         
         doc.setFont(undefined, 'bold');
         doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54);
@@ -2168,7 +2161,8 @@
 
         doc.setFontSize(8);
         doc.setFont(undefined, 'normal');
-        doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64);
+        doc.text(`Total PIX/Direta: R$ ${formatarMoeda(somaDireta)}`, 18, 64); 
+        doc.text(`Total Shopee: R$ ${formatarMoeda(somaShopee)}`, 85, 64);
         doc.text(`Total M. Livre: R$ ${formatarMoeda(somaMeli)}`, 160, 64);
 
         doc.setFont(undefined, 'bold');
