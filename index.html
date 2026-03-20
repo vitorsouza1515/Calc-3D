@@ -144,13 +144,13 @@
         .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
         .busca-larga:focus { width: 180px; border-color: var(--sky); }
 
-        /* LOADING E LOGIN CSS */
+        /* --- LOADING E LOGIN CSS --- */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10005; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10000; display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px;}
-        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .login-box h2 { font-size: 1.8rem; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; }
         .login-btn { background: var(--primary); color: #fff; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 1rem; margin-top: 20px; cursor: pointer; transition: 0.2s; }
         .login-btn:active { transform: scale(0.95); }
@@ -249,6 +249,7 @@
         <button class="btn btn-direta" onclick="fecharModal('configModal')" style="width: 100%; margin-top: 15px;">Concluído</button>
     </div>
 </div>
+
 <div id="logisticaModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="fecharModal('logisticaModal')">&times;</span>
@@ -355,11 +356,10 @@
 <header>
     <div><h1 style="font-size: 1.4rem;">3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span></div>
     <div style="display: flex; gap: 8px;">
-        <button onclick="fazerLogout()" id="btnSair" style="display: none; background: var(--danger); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem; margin-right: 8px;">SAIR</button>
+        <button onclick="fazerLogout()" id="btnSair" style="display: none; background: var(--danger); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">SAIR</button>
         <button onclick="abrirGaveta()" style="background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">☰ MENU</button>
     </div>
 </header>
-
 <div class="dashboard">
     <div class="col col-input">
         <div class="card">
@@ -619,6 +619,8 @@
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.firestore();
+    
+    // --- LÓGICA DE AUTENTICAÇÃO MULTI-TENANT ---
     const auth = firebase.auth();
     let nuvemRef = null; 
     let unsubscribeSnapshot = null;
@@ -673,11 +675,12 @@
         }
     };
 
+    // Variáveis globais base
     var historico = [];
     var estoque = [];
     var catalogo = [];
     var despesas = [];
-    var carrinho = []; 
+    
     var editEstoqueId = null;
     var editCatalogoId = null;
     var editHistoricoId = null; 
@@ -685,6 +688,7 @@
     var editandoCarrinhoId = null;
     var filtroStatusAtual = 'Todos';
     var clientesCadastrados = {};
+    
     window.qaOffset = 0;
     window.horasTotaisImpressasGlobal = 0;
     window.oldBaseVals = {};
@@ -839,6 +843,7 @@
 
     window.fecharModal = function(idModal) {
         document.getElementById(idModal).style.display = 'none';
+        
         if (idModal === 'configModal') {
             var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
             if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) {
@@ -856,12 +861,13 @@
                 }
             }
         }
-        
+
         if (idModal === 'logisticaModal') {
             var nEmb = pegaValor('custoEmbalagem'), nDes = pegaValor('custoDeslocamento');
             var oldEmb = parseLocal(window.configGlobais.custoEmbalagem || "0"), oldDes = parseLocal(window.configGlobais.custoDeslocamento || "0");
+            
             if (nEmb !== oldEmb || nDes !== oldDes) {
-                if(confirm("⚠️ Você alterou os custos Fixos de Logística.\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) {
+                if(confirm("⚠️ Você alterou os custos Fixos de Logística (Embalagem/Deslocamento).\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) {
                     historico.forEach(h => {
                         var q = h.totalQtd || 1;
                         var novoLog = (nEmb * q) + nDes;
@@ -889,8 +895,8 @@
         var avgBruto = valorBruto / qtdTotal; var feeShpUnit = 0;
         if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4; else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16; else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20; else feeShpUnit = (avgBruto * 0.14) + 26;
         var netShopee = valorBruto - (feeShpUnit * qtdTotal); if (netShopee < 0) netShopee = 0;
-        var txMeli = pegaValor('taxaMeli') / 100; var fixMeli = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
-        var feeMeliUnit = (avgBruto * txMeli) + fixMeli; var netMeli = valorBruto - (feeMeliUnit * qtdTotal); if (netMeli < 0) netMeli = 0;
+        var txMl = pegaValor('taxaMeli') / 100; var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
+        var feeMlUnit = (avgBruto * txMl) + fixMl; var netMeli = valorBruto - (feeMlUnit * qtdTotal); if (netMeli < 0) netMeli = 0;
         return { shopee: netShopee, meli: netMeli };
     }
 
@@ -1448,6 +1454,408 @@
         renderHistorico();
     };
 
+    window.onload = function() {
+        document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+        var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
+        idsSave.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && el.dataset && el.dataset.save) {
+                var saved = localStorage.getItem('3d4y_dark_' + id);
+                if (saved !== null) { 
+                    if (el.type === 'checkbox') { el.checked = (saved === 'true'); } 
+                    else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } 
+                }
+            }
+            if (el) {
+                if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); }
+                el.addEventListener('input', function() {
+                    if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); }
+                    if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } }
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular();
+                });
+            }
+        });
+        dynIds.forEach(function(id) {
+            var el = document.getElementById(id);
+            if(el) {
+                var saved = localStorage.getItem('3d4y_dark_' + id);
+                if (saved !== null) { 
+                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
+                    el.value = saved; 
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); }
+                    if (id === 'telefoneCliente') { mascaraTelefone(el); }
+                }
+            }
+        });
+        var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+
+        var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
+        if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
+        
+        var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
+        if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
+        
+        renderCoresExtras();
+        var mSli = document.getElementById('margemSlider'); if(mSli) { updateSliderProgress(mSli); }
+        if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; }
+        calcular(); mostrarValorPersonalizado();
+        
+        clientesCadastrados = {};
+        historico.forEach(function(item) {
+            if (item.cliente && item.cliente.trim() !== '') { if (!clientesCadastrados[item.cliente] && item.telefone) { clientesCadastrados[item.cliente] = item.telefone; } }
+        });
+        var dl = document.getElementById('listaClientes');
+        if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
+
+        var sliderFiltro = document.getElementById('filtroHistorico');
+        var isDown = false, startX, scrollLeft;
+        if(sliderFiltro) {
+            sliderFiltro.style.cursor = 'grab';
+            sliderFiltro.addEventListener('mousedown', (e) => {
+                isDown = true; window.isDraggingFiltro = false; sliderFiltro.style.cursor = 'grabbing';
+                startX = e.pageX - sliderFiltro.offsetLeft; scrollLeft = sliderFiltro.scrollLeft;
+            });
+            sliderFiltro.addEventListener('mouseleave', () => { isDown = false; sliderFiltro.style.cursor = 'grab'; });
+            sliderFiltro.addEventListener('mouseup', () => { isDown = false; sliderFiltro.style.cursor = 'grab'; setTimeout(() => window.isDraggingFiltro = false, 50); });
+            sliderFiltro.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                const x = e.pageX - sliderFiltro.offsetLeft; const walk = (x - startX) * 1.5; 
+                if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
+                if (window.isDraggingFiltro) { e.preventDefault(); sliderFiltro.scrollLeft = scrollLeft - walk; }
+            });
+        }
+    };
+
+    function calcular() {
+        var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
+        idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { localStorage.setItem('3d4y_dark_' + id, el.type === 'checkbox' ? el.checked : el.value); } });
+        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
+        if(qtdPecas < 1) qtdPecas = 1;
+
+        var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
+        var tempoTotal = pegaValor('tempoH') * qtdPecas;
+        var pesoTotalPrincipal = pegaValor('pesoPeca') * qtdPecas;
+        var dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoTotal;
+        var ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoTotal;
+        var precoMat = pegaValor('precoFilamento'); if(precoMat === 0) precoMat = 120;
+        var matTotal = (precoMat / 1000) * pesoTotalPrincipal;
+        if (multiMatEnabled) { 
+            var qtdExtras = parseInt(pegaValor('qtdCoresExtras')) || 1; 
+            for(var i = 2; i <= qtdExtras + 1; i++) { 
+                var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120;
+                matTotal += (precoE / 1000) * (pegaValor('pesoPeca' + i) * qtdPecas);
+            } 
+        }
+
+        var suc = pegaValor('taxaSucesso'); if (suc <= 0) suc = 100; 
+        var custoProducao = (dep + ene + matTotal) / (suc / 100);
+        var rDep = document.getElementById('r_dep'); if(rDep) rDep.textContent = formatarMoeda(dep); 
+        var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene); 
+        var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal); 
+        var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
+        var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado;
+        var isCart = carrinho && carrinho.length > 0;
+        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
+        if(totalQtd < 1) totalQtd = 1;
+
+        var cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
+        var frete = pegaValor('valorFreteManual');
+        var divResumoLog = document.getElementById('resumo_logistica');
+        if (divResumoLog) {
+            divResumoLog.style.display = 'block';
+            var rLogFixo = document.getElementById('r_log_fixo'); if(rLogFixo) rLogFixo.textContent = formatarMoeda(cLog);
+            var rLogFrete = document.getElementById('r_log_frete'); if(rLogFrete) rLogFrete.textContent = formatarMoeda(frete);
+            var rGastoTotal = document.getElementById('r_gasto_total'); if(rGastoTotal) rGastoTotal.textContent = formatarMoeda(custoProducao + cLog + frete);
+        }
+        
+        var vd = valorComLucro + cLog + frete;
+        var vShopeeBase = valorComLucro + cLog;
+        
+        var avgBase = vShopeeBase / totalQtd;
+        var pAvg1 = (avgBase + 4) / 0.80; var pAvg2 = (avgBase + 16) / 0.86; 
+        var pAvg3 = (avgBase + 20) / 0.86; var pAvg4 = (avgBase + 26) / 0.86; 
+
+        var bestPAvg;
+        if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2;
+        else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4;
+        var totS = bestPAvg * totalQtd;
+        
+        var avgBaseML = vShopeeBase / totalQtd;
+        var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100));
+        var pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100));
+        var totM = pAvgML * totalQtd;
+
+        var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd);
+        var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS);
+        var rVendaM = document.getElementById('r_vendaM'); if(rVendaM) rVendaM.textContent = formatarMoeda(totM);
+        var lucroD = vd - custoProducao - cLog - frete;
+        var netS = descontarTaxas(totS, totalQtd).shopee; var lucroS = netS - custoProducao - cLog - frete;
+        var netM = descontarTaxas(totM, totalQtd).meli; var lucroM = netM - custoProducao - cLog - frete;
+
+        var tagD = document.getElementById('tag_lucroD'); if(tagD) tagD.textContent = "Lucro: R$ " + formatarMoeda(lucroD);
+        var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
+        var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
+    }
+
+    function salvarHistorico() {
+        var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "";
+        var elCanal = document.getElementById('canalVendaSelecionado'), canal = elCanal ? elCanal.value : "Direta";
+        var isUrgente = document.getElementById('toggle_urgente').checked;
+        
+        var isCart = carrinho && carrinho.length > 0;
+        var nomeFinal = "", valorBruto = 0, custoProducaoFinal = 0, pesoFinal = 0, tempoFinal = 0, materiaisArray = [], cLog = 0, freteCalculado = 0, totalQtd = 1;
+        if(isCart) {
+            nomeFinal = carrinho.map(i => i.nome).join(' + ');
+            custoProducaoFinal = carrinho.reduce((a,b) => a + b.custo, 0); pesoFinal = carrinho.reduce((a,b) => a + b.peso, 0);
+            tempoFinal = carrinho.reduce((a,b) => a + b.tempo, 0);
+            totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
+            if(totalQtd < 1) totalQtd = 1;
+            carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
+            if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
+            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); } 
+            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); } 
+            else { valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); }
+            
+            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
+            freteCalculado = pegaValor('valorFreteManual');
+        } else {
+            var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
+            var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1;
+            totalQtd = qtdPecas;
+            nomeFinal = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
+            custoProducaoFinal = parseLocal(document.getElementById('r_gasto').textContent);
+            tempoFinal = pegaValor('tempoH') * qtdPecas; pesoFinal = pegaValor('pesoPeca') * qtdPecas;
+            
+            var multiOn = document.getElementById('toggle_multi_mat').checked;
+            if(multiOn) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); } }
+
+            cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
+            freteCalculado = pegaValor('valorFreteManual');
+
+            var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim();
+            if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); }
+            if (multiOn) { 
+                var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; 
+                for(var i = 2; i <= qtdExtras + 1; i++) { 
+                    var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
+                    if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
+                    if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } 
+                } 
+            }
+
+            if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
+            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('r_vendaD').textContent); } 
+            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('r_vendaS').textContent); } 
+            else { valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); }
+        }
+
+        var net = descontarTaxas(valorBruto, totalQtd);
+        var valorVendaFinal = 0;
+
+        if(canal === "Shopee") { valorVendaFinal = net.shopee - freteCalculado - cLog; } 
+        else if(canal === "Meli") { valorVendaFinal = net.meli - freteCalculado - cLog; } 
+        else { valorVendaFinal = valorBruto - freteCalculado - cLog; }
+
+        if(valorVendaFinal < 0) valorVendaFinal = 0;
+        var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
+        
+        var multiOnSave = document.getElementById('toggle_multi_mat').checked;
+        var extrasArrSave = [];
+        if(multiOnSave) {
+            var qtdExSave = parseInt(pegaValor('qtdCoresExtras')) || 1;
+            for(var i=2; i<=qtdExSave+1; i++) {
+                extrasArrSave.push({
+                    tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i)
+                });
+            }
+        }
+
+        var cartToSave = [];
+        if(isCart) { 
+            cartToSave = JSON.parse(JSON.stringify(carrinho));
+        } else { 
+            cartToSave.push({ 
+                id: Date.now(), nome: nomeFinal, qtd: totalQtd, custo: custoProducaoFinal, valorComLucro: valorBruto - freteCalculado - cLog, peso: pesoFinal, tempo: tempoFinal, materiais: stringMateriais,
+                tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'),
+                multi: multiOnSave, qtdCores: pegaTexto('qtdCoresExtras'), extras: extrasArrSave
+            }); 
+        }
+        
+        var posFila = Date.now();
+        var oldItem = null;
+        if (editHistoricoId) { 
+            oldItem = historico.find(h => h.id === editHistoricoId);
+            if(oldItem && oldItem.posicaoFila) posFila = oldItem.posicaoFila; 
+        }
+
+        if (isUrgente && (!editHistoricoId || (oldItem && !oldItem.urgente))) {
+            var fila = historico.filter(h => h.status === 'Na Fila');
+            if (fila.length > 0) {
+                var minPos = Math.min(...fila.map(h => h.posicaoFila || h.id));
+                if(isFinite(minPos)) {
+                    posFila = minPos - 1000;
+                }
+            } else {
+                posFila = Date.now() - 10000;
+            }
+        }
+
+        var novo = { 
+            id: editHistoricoId ? editHistoricoId : Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, 
+            valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteCalculado, logistica: cLog, 
+            peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')) 
+        };
+        if (editHistoricoId) {
+            var idx = historico.findIndex(h => h.id === editHistoricoId);
+            if (idx > -1) { historico[idx] = novo; }
+            editHistoricoId = null;
+            document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; 
+            document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)";
+            
+            var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
+            if(btnCancelVenda) btnCancelVenda.style.display = "none";
+        } else { 
+            historico.unshift(novo);
+        }
+
+        syncNuvem();
+        
+        if (cliNome.trim() !== '') {
+            if (!clientesCadastrados[cliNome] && cliTel) {
+                clientesCadastrados[cliNome] = cliTel;
+                var dl = document.getElementById('listaClientes');
+                if (dl) { dl.innerHTML += `<option value="${cliNome}">`; }
+            }
+        }
+        
+        var elPerso = document.getElementById('valorPersonalizado');
+        if(elPerso) elPerso.value = ''; localStorage.removeItem('3d4y_dark_valorPersonalizado');
+        resetarDados(); showToast("✅ Venda Registrada!");
+    }
+
+    function editarItemHistorico(id) {
+        var item = historico.find(h => h.id === id);
+        if (!item) return;
+
+        carrinho = [];
+        document.getElementById('carrinho_container').style.display = 'none';
+
+        var prod;
+        if (item.cartItems && item.cartItems.length === 1) {
+            prod = item.cartItems[0];
+        } else if (item.cartItems && item.cartItems.length > 1) {
+            carrinho = JSON.parse(JSON.stringify(item.cartItems));
+            renderCarrinho();
+            document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
+        } else {
+            var matchOld = item.nome.match(/^(\d+)x\s(.*)/);
+            var qtdOld = matchOld ? parseInt(matchOld[1]) : (item.totalQtd || 1);
+            prod = { nome: item.nome, qtd: qtdOld, tempo: item.tempo, peso: item.peso };
+        }
+
+        if (prod) {
+            var match = prod.nome.match(/^(\d+)x\s(.*)/);
+            var qtd = match ? parseInt(match[1]) : (prod.qtd || item.totalQtd || 1);
+            var baseNome = match ? match[2] : prod.nome;
+            document.getElementById('nomeProjeto').value = baseNome;
+            document.getElementById('qtdPecasProjeto').value = qtd;
+            document.getElementById('tempoH').value = formatarMoeda((prod.tempo || item.tempo) / qtd);
+            document.getElementById('pesoPeca').value = formatarMoeda((prod.peso || item.peso) / qtd);
+            var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim());
+            var selCat = document.getElementById('sel_catalogo');
+            if(matchCat) { if(selCat) selCat.value = matchCat.id.toString();
+            } else { if(selCat) selCat.value = ""; }
+
+            document.getElementById('tipoFilamento1').value = prod.tipo1 || "";
+            document.getElementById('corFilamento1').value = prod.cor1 || "";
+            document.getElementById('marcaFilamento1').value = prod.marca1 || "";
+
+            var match1 = null;
+            if(prod.tipo1) { match1 = estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1 && e.marca === prod.marca1) || estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1); }
+            var sel1 = document.getElementById('sel_est_1');
+            if(match1) { 
+                if(sel1) sel1.value = match1.id.toString();
+                document.getElementById('marcaFilamento1').value = match1.marca;
+                document.getElementById('precoFilamento').value = match1.preco;
+            } else {
+                if(sel1) sel1.value = "";
+            }
+            document.getElementById('detalhes_1').style.display = (prod.tipo1) ? 'block' : 'none';
+            var tMulti = document.getElementById('toggle_multi_mat');
+            if(tMulti) { tMulti.checked = prod.multi || false; tMulti.dispatchEvent(new Event('change'));
+            }
+
+            if(prod.multi && prod.extras) {
+                document.getElementById('qtdCoresExtras').value = prod.qtdCores || "1";
+                renderCoresExtras();
+                prod.extras.forEach((ex, idx) => {
+                    var i = idx + 2;
+                    setTimeout(() => {
+                        if(document.getElementById('tipoFilamento'+i)) {
+                            document.getElementById('tipoFilamento'+i).value = ex.tipo || "";
+                            document.getElementById('corFilamento'+i).value = ex.cor || "";
+                            document.getElementById('pesoPeca'+i).value = ex.peso || "";
+                            
+                            var matchI = null;
+                            if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); }
+                            var selI = document.getElementById('sel_est_'+i);
+                            if(matchI) {
+                                if(selI) selI.value = matchI.id.toString();
+                                document.getElementById('precoFilamento'+i).value = matchI.preco;
+                                document.getElementById('marcaFilamento'+i).value = matchI.marca;
+                            } else {
+                                if(selI) selI.value = "";
+                                document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
+                                document.getElementById('marcaFilamento'+i).value = ex.marca || "";
+                            }
+                        }
+                    }, 50);
+                });
+            }
+            salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
+        }
+
+        document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
+        var tUrgente = document.getElementById('toggle_urgente');
+        if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
+        
+        var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
+        if (canalReal === "Personalizado") {
+            document.getElementById('canalVendaSelecionado').value = "Personalizado";
+            document.getElementById('canalPersonalizadoDestino').value = item.canal; 
+        } else {
+            document.getElementById('canalVendaSelecionado').value = item.canal;
+        }
+
+        var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : item.valorVenda;
+        document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar); 
+        salvarDinamico('valorPersonalizado');
+        
+        mostrarValorPersonalizado();
+
+        if (item.logistica > 0 || item.frete > 0) {
+            document.getElementById('custoEmbalagem').value = formatarMoeda(item.logistica || 0);
+            document.getElementById('custoDeslocamento').value = "0,00";
+            var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
+        }
+
+        calcular(); editHistoricoId = id;
+        
+        document.getElementById('btn_salvar_venda_main').textContent = "💾 Confirmar Edição de Venda";
+        document.getElementById('btn_salvar_venda_main').style.background = "var(--sky)";
+        
+        var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda');
+        if(btnCancelVenda) btnCancelVenda.style.display = "block";
+        
+        showToast("✏️ Venda carregada para edição!");
+        var dash = document.querySelector('.dashboard');
+        if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id);
+        if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } 
+    }
+
     function renderHistorico() {
         var lista = document.getElementById('listaHistorico');
         if(!lista) return; 
@@ -1461,6 +1869,7 @@
 
         var campoBusca = document.getElementById('buscaCliente');
         var termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
+        
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
@@ -1491,6 +1900,7 @@
 
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
+        
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
@@ -1919,7 +2329,8 @@
         currentY = doc.lastAutoTable.finalY + 15;
 
         if (tableDataDevolucoes.length > 0) {
-            if (currentY > 170) { doc.addPage(); currentY = 20; }
+            if (currentY > 170) { doc.addPage();
+                currentY = 20; }
             doc.setFontSize(12); doc.setFont(undefined, 'bold');
             doc.setTextColor(239, 68, 68);
             doc.text("Histórico de Devoluções", 14, currentY);
@@ -1955,7 +2366,7 @@
         doc.save("Relatorio_Geral_3D4You.pdf");
         showToast("📄 Relatório PDF Gerado!");
     };
-    
+
     window.exportarExcel = function() {
         if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar");
         return; }
@@ -2007,8 +2418,12 @@
         }
         
         var dadosCompletos = {
-            historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas,
-            configGlobais: window.configGlobais, qaOffset: window.qaOffset || 0
+            historico: historico,
+            estoque: estoque,
+            catalogo: catalogo,
+            despesas: despesas,
+            configGlobais: window.configGlobais,
+            qaOffset: window.qaOffset || 0
         };
 
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosCompletos));
