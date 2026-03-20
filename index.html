@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -144,9 +144,13 @@
         .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
         .busca-larga:focus { width: 180px; border-color: var(--sky); }
 
-        /* --- CSS DO ECRÃ DE LOGIN --- */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10000; display: flex; justify-content: center; align-items: center; }
-        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* --- LOADING E LOGIN CSS --- */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10005; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10000; display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px;}
+        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .login-box h2 { font-size: 1.8rem; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; }
         .login-btn { background: var(--primary); color: #fff; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 1rem; margin-top: 20px; cursor: pointer; transition: 0.2s; }
         .login-btn:active { transform: scale(0.95); }
@@ -157,6 +161,11 @@
 <body>
 
 <div id="toast">✅ Operação Realizada</div>
+
+<div id="loading-screen">
+    <div class="spinner"></div>
+    <h2 style="color: var(--sky); margin-top: 20px; font-size: 1.2rem;">Carregando o Sistema...</h2>
+</div>
 
 <div id="login-screen">
     <div class="login-box">
@@ -169,8 +178,8 @@
             <label>Palavra-passe</label>
             <input type="password" id="authSenha" placeholder="******">
         </div>
-        <button class="login-btn" onclick="fazerLogin()" id="btnLogin">Entrar</button>
-        <button class="login-link" onclick="criarConta()">Não tem conta? Criar nova conta</button>
+        <button class="login-btn" onclick="fazerLogin()" id="btnLogin">ENTRAR</button>
+        <button class="login-link" onclick="criarConta()">CRIAR CONTA ZERADA</button>
         <p id="loginError" style="color: var(--danger); font-size: 0.8rem; margin-top: 15px; display: none; font-weight: bold;"></p>
     </div>
 </div>
@@ -346,8 +355,8 @@
 
 <header>
     <div><h1 style="font-size: 1.4rem;">3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span></div>
-    <div>
-        <button onclick="fazerLogout()" id="btnSair" style="display: none; background: var(--danger); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem; margin-right: 8px;">SAIR</button>
+    <div style="display: flex; gap: 8px;">
+        <button onclick="fazerLogout()" id="btnSair" style="display: none; background: var(--danger); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">SAIR</button>
         <button onclick="abrirGaveta()" style="background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">☰ MENU</button>
     </div>
 </header>
@@ -617,16 +626,14 @@
     let unsubscribeSnapshot = null;
 
     auth.onAuthStateChanged(user => {
+        document.getElementById('loading-screen').style.display = 'none';
+        
         if (user) {
-            // Utilizador logado, esconde ecrã login
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('btnSair').style.display = 'inline-block';
-            
-            // Aponta para a base de dados específica deste utilizador (UID)
             nuvemRef = db.collection("workspaces_3d4you").doc(user.uid);
             iniciarApp(); 
         } else {
-            // Mostra o ecrã login
             document.getElementById('login-screen').style.display = 'flex';
             document.getElementById('btnSair').style.display = 'none';
             if (unsubscribeSnapshot) unsubscribeSnapshot();
@@ -637,11 +644,11 @@
         var email = document.getElementById('authEmail').value;
         var senha = document.getElementById('authSenha').value;
         if(!email || !senha) return;
-        document.getElementById('btnLogin').textContent = "Aguarde...";
+        document.getElementById('loading-screen').style.display = 'flex';
         auth.signInWithEmailAndPassword(email, senha).catch(error => {
+            document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('loginError').textContent = "Erro: " + error.message;
             document.getElementById('loginError').style.display = 'block';
-            document.getElementById('btnLogin').textContent = "Entrar";
         });
     };
 
@@ -649,9 +656,11 @@
         var email = document.getElementById('authEmail').value;
         var senha = document.getElementById('authSenha').value;
         if(!email || !senha) return alert("Preencha o e-mail e palavra-passe para criar conta!");
+        document.getElementById('loading-screen').style.display = 'flex';
         auth.createUserWithEmailAndPassword(email, senha).then(() => {
             showToast("✅ Conta criada com sucesso!");
         }).catch(error => {
+            document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('loginError').textContent = "Erro: " + error.message;
             document.getElementById('loginError').style.display = 'block';
         });
@@ -662,7 +671,6 @@
             auth.signOut();
             historico = []; estoque = []; catalogo = []; despesas = []; carrinho = [];
             resetarDados();
-            document.getElementById('btnLogin').textContent = "Entrar";
             document.getElementById('authSenha').value = "";
         }
     };
@@ -712,7 +720,6 @@
         }
     }
 
-    // --- NOVA FUNÇÃO INICIAR APP SÓ CORRE APÓS O LOGIN ---
     function iniciarApp() {
         unsubscribeSnapshot = nuvemRef.onSnapshot(function(doc) {
             if (doc.exists) {
@@ -781,7 +788,7 @@
             margemLucro: pegaTexto('margemInput') || "80"
         };
         
-        if (nuvemRef) {
+        if(nuvemRef) {
             nuvemRef.set({
                 historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas,
                 qaOffset: window.qaOffset || 0, configGlobais: window.configGlobais
@@ -858,6 +865,7 @@
         if (idModal === 'logisticaModal') {
             var nEmb = pegaValor('custoEmbalagem'), nDes = pegaValor('custoDeslocamento');
             var oldEmb = parseLocal(window.configGlobais.custoEmbalagem || "0"), oldDes = parseLocal(window.configGlobais.custoDeslocamento || "0");
+            
             if (nEmb !== oldEmb || nDes !== oldDes) {
                 if(confirm("⚠️ Você alterou os custos Fixos de Logística (Embalagem/Deslocamento).\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) {
                     historico.forEach(h => {
@@ -1178,6 +1186,7 @@
         document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none';
         
         resetarDados();
+
         syncNuvem(); renderCatalogo();
     }
 
@@ -1443,6 +1452,78 @@
         if (window.isDraggingFiltro) return; 
         window.filtroStatusAtual = status;
         renderHistorico();
+    };
+
+    window.onload = function() {
+        document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+        var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
+        idsSave.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el && el.dataset && el.dataset.save) {
+                var saved = localStorage.getItem('3d4y_dark_' + id);
+                if (saved !== null) { 
+                    if (el.type === 'checkbox') { el.checked = (saved === 'true'); } 
+                    else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } 
+                }
+            }
+            if (el) {
+                if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); }
+                el.addEventListener('input', function() {
+                    if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); }
+                    if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } }
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular();
+                });
+            }
+        });
+        dynIds.forEach(function(id) {
+            var el = document.getElementById(id);
+            if(el) {
+                var saved = localStorage.getItem('3d4y_dark_' + id);
+                if (saved !== null) { 
+                    if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } }
+                    el.value = saved; 
+                    if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); }
+                    if (id === 'telefoneCliente') { mascaraTelefone(el); }
+                }
+            }
+        });
+        var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
+
+        var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat');
+        if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
+        
+        var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); }
+        if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
+        
+        renderCoresExtras();
+        var mSli = document.getElementById('margemSlider'); if(mSli) { updateSliderProgress(mSli); }
+        if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; }
+        calcular(); mostrarValorPersonalizado();
+        
+        clientesCadastrados = {};
+        historico.forEach(function(item) {
+            if (item.cliente && item.cliente.trim() !== '') { if (!clientesCadastrados[item.cliente] && item.telefone) { clientesCadastrados[item.cliente] = item.telefone; } }
+        });
+        var dl = document.getElementById('listaClientes');
+        if (dl) { dl.innerHTML = ''; for (var c in clientesCadastrados) { dl.innerHTML += `<option value="${c}">`; } }
+
+        var sliderFiltro = document.getElementById('filtroHistorico');
+        var isDown = false, startX, scrollLeft;
+        if(sliderFiltro) {
+            sliderFiltro.style.cursor = 'grab';
+            sliderFiltro.addEventListener('mousedown', (e) => {
+                isDown = true; window.isDraggingFiltro = false; sliderFiltro.style.cursor = 'grabbing';
+                startX = e.pageX - sliderFiltro.offsetLeft; scrollLeft = sliderFiltro.scrollLeft;
+            });
+            sliderFiltro.addEventListener('mouseleave', () => { isDown = false; sliderFiltro.style.cursor = 'grab'; });
+            sliderFiltro.addEventListener('mouseup', () => { isDown = false; sliderFiltro.style.cursor = 'grab'; setTimeout(() => window.isDraggingFiltro = false, 50); });
+            sliderFiltro.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                const x = e.pageX - sliderFiltro.offsetLeft; const walk = (x - startX) * 1.5; 
+                if (Math.abs(walk) > 10) window.isDraggingFiltro = true; 
+                if (window.isDraggingFiltro) { e.preventDefault(); sliderFiltro.scrollLeft = scrollLeft - walk; }
+            });
+        }
     };
 
     function calcular() {
@@ -2285,61 +2366,6 @@
         doc.save("Relatorio_Geral_3D4You.pdf");
         showToast("📄 Relatório PDF Gerado!");
     };
-    
-    // --- NOVO SISTEMA DE BACKUP 100% SEGURO ---
-    window.fazerBackupJSON = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0) {
-            showToast("⚠️ Não há dados para guardar");
-            return;
-        }
-        
-        var dadosCompletos = {
-            historico: historico,
-            estoque: estoque,
-            catalogo: catalogo,
-            despesas: despesas,
-            configGlobais: window.configGlobais,
-            qaOffset: window.qaOffset || 0
-        };
-
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosCompletos));
-        var downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "Backup_3D4You_Seguro.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-        showToast("📦 Backup descarregado com sucesso!");
-    };
-
-    window.importarBackupJSON = function(input) {
-        var file = input.files[0];
-        if (!file) return;
-
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                var dados = JSON.parse(e.target.result);
-                
-                historico = dados.historico || [];
-                estoque = dados.estoque || [];
-                catalogo = dados.catalogo || [];
-                despesas = dados.despesas || [];
-                window.configGlobais = dados.configGlobais || window.configGlobais;
-                window.qaOffset = dados.qaOffset || 0;
-                
-                syncNuvem();
-                
-                showToast("📥 Base de dados restaurada!");
-                setTimeout(() => location.reload(), 1500);
-            } catch (error) {
-                alert("❌ Erro ao ler o ficheiro. Certifica-te de que escolheste o ficheiro .json correto!");
-                console.error(error);
-            }
-        };
-        reader.readAsText(file);
-        input.value = ""; 
-    };
 
     window.exportarExcel = function() {
         if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar");
@@ -2381,8 +2407,61 @@
         }];
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosConfig), "Configurações");
 
-        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
-        showToast("📊 Backup Excel baixado!");
+        XLSX.writeFile(wb, "3D4You_Relatorio.xlsx");
+        showToast("📊 Relatório Excel descarregado!");
+    };
+
+    window.fazerBackupJSON = function() {
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0) {
+            showToast("⚠️ Não há dados para guardar");
+            return;
+        }
+        
+        var dadosCompletos = {
+            historico: historico,
+            estoque: estoque,
+            catalogo: catalogo,
+            despesas: despesas,
+            configGlobais: window.configGlobais,
+            qaOffset: window.qaOffset || 0
+        };
+
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosCompletos));
+        var downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "Backup_3D4You_Seguro.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        showToast("📦 Backup descarregado com sucesso!");
+    };
+
+    window.importarBackupJSON = function(input) {
+        var file = input.files[0];
+        if (!file) return;
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                var dados = JSON.parse(e.target.result);
+                historico = dados.historico || [];
+                estoque = dados.estoque || [];
+                catalogo = dados.catalogo || [];
+                despesas = dados.despesas || [];
+                window.configGlobais = dados.configGlobais || window.configGlobais;
+                window.qaOffset = dados.qaOffset || 0;
+                
+                syncNuvem();
+                
+                showToast("📥 Base de dados restaurada!");
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                alert("❌ Erro ao ler o ficheiro. Certifica-te de que escolheste o ficheiro .json correto!");
+                console.error(error);
+            }
+        };
+        reader.readAsText(file);
+        input.value = ""; 
     };
 </script>
 </body>
