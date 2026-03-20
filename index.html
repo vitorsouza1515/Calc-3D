@@ -165,9 +165,14 @@
     <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; padding-left: 5px;">Relatórios & Exportação</span>
     
     <button class="menu-btn" onclick="fecharGaveta(); gerarRelatorioGeral()">📄 Relatório PDF Geral</button>
-    <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel Completo</button>
-    <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
-    <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
+    <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel (Relatório)</button>
+    
+    <hr style="border: 1px dashed var(--border); margin: 10px 0;">
+    <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: bold; padding-left: 5px;">Backup do Sistema</span>
+
+    <button class="menu-btn" onclick="fecharGaveta(); fazerBackupJSON()" style="color: var(--sky);">📦 Guardar Backup Seguro</button>
+    <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importBackup').click()" style="color: var(--orange);">📥 Restaurar Backup</button>
+    <input type="file" id="importBackup" style="display:none" accept=".json" onchange="importarBackupJSON(this)">
 </div>
 
 <div id="configModal" class="modal">
@@ -554,7 +559,6 @@
             fecharGaveta();
         }
     });
-    
     window.abrirGaveta = function() {
         document.getElementById('sideMenu').classList.add('open');
         document.getElementById('menuOverlay').classList.add('open');
@@ -641,6 +645,7 @@
             document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
             document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
             document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+            
             document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
             document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
             document.getElementById('margemSlider').value = pegaValor('margemInput');
@@ -663,7 +668,12 @@
             });
             if(precisaSalvarNuven) syncNuvem();
 
-            renderHistorico(); renderEstoque(); renderCatalogo(); renderDespesas(); atualizarDropdownsEstoque(); calcular(); 
+            renderHistorico();
+            renderEstoque();
+            renderCatalogo();
+            renderDespesas();
+            atualizarDropdownsEstoque();
+            calcular(); 
         } else {
             if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0 || despesas.length > 0) {
                 syncNuvem();
@@ -689,15 +699,20 @@
         };
 
         nuvemRef.set({
-            historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas,
-            qaOffset: window.qaOffset || 0, configGlobais: window.configGlobais
+            historico: historico,
+            estoque: estoque,
+            catalogo: catalogo,
+            despesas: despesas,
+            qaOffset: window.qaOffset || 0,
+            configGlobais: window.configGlobais
         }).then(function() {
             localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
             localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
             localStorage.setItem('3d4y_catalogo_dark', JSON.stringify(catalogo));
             localStorage.setItem('3d4y_despesas_dark', JSON.stringify(despesas));
         }).catch(function(error) {
-            console.error("Erro na nuvem:", error); showToast("❌ Erro ao Sincronizar Nuvem");
+            console.error("Erro na nuvem:", error);
+            showToast("❌ Erro ao Sincronizar Nuvem");
         });
     }
 
@@ -710,7 +725,8 @@
         var intPart = parts[0];
         if (intPart) { if (intPart.length > 1 && intPart.charAt(0) === '0') { intPart = parseInt(intPart, 10).toString(); } intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
         var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart;
-        if (el.value !== newVal) { el.value = newVal; var newStart = start + (newVal.length - oldVal.length); if (newStart < 0) newStart = 0; try { el.setSelectionRange(newStart, newStart); } catch(e) {} }
+        if (el.value !== newVal) { el.value = newVal;
+        var newStart = start + (newVal.length - oldVal.length); if (newStart < 0) newStart = 0; try { el.setSelectionRange(newStart, newStart); } catch(e) {} }
     }
 
     function mascaraTelefone(el) {
@@ -741,7 +757,6 @@
 
     window.fecharModal = function(idModal) {
         document.getElementById(idModal).style.display = 'none';
-        
         if (idModal === 'configModal') {
             var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
             if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) {
@@ -759,13 +774,12 @@
                 }
             }
         }
-
+        
         if (idModal === 'logisticaModal') {
             var nEmb = pegaValor('custoEmbalagem'), nDes = pegaValor('custoDeslocamento');
             var oldEmb = parseLocal(window.configGlobais.custoEmbalagem || "0"), oldDes = parseLocal(window.configGlobais.custoDeslocamento || "0");
-            
             if (nEmb !== oldEmb || nDes !== oldDes) {
-                if(confirm("⚠️ Você alterou os custos Fixos de Logística (Embalagem/Deslocamento).\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) {
+                if(confirm("⚠️ Você alterou os custos Fixos de Logística.\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) {
                     historico.forEach(h => {
                         var q = h.totalQtd || 1;
                         var novoLog = (nEmb * q) + nDes;
@@ -811,6 +825,7 @@
         var match = prod.nome.match(/^(\d+)x\s(.*)/);
         var qtd = match ? parseInt(match[1]) : (prod.qtd || 1);
         var baseNome = match ? match[2] : prod.nome;
+
         document.getElementById('nomeProjeto').value = baseNome;
         document.getElementById('qtdPecasProjeto').value = qtd;
         
@@ -833,14 +848,27 @@
         document.getElementById('pesoPeca').value = t_peso;
 
         if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso;
-        if (prod.margemLucro) { document.getElementById('margemInput').value = prod.margemLucro; document.getElementById('margemSlider').value = prod.margemLucro; updateSliderProgress(document.getElementById('margemSlider')); }
+        if (prod.margemLucro) {
+            document.getElementById('margemInput').value = prod.margemLucro;
+            document.getElementById('margemSlider').value = prod.margemLucro;
+            updateSliderProgress(document.getElementById('margemSlider'));
+        }
 
-        document.getElementById('tipoFilamento1').value = p_tipo1; document.getElementById('corFilamento1').value = p_cor1; document.getElementById('marcaFilamento1').value = p_marca1; document.getElementById('precoFilamento').value = p_preco1;
+        document.getElementById('tipoFilamento1').value = p_tipo1;
+        document.getElementById('corFilamento1').value = p_cor1;
+        document.getElementById('marcaFilamento1').value = p_marca1;
+        document.getElementById('precoFilamento').value = p_preco1;
 
         var match1 = null;
         if(p_tipo1) { match1 = estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1 && e.marca === p_marca1) || estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1); }
         var sel1 = document.getElementById('sel_est_1'); 
-        if(match1) { if(sel1) sel1.value = match1.id.toString(); document.getElementById('marcaFilamento1').value = match1.marca; document.getElementById('precoFilamento').value = match1.preco; } else { if(sel1) sel1.value = ""; }
+        if(match1) { 
+            if(sel1) sel1.value = match1.id.toString(); 
+            document.getElementById('marcaFilamento1').value = match1.marca;
+            document.getElementById('precoFilamento').value = match1.preco;
+        } else {
+            if(sel1) sel1.value = "";
+        }
         
         document.getElementById('detalhes_1').style.display = (p_tipo1) ? 'block' : 'none';
 
@@ -849,31 +877,51 @@
 
         if(p_multi && p_extras && p_extras.length > 0) {
             document.getElementById('qtdCoresExtras').value = p_qtdCores;
-            p_extras.forEach((ex, idx) => { var i = idx + 2; salvarDinamicoValor('tipoFilamento'+i, ex.tipo || ""); salvarDinamicoValor('corFilamento'+i, ex.cor || ""); salvarDinamicoValor('marcaFilamento'+i, ex.marca || ""); salvarDinamicoValor('precoFilamento'+i, ex.preco || "120,00"); salvarDinamicoValor('pesoPeca'+i, ex.peso || ""); });
+            
+            p_extras.forEach((ex, idx) => {
+                var i = idx + 2;
+                salvarDinamicoValor('tipoFilamento'+i, ex.tipo || "");
+                salvarDinamicoValor('corFilamento'+i, ex.cor || "");
+                salvarDinamicoValor('marcaFilamento'+i, ex.marca || "");
+                salvarDinamicoValor('precoFilamento'+i, ex.preco || "120,00");
+                salvarDinamicoValor('pesoPeca'+i, ex.peso || "");
+            });
+
             renderCoresExtras();
+            
             p_extras.forEach((ex, idx) => {
                 var i = idx + 2;
                 setTimeout(() => {
                     var matchI = null;
                     if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); }
                     var selI = document.getElementById('sel_est_'+i);
-                    if(matchI) { if(selI) selI.value = matchI.id.toString(); document.getElementById('precoFilamento'+i).value = matchI.preco; document.getElementById('marcaFilamento'+i).value = matchI.marca; } else { if(selI) selI.value = ""; }
+                    if(matchI) {
+                        if(selI) selI.value = matchI.id.toString();
+                        document.getElementById('precoFilamento'+i).value = matchI.preco;
+                        document.getElementById('marcaFilamento'+i).value = matchI.marca;
+                    } else {
+                        if(selI) selI.value = "";
+                    }
                 }, 50);
             });
         } else {
-            if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1"; renderCoresExtras();
+            if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1";
+            renderCoresExtras();
         }
         
-        ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
+        ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id));
+        calcular();
     }
 
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
-        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1;
+        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
+        if(qtdPecas < 1) qtdPecas = 1;
         var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
 
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
-        var tempoItem = pegaValor('tempoH') * qtdPecas; var pesoItem = pegaValor('pesoPeca') * qtdPecas;
+        var tempoItem = pegaValor('tempoH') * qtdPecas;
+        var pesoItem = pegaValor('pesoPeca') * qtdPecas;
         
         var depCalc = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem;
         var eneCalc = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem;
@@ -891,13 +939,16 @@
         if (multiMatEnabled) { 
             var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; 
             for(var i = 2; i <= qtdEx + 1; i++) { 
-                var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE;
+                var pesoE = pegaValor('pesoPeca'+i) * qtdPecas;
+                pesoItem += pesoE;
                 var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120;
                 matTotalCalc += (precoE / 1000) * pesoE; 
+                
                 var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i);
                 var nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
                 if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
                 if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)');
+
                 extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) });
             } 
         }
@@ -925,8 +976,10 @@
             if(btnCancel) btnCancel.style.display = "none";
             showToast("🛒 Item atualizado no Pedido!");
         } else {
-            carrinho.push(novoItem); showToast("🛒 Item adicionado ao Pedido!");
+            carrinho.push(novoItem);
+            showToast("🛒 Item adicionado ao Pedido!");
         }
+
         resetarInputProjeto(); renderCarrinho(); calcular();
     }
 
@@ -942,7 +995,8 @@
 
     function editarItemCarrinho(id) {
         var item = carrinho.find(i => i.id === id); if(!item) return;
-        preencherFormProjeto(item); editandoCarrinhoId = id;
+        preencherFormProjeto(item);
+        editandoCarrinhoId = id;
         var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
         if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; }
         if(btnCancel) btnCancel.style.display = "block";
@@ -1044,7 +1098,6 @@
         document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none';
         
         resetarDados();
-
         syncNuvem(); renderCatalogo();
     }
 
@@ -1727,6 +1780,7 @@
 
         var campoBusca = document.getElementById('buscaCliente');
         var termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
+        
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
@@ -1750,6 +1804,7 @@
                 totDevolvido += valLiqDev;
             }
             
+            // CONVERTIDO: Assegura que o tempo some sempre números reais
             if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') {
                 window.horasTotaisImpressasGlobal += parseLocal(item.tempo);
             }
@@ -1757,6 +1812,7 @@
 
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
+        
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
@@ -2185,7 +2241,8 @@
         currentY = doc.lastAutoTable.finalY + 15;
 
         if (tableDataDevolucoes.length > 0) {
-            if (currentY > 170) { doc.addPage(); currentY = 20; }
+            if (currentY > 170) { doc.addPage();
+                currentY = 20; }
             doc.setFontSize(12); doc.setFont(undefined, 'bold');
             doc.setTextColor(239, 68, 68);
             doc.text("Histórico de Devoluções", 14, currentY);
@@ -2222,12 +2279,13 @@
         showToast("📄 Relatório PDF Gerado!");
     };
     
+    // EXPORTAR EXCEL COMO RELATÓRIO
     window.exportarExcel = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar");
-        return; }
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar"); return; }
         var wb = XLSX.utils.book_new();
         var vendasValidas = historico.filter(h => h.status !== 'Devolução');
         var devolucoes = historico.filter(h => h.status === 'Devolução');
+        
         if (vendasValidas.length > 0) {
             var dadosVendas = vendasValidas.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd }));
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
@@ -2251,103 +2309,74 @@
         if (catalogo.length > 0) {
             var dadosCatalogo = catalogo.map(c => {
                 var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
-                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo 
-                || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
+                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
             });
             XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
         }
 
         var dadosConfig = [{
-            "Máquina (R$)": window.configGlobais.maquina ||
-            "3.275",
-            "Vida Útil (h)": window.configGlobais.vidaUtil ||
-            "3.000",
-            "Consumo (W)": window.configGlobais.consumoW ||
-            "350",
-            "Preço kWh (R$)": window.configGlobais.precoKwh ||
-            "1,20",
-            "Aviso Manutenção (h)": window.configGlobais.qa_aviso ||
-            "100",
-            "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem ||
-            "0,00",
-            "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento ||
-            "0,00",
-            "Taxa M. Livre (%)": window.configGlobais.taxaMeli ||
-            "17",
-            "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli ||
-            "6,75",
-            "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso ||
-            "80",
-            "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro ||
-            "80"
+            "Máquina (R$)": window.configGlobais.maquina || "3.275", "Vida Útil (h)": window.configGlobais.vidaUtil || "3.000", "Consumo (W)": window.configGlobais.consumoW || "350", "Preço kWh (R$)": window.configGlobais.precoKwh || "1,20", "Aviso Manutenção (h)": window.configGlobais.qa_aviso || "100", "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem || "0,00", "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento || "0,00", "Taxa M. Livre (%)": window.configGlobais.taxaMeli || "17", "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli || "6,75", "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso || "80", "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro || "80"
         }];
         XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosConfig), "Configurações");
 
-        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
-        showToast("📊 Backup Excel baixado!");
+        XLSX.writeFile(wb, "3D4You_Relatorio.xlsx");
+        showToast("📊 Relatório Excel descarregado!");
     };
-    
-    window.importarExcel = function(input) {
+
+    // --- NOVO SISTEMA DE BACKUP 100% SEGURO ---
+    window.fazerBackupJSON = function() {
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0) {
+            showToast("⚠️ Não há dados para guardar");
+            return;
+        }
+        
+        var dadosCompletos = {
+            historico: historico,
+            estoque: estoque,
+            catalogo: catalogo,
+            despesas: despesas,
+            configGlobais: window.configGlobais,
+            qaOffset: window.qaOffset || 0
+        };
+
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosCompletos));
+        var downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "Backup_3D4You_Seguro.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        showToast("📦 Backup descarregado com sucesso!");
+    };
+
+    window.importarBackupJSON = function(input) {
+        var file = input.files[0];
+        if (!file) return;
+
         var reader = new FileReader();
         reader.onload = function(e) {
-            var data = new Uint8Array(e.target.result);
-            var workbook = XLSX.read(data, {type: 'array'});
-            
-            if (workbook.Sheets["Vendas"]) {
-                var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets["Vendas"]);
-                historico = jsonVendas.map(v => ({
-                    id: Date.now() + Math.random(),
-                    data: v["Data"],
-                    cliente: v["Cliente"],
-                    nome: v["Projeto"],
-                    status: v["Status"],
-                    canal: v["Canal"],
-                    valorBruto: v["Bruto (R$)"],
-                    valorLiquido: v["Líquido (R$)"],
-                    custo: v["Custo (R$)"],
-                    frete: v["Log+Frete (R$)"],
-                    materiais: v["Materiais"],
-                    tempo: v["Tempo (h)"],
-                    totalQtd: v["Qtd"]
-                }));
+            try {
+                var dados = JSON.parse(e.target.result);
+                historico = dados.historico || [];
+                estoque = dados.estoque || [];
+                catalogo = dados.catalogo || [];
+                despesas = dados.despesas || [];
+                window.configGlobais = dados.configGlobais || window.configGlobais;
+                window.qaOffset = dados.qaOffset || 0;
+                
+                syncNuvem();
+                
+                showToast("📥 Base de dados restaurada!");
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                alert("❌ Erro ao ler o ficheiro. Certifica-te de que escolheste o ficheiro .json correto!");
+                console.error(error);
             }
-            
-            if (workbook.Sheets["Estoque"]) {
-                estoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]).map(e => ({
-                    id: Date.now() + Math.random(),
-                    tipo: e["Tipo"],
-                    cor: e["Cor"],
-                    marca: e["Marca"],
-                    preco: e["Preço Pago (R$)"]
-                }));
-            }
-
-            if (workbook.Sheets["Catálogo"]) {
-                catalogo = XLSX.utils.sheet_to_json(workbook.Sheets["Catálogo"]).map(c => ({
-                    id: Date.now() + Math.random(),
-                    nome: c["Nome do Projeto"],
-                    precoFixo: c["Preço Salvo (R$)"] !== "-" ? c["Preço Salvo (R$)"] : "",
-                    tempo: c["Tempo de Impressão (h)"],
-                    multi: c["Multi-Cor"] === "Sim"
-                }));
-            }
-
-            if (workbook.Sheets["Despesas"]) {
-                despesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]).map(d => ({
-                    id: Date.now() + Math.random(),
-                    data: d["Data"],
-                    qtd: d["Quantidade"],
-                    nome: d["Descrição"],
-                    valor: d["Valor Total (R$)"]
-                }));
-            }
-
-            syncNuvem();
-            showToast("📥 Dados Importados com Sucesso!");
-            setTimeout(() => location.reload(), 1500);
         };
-        reader.readAsArrayBuffer(input.files[0]);
+        reader.readAsText(file);
+        input.value = ""; 
     };
+
 </script>
 </body>
 </html>
