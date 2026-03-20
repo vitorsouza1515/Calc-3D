@@ -18,7 +18,6 @@
 
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     
     <style>
         :root {
@@ -143,46 +142,11 @@
         
         .busca-larga { padding: 8px 12px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); font-size: 0.8rem; outline: none; width: 120px; transition: width 0.3s, border-color 0.3s; font-weight: normal; text-transform: none; }
         .busca-larga:focus { width: 180px; border-color: var(--sky); }
-
-        /* --- LOADING E LOGIN CSS --- */
-        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10005; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .spinner { width: 50px; height: 50px; border: 5px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 10000; display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px;}
-        .login-box { background: var(--card-bg); padding: 30px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .login-box h2 { font-size: 1.8rem; background: linear-gradient(135deg, #3b82f6, #9333ea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 25px; }
-        .login-btn { background: var(--primary); color: #fff; border: none; padding: 14px; width: 100%; border-radius: 10px; font-weight: bold; font-size: 1rem; margin-top: 20px; cursor: pointer; transition: 0.2s; }
-        .login-btn:active { transform: scale(0.95); }
-        .login-link { color: var(--sky); font-size: 0.85rem; margin-top: 15px; display: inline-block; cursor: pointer; text-decoration: none; font-weight: bold; padding: 10px; border: 1px solid var(--sky); border-radius: 10px; width: 100%; transition: 0.2s;}
-        .login-link:active { background: rgba(14, 165, 233, 0.1); }
     </style>
 </head>
 <body>
 
 <div id="toast">✅ Operação Realizada</div>
-
-<div id="loading-screen">
-    <div class="spinner"></div>
-    <h2 style="color: var(--sky); margin-top: 20px; font-size: 1.2rem;">Carregando o Sistema...</h2>
-</div>
-
-<div id="login-screen">
-    <div class="login-box">
-        <h2>3D 4You ERP</h2>
-        <div class="input-group" style="text-align: left;">
-            <label>E-mail</label>
-            <input type="email" id="authEmail" placeholder="seu@email.com">
-        </div>
-        <div class="input-group" style="text-align: left; margin-top: 15px;">
-            <label>Palavra-passe</label>
-            <input type="password" id="authSenha" placeholder="******">
-        </div>
-        <button class="login-btn" onclick="fazerLogin()" id="btnLogin">ENTRAR</button>
-        <button class="login-link" onclick="criarConta()">CRIAR CONTA ZERADA</button>
-        <p id="loginError" style="color: var(--danger); font-size: 0.8rem; margin-top: 15px; display: none; font-weight: bold;"></p>
-    </div>
-</div>
 
 <div id="menuOverlay" class="menu-overlay" onclick="fecharGaveta()"></div>
 <div id="sideMenu" class="side-menu">
@@ -201,14 +165,9 @@
     <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; padding-left: 5px;">Relatórios & Exportação</span>
     
     <button class="menu-btn" onclick="fecharGaveta(); gerarRelatorioGeral()">📄 Relatório PDF Geral</button>
-    <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel (Relatório)</button>
-    
-    <hr style="border: 1px dashed var(--border); margin: 10px 0;">
-    <span style="font-size: 0.65rem; color: var(--danger); text-transform: uppercase; font-weight: bold; padding-left: 5px;">Backup do Sistema</span>
-
-    <button class="menu-btn" onclick="fecharGaveta(); fazerBackupJSON()" style="color: var(--sky);">📦 Guardar Backup Seguro</button>
-    <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importBackup').click()" style="color: var(--orange);">📥 Restaurar Backup</button>
-    <input type="file" id="importBackup" style="display:none" accept=".json" onchange="importarBackupJSON(this)">
+    <button class="menu-btn" onclick="fecharGaveta(); exportarExcel()">📊 Exportar Excel Completo</button>
+    <button class="menu-btn" onclick="fecharGaveta(); document.getElementById('importFile').click()">📥 Importar Backup XLS</button>
+    <input type="file" id="importFile" style="display:none" accept=".xlsx, .xls" onchange="importarExcel(this)">
 </div>
 
 <div id="configModal" class="modal">
@@ -355,10 +314,7 @@
 
 <header>
     <div><h1 style="font-size: 1.4rem;">3D 4You</h1><span class="nuvem-icon" title="Nuvem Online">☁️</span></div>
-    <div style="display: flex; gap: 8px;">
-        <button onclick="fazerLogout()" id="btnSair" style="display: none; background: var(--danger); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">SAIR</button>
-        <button onclick="abrirGaveta()" style="background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">☰ MENU</button>
-    </div>
+    <button onclick="abrirGaveta()" style="background: #1e293b; border: 1px solid var(--border); color: #fff; padding: 6px 14px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.8rem;">☰ MENU</button>
 </header>
 <div class="dashboard">
     <div class="col col-input">
@@ -619,69 +575,14 @@
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const db = firebase.firestore();
+    const nuvemRef = db.collection("3d4you_app").doc("banco_de_dados");
+
+    var historico = JSON.parse(localStorage.getItem('3d4y_hist_dark')) || [];
+    var estoque = JSON.parse(localStorage.getItem('3d4y_estoque_dark')) || [];
+    var catalogo = JSON.parse(localStorage.getItem('3d4y_catalogo_dark')) || [];
+    var despesas = JSON.parse(localStorage.getItem('3d4y_despesas_dark')) || [];
     
-    // --- LÓGICA DE AUTENTICAÇÃO MULTI-TENANT ---
-    const auth = firebase.auth();
-    let nuvemRef = null; 
-    let unsubscribeSnapshot = null;
-
-    auth.onAuthStateChanged(user => {
-        document.getElementById('loading-screen').style.display = 'none';
-        
-        if (user) {
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('btnSair').style.display = 'inline-block';
-            nuvemRef = db.collection("workspaces_3d4you").doc(user.uid);
-            iniciarApp(); 
-        } else {
-            document.getElementById('login-screen').style.display = 'flex';
-            document.getElementById('btnSair').style.display = 'none';
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-        }
-    });
-
-    window.fazerLogin = function() {
-        var email = document.getElementById('authEmail').value;
-        var senha = document.getElementById('authSenha').value;
-        if(!email || !senha) return;
-        document.getElementById('loading-screen').style.display = 'flex';
-        auth.signInWithEmailAndPassword(email, senha).catch(error => {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('loginError').textContent = "Erro: " + error.message;
-            document.getElementById('loginError').style.display = 'block';
-        });
-    };
-
-    window.criarConta = function() {
-        var email = document.getElementById('authEmail').value;
-        var senha = document.getElementById('authSenha').value;
-        if(!email || !senha) return alert("Preencha o e-mail e palavra-passe para criar conta!");
-        document.getElementById('loading-screen').style.display = 'flex';
-        auth.createUserWithEmailAndPassword(email, senha).then(() => {
-            showToast("✅ Conta criada com sucesso!");
-        }).catch(error => {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('loginError').textContent = "Erro: " + error.message;
-            document.getElementById('loginError').style.display = 'block';
-        });
-    };
-
-    window.fazerLogout = function() {
-        if(confirm("Deseja realmente sair?")) {
-            auth.signOut();
-            historico = []; estoque = []; catalogo = []; despesas = []; carrinho = [];
-            resetarDados();
-            document.getElementById('authSenha').value = "";
-        }
-    };
-
-    // Variáveis globais base
-    var historico = [];
-    var estoque = [];
-    var catalogo = [];
-    var despesas = [];
-    var carrinho = [];
-    
+    var carrinho = []; 
     var editEstoqueId = null;
     var editCatalogoId = null;
     var editHistoricoId = null; 
@@ -721,58 +622,56 @@
         }
     }
 
-    function iniciarApp() {
-        unsubscribeSnapshot = nuvemRef.onSnapshot(function(doc) {
-            if (doc.exists) {
-                var data = doc.data();
-                historico = data.historico || [];
-                estoque = data.estoque || [];
-                catalogo = data.catalogo || [];
-                despesas = data.despesas || [];
-                window.qaOffset = data.qaOffset || 0; 
-                window.configGlobais = data.configGlobais || window.configGlobais;
+    nuvemRef.onSnapshot(function(doc) {
+        if (doc.exists) {
+            var data = doc.data();
+            historico = data.historico || [];
+            estoque = data.estoque || [];
+            catalogo = data.catalogo || [];
+            despesas = data.despesas || [];
+            window.qaOffset = data.qaOffset || 0; 
+            window.configGlobais = data.configGlobais || window.configGlobais;
 
-                document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
-                document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
-                document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
-                document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20";
-                document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100";
-                document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00";
-                document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
-                document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
-                document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
-                document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
-                document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
-                
-                let elMargemSlider = document.getElementById('margemSlider');
-                if(elMargemSlider) {
-                    elMargemSlider.value = pegaValor('margemInput');
-                    updateSliderProgress(elMargemSlider);
-                }
+            document.getElementById('maquina').value = window.configGlobais.maquina || "3.275";
+            document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000";
+            document.getElementById('consumoW').value = window.configGlobais.consumoW || "350";
+            document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20";
+            document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100";
+            document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00";
+            document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00";
+            document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17";
+            document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
+            document.getElementById('taxaSucesso').value = window.configGlobais.taxaSucesso || "80";
+            document.getElementById('margemInput').value = window.configGlobais.margemLucro || "80";
+            document.getElementById('margemSlider').value = pegaValor('margemInput');
+            updateSliderProgress(document.getElementById('margemSlider'));
 
-                let precisaSalvarNuven = false;
-                historico.forEach(h => {
-                    if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento' && h.status !== 'Devolução') {
-                        let hrs = parseLocal(h.tempo) || 0;
-                        let grm = parseLocal(h.peso) || 0;
-                      
-                        if (hrs > 0 || grm > 0) {
-                            let dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * hrs;
-                            let ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * hrs;
-                            let mat = (120 / 1000) * grm; 
-                            h.custo = dep + ene + mat;
-                            precisaSalvarNuven = true;
-                        }
+            let precisaSalvarNuven = false;
+            historico.forEach(h => {
+                if ((h.custo === 0 || isNaN(h.custo)) && h.status !== 'Orçamento' && h.status !== 'Devolução') {
+                    let hrs = parseLocal(h.tempo) || 0;
+                    let grm = parseLocal(h.peso) || 0;
+                  
+                    if (hrs > 0 || grm > 0) {
+                        let dep = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * hrs;
+                        let ene = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * hrs;
+                        let mat = (120 / 1000) * grm; 
+                        h.custo = dep + ene + mat;
+                        precisaSalvarNuven = true;
                     }
-                });
-                if(precisaSalvarNuven) syncNuvem();
+                }
+            });
+            if(precisaSalvarNuven) syncNuvem();
 
-                renderHistorico(); renderEstoque(); renderCatalogo(); renderDespesas(); atualizarDropdownsEstoque(); calcular(); 
+            renderHistorico(); renderEstoque(); renderCatalogo(); renderDespesas(); atualizarDropdownsEstoque(); calcular(); 
+        } else {
+            if (historico.length > 0 || estoque.length > 0 || catalogo.length > 0 || despesas.length > 0) {
+                syncNuvem();
             } else {
                 nuvemRef.set({ historico: [], estoque: [], catalogo: [], despesas: [], qaOffset: 0, configGlobais: window.configGlobais });
             }
-        });
-    }
+        }
+    });
 
     function syncNuvem() {
         window.configGlobais = {
@@ -788,20 +687,18 @@
             taxaSucesso: pegaTexto('taxaSucesso') || "80",
             margemLucro: pegaTexto('margemInput') || "80"
         };
-        
-        if(nuvemRef) {
-            nuvemRef.set({
-                historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas,
-                qaOffset: window.qaOffset || 0, configGlobais: window.configGlobais
-            }).then(function() {
-                localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
-                localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
-                localStorage.setItem('3d4y_catalogo_dark', JSON.stringify(catalogo));
-                localStorage.setItem('3d4y_despesas_dark', JSON.stringify(despesas));
-            }).catch(function(error) {
-                console.error("Erro na nuvem:", error); showToast("❌ Erro ao Sincronizar Nuvem");
-            });
-        }
+
+        nuvemRef.set({
+            historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas,
+            qaOffset: window.qaOffset || 0, configGlobais: window.configGlobais
+        }).then(function() {
+            localStorage.setItem('3d4y_hist_dark', JSON.stringify(historico));
+            localStorage.setItem('3d4y_estoque_dark', JSON.stringify(estoque));
+            localStorage.setItem('3d4y_catalogo_dark', JSON.stringify(catalogo));
+            localStorage.setItem('3d4y_despesas_dark', JSON.stringify(despesas));
+        }).catch(function(error) {
+            console.error("Erro na nuvem:", error); showToast("❌ Erro ao Sincronizar Nuvem");
+        });
     }
 
     function aplicarMascara(el) {
@@ -914,7 +811,6 @@
         var match = prod.nome.match(/^(\d+)x\s(.*)/);
         var qtd = match ? parseInt(match[1]) : (prod.qtd || 1);
         var baseNome = match ? match[2] : prod.nome;
-
         document.getElementById('nomeProjeto').value = baseNome;
         document.getElementById('qtdPecasProjeto').value = qtd;
         
@@ -937,27 +833,14 @@
         document.getElementById('pesoPeca').value = t_peso;
 
         if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso;
-        if (prod.margemLucro) {
-            document.getElementById('margemInput').value = prod.margemLucro;
-            document.getElementById('margemSlider').value = prod.margemLucro;
-            updateSliderProgress(document.getElementById('margemSlider'));
-        }
+        if (prod.margemLucro) { document.getElementById('margemInput').value = prod.margemLucro; document.getElementById('margemSlider').value = prod.margemLucro; updateSliderProgress(document.getElementById('margemSlider')); }
 
-        document.getElementById('tipoFilamento1').value = p_tipo1;
-        document.getElementById('corFilamento1').value = p_cor1;
-        document.getElementById('marcaFilamento1').value = p_marca1;
-        document.getElementById('precoFilamento').value = p_preco1;
+        document.getElementById('tipoFilamento1').value = p_tipo1; document.getElementById('corFilamento1').value = p_cor1; document.getElementById('marcaFilamento1').value = p_marca1; document.getElementById('precoFilamento').value = p_preco1;
 
         var match1 = null;
         if(p_tipo1) { match1 = estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1 && e.marca === p_marca1) || estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1); }
         var sel1 = document.getElementById('sel_est_1'); 
-        if(match1) { 
-            if(sel1) sel1.value = match1.id.toString(); 
-            document.getElementById('marcaFilamento1').value = match1.marca;
-            document.getElementById('precoFilamento').value = match1.preco;
-        } else {
-            if(sel1) sel1.value = "";
-        }
+        if(match1) { if(sel1) sel1.value = match1.id.toString(); document.getElementById('marcaFilamento1').value = match1.marca; document.getElementById('precoFilamento').value = match1.preco; } else { if(sel1) sel1.value = ""; }
         
         document.getElementById('detalhes_1').style.display = (p_tipo1) ? 'block' : 'none';
 
@@ -966,51 +849,31 @@
 
         if(p_multi && p_extras && p_extras.length > 0) {
             document.getElementById('qtdCoresExtras').value = p_qtdCores;
-            
-            p_extras.forEach((ex, idx) => {
-                var i = idx + 2;
-                salvarDinamicoValor('tipoFilamento'+i, ex.tipo || "");
-                salvarDinamicoValor('corFilamento'+i, ex.cor || "");
-                salvarDinamicoValor('marcaFilamento'+i, ex.marca || "");
-                salvarDinamicoValor('precoFilamento'+i, ex.preco || "120,00");
-                salvarDinamicoValor('pesoPeca'+i, ex.peso || "");
-            });
-
+            p_extras.forEach((ex, idx) => { var i = idx + 2; salvarDinamicoValor('tipoFilamento'+i, ex.tipo || ""); salvarDinamicoValor('corFilamento'+i, ex.cor || ""); salvarDinamicoValor('marcaFilamento'+i, ex.marca || ""); salvarDinamicoValor('precoFilamento'+i, ex.preco || "120,00"); salvarDinamicoValor('pesoPeca'+i, ex.peso || ""); });
             renderCoresExtras();
-            
             p_extras.forEach((ex, idx) => {
                 var i = idx + 2;
                 setTimeout(() => {
                     var matchI = null;
                     if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); }
                     var selI = document.getElementById('sel_est_'+i);
-                    if(matchI) {
-                        if(selI) selI.value = matchI.id.toString();
-                        document.getElementById('precoFilamento'+i).value = matchI.preco;
-                        document.getElementById('marcaFilamento'+i).value = matchI.marca;
-                    } else {
-                        if(selI) selI.value = "";
-                    }
+                    if(matchI) { if(selI) selI.value = matchI.id.toString(); document.getElementById('precoFilamento'+i).value = matchI.preco; document.getElementById('marcaFilamento'+i).value = matchI.marca; } else { if(selI) selI.value = ""; }
                 }, 50);
             });
         } else {
-            if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1";
-            renderCoresExtras();
+            if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1"; renderCoresExtras();
         }
         
-        ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id));
-        calcular();
+        ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
     }
 
     function adicionarAoCarrinho() {
         var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome";
-        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
-        if(qtdPecas < 1) qtdPecas = 1;
+        var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1;
         var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase;
 
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
-        var tempoItem = pegaValor('tempoH') * qtdPecas;
-        var pesoItem = pegaValor('pesoPeca') * qtdPecas;
+        var tempoItem = pegaValor('tempoH') * qtdPecas; var pesoItem = pegaValor('pesoPeca') * qtdPecas;
         
         var depCalc = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem;
         var eneCalc = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem;
@@ -1028,16 +891,13 @@
         if (multiMatEnabled) { 
             var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; 
             for(var i = 2; i <= qtdEx + 1; i++) { 
-                var pesoE = pegaValor('pesoPeca'+i) * qtdPecas;
-                pesoItem += pesoE;
+                var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE;
                 var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120;
                 matTotalCalc += (precoE / 1000) * pesoE; 
-                
                 var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i);
                 var nomeMatI = (ti + ' ' + ci + ' ' + mi).trim();
                 if (nomeMatI === '') nomeMatI = 'Filamento ' + i;
                 if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)');
-
                 extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) });
             } 
         }
@@ -1065,10 +925,8 @@
             if(btnCancel) btnCancel.style.display = "none";
             showToast("🛒 Item atualizado no Pedido!");
         } else {
-            carrinho.push(novoItem);
-            showToast("🛒 Item adicionado ao Pedido!");
+            carrinho.push(novoItem); showToast("🛒 Item adicionado ao Pedido!");
         }
-
         resetarInputProjeto(); renderCarrinho(); calcular();
     }
 
@@ -1080,12 +938,11 @@
         resetarInputProjeto(); calcular(); showToast("❌ Edição cancelada");
     }
 
-    function removerDoCarrinho(id) { carrinho = carrinho.filter(i => i.id !== id); renderCarrinho(); calcular(); }
+    function removerDoCarrinho(id) { carrinho = carrinho.filter(i => i.id !== id); renderCarrinho(); }
 
     function editarItemCarrinho(id) {
         var item = carrinho.find(i => i.id === id); if(!item) return;
-        preencherFormProjeto(item);
-        editandoCarrinhoId = id;
+        preencherFormProjeto(item); editandoCarrinhoId = id;
         var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao');
         if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; }
         if(btnCancel) btnCancel.style.display = "block";
@@ -1114,18 +971,11 @@
 
         var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1;
         var cLog = pegaValor('custoEmbalagem') * totalQtd + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual');
-        
-        var totD = totValorComLucro + cLog + frete; 
-        var vShopeeBase = totValorComLucro + cLog + frete; 
-        
+        var totD = totValorComLucro + cLog + frete; var vShopeeBase = totValorComLucro + cLog;
         var avgBase = vShopeeBase / totalQtd; var pAvg1 = (avgBase + 4) / 0.80; var pAvg2 = (avgBase + 16) / 0.86; var pAvg3 = (avgBase + 20) / 0.86; var pAvg4 = (avgBase + 26) / 0.86; 
         var bestPAvg; if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2; else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4;
         var totS = bestPAvg * totalQtd;
-        
-        var avgBaseML = vShopeeBase / totalQtd; 
-        var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100)); 
-        var pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100)); 
-        var totM = pAvgML * totalQtd;
+        var avgBaseML = vShopeeBase / totalQtd; var pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100)); var pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100)); var totM = pAvgML * totalQtd;
 
         document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD);
         document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS); document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
@@ -1170,9 +1020,9 @@
                         var freteLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0);
                         var taxas = descontarTaxas(h.valorBruto, qtdItem);
                         
-                        if(h.canal === "Shopee") h.valorLiquido = taxas.shopee;
-                        else if(h.canal === "Meli") h.valorLiquido = taxas.meli;
-                        else h.valorLiquido = h.valorBruto;
+                        if(h.canal === "Shopee") h.valorLiquido = taxas.shopee - freteLog;
+                        else if(h.canal === "Meli") h.valorLiquido = taxas.meli - freteLog;
+                        else h.valorLiquido = h.valorBruto - freteLog;
                         
                         if(h.valorLiquido < 0) h.valorLiquido = 0;
                     });
@@ -1537,14 +1387,9 @@
     function calcular() {
         var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
         idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { localStorage.setItem('3d4y_dark_' + id, el.type === 'checkbox' ? el.checked : el.value); } });
-        
-        var isCart = carrinho && carrinho.length > 0;
-        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
-        if(totalQtd < 1) totalQtd = 1;
-
         var qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1;
         if(qtdPecas < 1) qtdPecas = 1;
-        
+
         var tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false;
         var tempoTotal = pegaValor('tempoH') * qtdPecas;
         var pesoTotalPrincipal = pegaValor('pesoPeca') * qtdPecas;
@@ -1566,10 +1411,10 @@
         var rEne = document.getElementById('r_ene'); if(rEne) rEne.textContent = formatarMoeda(ene); 
         var rMat = document.getElementById('r_mat'); if(rMat) rMat.textContent = formatarMoeda(matTotal); 
         var rGasto = document.getElementById('r_gasto'); if(rGasto) rGasto.textContent = formatarMoeda(custoProducao);
-        
-        var mInput = pegaValor('margemInput');
-        var lucroBrutoDesejado = custoProducao * (mInput / 100);
-        var valorComLucro = custoProducao + lucroBrutoDesejado;
+        var mInput = pegaValor('margemInput'), lucroBrutoDesejado = custoProducao * (mInput / 100), valorComLucro = custoProducao + lucroBrutoDesejado;
+        var isCart = carrinho && carrinho.length > 0;
+        var totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1);
+        if(totalQtd < 1) totalQtd = 1;
 
         var cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
         var frete = pegaValor('valorFreteManual');
@@ -1578,24 +1423,12 @@
             divResumoLog.style.display = 'block';
             var rLogFixo = document.getElementById('r_log_fixo'); if(rLogFixo) rLogFixo.textContent = formatarMoeda(cLog);
             var rLogFrete = document.getElementById('r_log_frete'); if(rLogFrete) rLogFrete.textContent = formatarMoeda(frete);
-            var rGastoTotal = document.getElementById('r_gasto_total'); 
-            if(rGastoTotal) rGastoTotal.textContent = formatarMoeda((isCart ? carrinho.reduce((a,b)=>a+b.custo, 0) : custoProducao) + cLog + frete);
+            var rGastoTotal = document.getElementById('r_gasto_total'); if(rGastoTotal) rGastoTotal.textContent = formatarMoeda(custoProducao + cLog + frete);
         }
         
-        var vd = 0, vShopeeBase = 0, custoProducaoTotal = 0;
+        var vd = valorComLucro + cLog + frete;
+        var vShopeeBase = valorComLucro + cLog;
         
-        if (isCart) {
-            var totCartCusto = carrinho.reduce((a,b)=>a+b.custo, 0);
-            var totCartVenda = carrinho.reduce((a,b)=>a+b.valorComLucro, 0);
-            custoProducaoTotal = totCartCusto;
-            vd = totCartVenda + cLog + frete;
-            vShopeeBase = totCartVenda + cLog + frete;
-        } else {
-            custoProducaoTotal = custoProducao;
-            vd = valorComLucro + cLog + frete;
-            vShopeeBase = valorComLucro + cLog + frete;
-        }
-
         var avgBase = vShopeeBase / totalQtd;
         var pAvg1 = (avgBase + 4) / 0.80; var pAvg2 = (avgBase + 16) / 0.86; 
         var pAvg3 = (avgBase + 20) / 0.86; var pAvg4 = (avgBase + 26) / 0.86; 
@@ -1613,10 +1446,9 @@
         var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd);
         var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS);
         var rVendaM = document.getElementById('r_vendaM'); if(rVendaM) rVendaM.textContent = formatarMoeda(totM);
-        
-        var lucroD = vd - custoProducaoTotal - cLog - frete;
-        var netS = descontarTaxas(totS, totalQtd).shopee; var lucroS = netS - custoProducaoTotal - cLog - frete;
-        var netM = descontarTaxas(totM, totalQtd).meli; var lucroM = netM - custoProducaoTotal - cLog - frete;
+        var lucroD = vd - custoProducao - cLog - frete;
+        var netS = descontarTaxas(totS, totalQtd).shopee; var lucroS = netS - custoProducao - cLog - frete;
+        var netM = descontarTaxas(totM, totalQtd).meli; var lucroM = netM - custoProducao - cLog - frete;
 
         var tagD = document.getElementById('tag_lucroD'); if(tagD) tagD.textContent = "Lucro: R$ " + formatarMoeda(lucroD);
         var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS);
@@ -1637,11 +1469,10 @@
             totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0);
             if(totalQtd < 1) totalQtd = 1;
             carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
-            
             if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; } 
-            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('r_vendaD').textContent); } 
-            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('r_vendaS').textContent); } 
-            else { valorBruto = parseLocal(document.getElementById('r_vendaM').textContent); }
+            else if(canal === "Direta") { valorBruto = parseLocal(document.getElementById('cart_tot_vd').textContent); } 
+            else if(canal === "Shopee") { valorBruto = parseLocal(document.getElementById('cart_tot_vs').textContent); } 
+            else { valorBruto = parseLocal(document.getElementById('cart_tot_vm').textContent); }
             
             cLog = (pegaValor('custoEmbalagem') * totalQtd) + pegaValor('custoDeslocamento');
             freteCalculado = pegaValor('valorFreteManual');
@@ -1679,9 +1510,9 @@
         var net = descontarTaxas(valorBruto, totalQtd);
         var valorVendaFinal = 0;
 
-        if(canal === "Shopee") { valorVendaFinal = net.shopee; } 
-        else if(canal === "Meli") { valorVendaFinal = net.meli; } 
-        else { valorVendaFinal = valorBruto; }
+        if(canal === "Shopee") { valorVendaFinal = net.shopee - freteCalculado - cLog; } 
+        else if(canal === "Meli") { valorVendaFinal = net.meli - freteCalculado - cLog; } 
+        else { valorVendaFinal = valorBruto - freteCalculado - cLog; }
 
         if(valorVendaFinal < 0) valorVendaFinal = 0;
         var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado';
@@ -1732,7 +1563,6 @@
             valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteCalculado, logistica: cLog, 
             peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')) 
         };
-        
         if (editHistoricoId) {
             var idx = historico.findIndex(h => h.id === editHistoricoId);
             if (idx > -1) { historico[idx] = novo; }
@@ -1768,19 +1598,82 @@
         carrinho = [];
         document.getElementById('carrinho_container').style.display = 'none';
 
-        if (item.cartItems && item.cartItems.length > 0) {
+        var prod;
+        if (item.cartItems && item.cartItems.length === 1) {
+            prod = item.cartItems[0];
+        } else if (item.cartItems && item.cartItems.length > 1) {
             carrinho = JSON.parse(JSON.stringify(item.cartItems));
             renderCarrinho();
-            resetarInputProjeto();
+            document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('nomeProjeto').value = ""; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = "";
         } else {
             var matchOld = item.nome.match(/^(\d+)x\s(.*)/);
             var qtdOld = matchOld ? parseInt(matchOld[1]) : (item.totalQtd || 1);
-            var prod = { nome: item.nome, qtd: qtdOld, tempo: item.tempo, peso: item.peso, tipo1: item.tipo1, cor1: item.cor1, marca1: item.marca1, preco1: item.preco1, multi: item.multi, qtdCores: item.qtdCores, extras: item.extras };
-            preencherFormProjeto(prod);
+            prod = { nome: item.nome, qtd: qtdOld, tempo: item.tempo, peso: item.peso };
         }
 
-        document.getElementById('nomeCliente').value = item.cliente || ""; 
-        document.getElementById('telefoneCliente').value = item.telefone || "";
+        if (prod) {
+            var match = prod.nome.match(/^(\d+)x\s(.*)/);
+            var qtd = match ? parseInt(match[1]) : (prod.qtd || item.totalQtd || 1);
+            var baseNome = match ? match[2] : prod.nome;
+            document.getElementById('nomeProjeto').value = baseNome;
+            document.getElementById('qtdPecasProjeto').value = qtd;
+            document.getElementById('tempoH').value = formatarMoeda((prod.tempo || item.tempo) / qtd);
+            document.getElementById('pesoPeca').value = formatarMoeda((prod.peso || item.peso) / qtd);
+            var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim());
+            var selCat = document.getElementById('sel_catalogo');
+            if(matchCat) { if(selCat) selCat.value = matchCat.id.toString();
+            } else { if(selCat) selCat.value = ""; }
+
+            document.getElementById('tipoFilamento1').value = prod.tipo1 || "";
+            document.getElementById('corFilamento1').value = prod.cor1 || "";
+            document.getElementById('marcaFilamento1').value = prod.marca1 || "";
+
+            var match1 = null;
+            if(prod.tipo1) { match1 = estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1 && e.marca === prod.marca1) || estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1); }
+            var sel1 = document.getElementById('sel_est_1');
+            if(match1) { 
+                if(sel1) sel1.value = match1.id.toString();
+                document.getElementById('marcaFilamento1').value = match1.marca;
+                document.getElementById('precoFilamento').value = match1.preco;
+            } else {
+                if(sel1) sel1.value = "";
+            }
+            document.getElementById('detalhes_1').style.display = (prod.tipo1) ? 'block' : 'none';
+            var tMulti = document.getElementById('toggle_multi_mat');
+            if(tMulti) { tMulti.checked = prod.multi || false; tMulti.dispatchEvent(new Event('change'));
+            }
+
+            if(prod.multi && prod.extras) {
+                document.getElementById('qtdCoresExtras').value = prod.qtdCores || "1";
+                renderCoresExtras();
+                prod.extras.forEach((ex, idx) => {
+                    var i = idx + 2;
+                    setTimeout(() => {
+                        if(document.getElementById('tipoFilamento'+i)) {
+                            document.getElementById('tipoFilamento'+i).value = ex.tipo || "";
+                            document.getElementById('corFilamento'+i).value = ex.cor || "";
+                            document.getElementById('pesoPeca'+i).value = ex.peso || "";
+                            
+                            var matchI = null;
+                            if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); }
+                            var selI = document.getElementById('sel_est_'+i);
+                            if(matchI) {
+                                if(selI) selI.value = matchI.id.toString();
+                                document.getElementById('precoFilamento'+i).value = matchI.preco;
+                                document.getElementById('marcaFilamento'+i).value = matchI.marca;
+                            } else {
+                                if(selI) selI.value = "";
+                                document.getElementById('precoFilamento'+i).value = ex.preco || "120,00";
+                                document.getElementById('marcaFilamento'+i).value = ex.marca || "";
+                            }
+                        }
+                    }, 50);
+                });
+            }
+            salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
+        }
+
+        document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
         var tUrgente = document.getElementById('toggle_urgente');
         if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
         
@@ -1799,8 +1692,7 @@
         mostrarValorPersonalizado();
 
         if (item.logistica > 0 || item.frete > 0) {
-            var qtd = item.totalQtd || 1;
-            document.getElementById('custoEmbalagem').value = formatarMoeda((item.logistica || 0) / qtd);
+            document.getElementById('custoEmbalagem').value = formatarMoeda(item.logistica || 0);
             document.getElementById('custoDeslocamento').value = "0,00";
             var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0);
         }
@@ -1835,7 +1727,6 @@
 
         var campoBusca = document.getElementById('buscaCliente');
         var termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
-        
         historico.forEach(function(item) {
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
             counts[st] = (counts[st] || 0) + 1;
@@ -1846,7 +1737,6 @@
                 var canalStr = item.canal || "Direta";
                 var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
                 var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq;
-                
                 var lucroItem = valLiq - custoItem - freteLogItem;
 
                 somaCusto += custoItem; somaLogistica += freteLogItem; somaBruto += valBruto; somaLiquido += valLiq; somaLucro += lucroItem; qtdValida++;
@@ -1867,7 +1757,6 @@
 
         var lblOdometro = document.getElementById('lbl_horas_totais_maquina');
         if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
-        
         var txtVida = document.getElementById('txt_vida_util');
         var barVida = document.getElementById('bar_vida_util');
         var msgVida = document.getElementById('msg_vida_util');
@@ -1937,9 +1826,7 @@
         itensFiltrados.forEach(function(item, index) {
             var custoItem = parseLocal(item.custo); var freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0); var canalStr = item.canal || "Direta";
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
-            var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq; 
-            
-            var lucroItem = valLiq - custoItem - freteLogItem;
+            var valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq; var lucroItem = valLiq - custoItem - freteLogItem;
             
             var tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981";
             var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
@@ -2298,8 +2185,7 @@
         currentY = doc.lastAutoTable.finalY + 15;
 
         if (tableDataDevolucoes.length > 0) {
-            if (currentY > 170) { doc.addPage();
-                currentY = 20; }
+            if (currentY > 170) { doc.addPage(); currentY = 20; }
             doc.setFontSize(12); doc.setFont(undefined, 'bold');
             doc.setTextColor(239, 68, 68);
             doc.text("Histórico de Devoluções", 14, currentY);
@@ -2335,132 +2221,132 @@
         doc.save("Relatorio_Geral_3D4You.pdf");
         showToast("📄 Relatório PDF Gerado!");
     };
-
+    
     window.exportarExcel = function() {
-        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { 
-            showToast("⚠️ Nenhum dado para exportar");
-            return; 
-        }
+        if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar");
+        return; }
         var wb = XLSX.utils.book_new();
         var vendasValidas = historico.filter(h => h.status !== 'Devolução');
         var devolucoes = historico.filter(h => h.status === 'Devolução');
-        
         if (vendasValidas.length > 0) {
-            var dadosVendas = vendasValidas.map(h => ({
-                "Data": h.data,
-                "Cliente": h.cliente || 'Balcão',
-                "Projeto": h.nome,
-                "Status": h.status,
-                "Canal": h.canal,
-                "Bruto (R$)": h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda),
-                "Líquido (R$)": h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda,
-                "Custo Fab (R$)": h.custo,
-                "Log/Frete (R$)": (h.frete || 0) + (h.logistica || 0),
-                "Lucro (R$)": (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0),
-                "Tempo (h)": h.tempo,
-                "Peso (g)": h.peso
-            }));
-            var wsVendas = XLSX.utils.json_to_sheet(dadosVendas);
-            XLSX.utils.book_append_sheet(wb, wsVendas, "Vendas");
+            var dadosVendas = vendasValidas.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, "Bruto (R$)": h.valorBruto || (h.valorLiquido || h.valorVenda), "Líquido (R$)": h.valorLiquido || h.valorVenda, "Custo (R$)": h.custo, "Log+Frete (R$)": (h.frete || 0) + (h.logistica || 0), "Lucro (R$)": (h.valorLiquido || h.valorVenda) - h.custo - (h.frete || 0) - (h.logistica || 0), "Materiais": h.materiais, "Tempo (h)": h.tempo, "Qtd": h.totalQtd }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas");
         }
         
         if (devolucoes.length > 0) {
-            var dadosDevolucoes = devolucoes.map(h => ({
-                "Data": h.data,
-                "Cliente": h.cliente || 'Balcão',
-                "Projeto": h.nome,
-                "Status": h.status,
-                "Canal": h.canal,
-                "Valor Estornado (R$)": h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda,
-                "Tempo Gasto (h)": h.tempo,
-                "Peso Gasto (g)": h.peso
-            }));
-            var wsDevolucoes = XLSX.utils.json_to_sheet(dadosDevolucoes);
-            XLSX.utils.book_append_sheet(wb, wsDevolucoes, "Devoluções");
+            var dadosDev = devolucoes.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Canal Estornado": h.canal, "Valor Estornado (R$)": h.valorLiquido || h.valorVenda, "Materiais": h.materiais, "Qtd Devolvida": h.totalQtd }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDev), "Devoluções");
         }
 
         if (despesas.length > 0) {
-            var dadosDespesas = despesas.map(d => ({
-                "Data": d.data,
-                "Qtd": d.qtd,
-                "Descrição": d.nome,
-                "Valor (R$)": d.valor
-            }));
-            var wsDespesas = XLSX.utils.json_to_sheet(dadosDespesas);
-            XLSX.utils.book_append_sheet(wb, wsDespesas, "Despesas");
+            var dadosDespesas = despesas.map(d => ({ "Data": d.data, "Quantidade": d.qtd, "Descrição": d.nome, "Valor Total (R$)": d.valor }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDespesas), "Despesas");
         }
-
+        
         if (estoque.length > 0) {
-            var dadosEstoque = estoque.map(e => ({
-                "Tipo": e.tipo,
-                "Cor": e.cor,
-                "Marca": e.marca,
-                "Preço Pago (R$)": e.preco
-            }));
-            var wsEstoque = XLSX.utils.json_to_sheet(dadosEstoque);
-            XLSX.utils.book_append_sheet(wb, wsEstoque, "Estoque");
+            var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço Pago (R$)": e.preco }));
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), "Estoque");
         }
-
+        
         if (catalogo.length > 0) {
-            var dadosCatalogo = catalogo.map(c => ({
-                "Produto": c.nome,
-                "Tempo (h)": c.tempo,
-                "Peso Principal (g)": c.peso1,
-                "Preço Fixo (R$)": c.precoFixo || "N/A"
-            }));
-            var wsCatalogo = XLSX.utils.json_to_sheet(dadosCatalogo);
-            XLSX.utils.book_append_sheet(wb, wsCatalogo, "Catálogo");
+            var dadosCatalogo = catalogo.map(c => {
+                var pesoTotal = parseLocal(c.peso1); if(c.multi && c.extras && c.extras.length > 0) { c.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
+                return { "Nome do Projeto": c.nome, "Preço Salvo (R$)": c.precoFixo 
+                || "-", "Tempo de Impressão (h)": c.tempo, "Peso Total (g)": formatarMoeda(pesoTotal), "Multi-Cor": c.multi ? "Sim" : "Não" };
+            });
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo");
         }
 
-        XLSX.writeFile(wb, "Relatorio_3D4You.xlsx");
-        showToast("📊 Excel Exportado com Sucesso!");
+        var dadosConfig = [{
+            "Máquina (R$)": window.configGlobais.maquina ||
+            "3.275",
+            "Vida Útil (h)": window.configGlobais.vidaUtil ||
+            "3.000",
+            "Consumo (W)": window.configGlobais.consumoW ||
+            "350",
+            "Preço kWh (R$)": window.configGlobais.precoKwh ||
+            "1,20",
+            "Aviso Manutenção (h)": window.configGlobais.qa_aviso ||
+            "100",
+            "Custo Embalagem (R$)": window.configGlobais.custoEmbalagem ||
+            "0,00",
+            "Custo Deslocamento (R$)": window.configGlobais.custoDeslocamento ||
+            "0,00",
+            "Taxa M. Livre (%)": window.configGlobais.taxaMeli ||
+            "17",
+            "Taxa Fixa M. Livre (R$)": window.configGlobais.fixaMeli ||
+            "6,75",
+            "Taxa Sucesso Padrão (%)": window.configGlobais.taxaSucesso ||
+            "80",
+            "Margem de Lucro Padrão (%)": window.configGlobais.margemLucro ||
+            "80"
+        }];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosConfig), "Configurações");
+
+        XLSX.writeFile(wb, "3D4You_Backup_Completo.xlsx");
+        showToast("📊 Backup Excel baixado!");
     };
-
-    window.fazerBackupJSON = function() {
-        var dadosCompletos = {
-            historico: historico,
-            estoque: estoque,
-            catalogo: catalogo,
-            despesas: despesas,
-            configGlobais: window.configGlobais,
-            qaOffset: window.qaOffset
-        };
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosCompletos));
-        var downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", "Backup_3D4You_Seguro.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-        showToast("📦 Backup descarregado com sucesso!");
-    };
-
-    window.importarBackupJSON = function(input) {
-        var file = input.files[0];
-        if (!file) return;
-
+    
+    window.importarExcel = function(input) {
         var reader = new FileReader();
         reader.onload = function(e) {
-            try {
-                var dados = JSON.parse(e.target.result);
-                historico = dados.historico || [];
-                estoque = dados.estoque || [];
-                catalogo = dados.catalogo || [];
-                despesas = dados.despesas || [];
-                window.configGlobais = dados.configGlobais || window.configGlobais;
-                window.qaOffset = dados.qaOffset || 0;
-                
-                syncNuvem();
-                
-                showToast("📥 Base de dados restaurada!");
-                setTimeout(() => location.reload(), 1500);
-            } catch (error) {
-                alert("❌ Erro ao ler o ficheiro. Certifica-te de que escolheste o ficheiro .json correto!");
-                console.error(error);
+            var data = new Uint8Array(e.target.result);
+            var workbook = XLSX.read(data, {type: 'array'});
+            
+            if (workbook.Sheets["Vendas"]) {
+                var jsonVendas = XLSX.utils.sheet_to_json(workbook.Sheets["Vendas"]);
+                historico = jsonVendas.map(v => ({
+                    id: Date.now() + Math.random(),
+                    data: v["Data"],
+                    cliente: v["Cliente"],
+                    nome: v["Projeto"],
+                    status: v["Status"],
+                    canal: v["Canal"],
+                    valorBruto: v["Bruto (R$)"],
+                    valorLiquido: v["Líquido (R$)"],
+                    custo: v["Custo (R$)"],
+                    frete: v["Log+Frete (R$)"],
+                    materiais: v["Materiais"],
+                    tempo: v["Tempo (h)"],
+                    totalQtd: v["Qtd"]
+                }));
             }
+            
+            if (workbook.Sheets["Estoque"]) {
+                estoque = XLSX.utils.sheet_to_json(workbook.Sheets["Estoque"]).map(e => ({
+                    id: Date.now() + Math.random(),
+                    tipo: e["Tipo"],
+                    cor: e["Cor"],
+                    marca: e["Marca"],
+                    preco: e["Preço Pago (R$)"]
+                }));
+            }
+
+            if (workbook.Sheets["Catálogo"]) {
+                catalogo = XLSX.utils.sheet_to_json(workbook.Sheets["Catálogo"]).map(c => ({
+                    id: Date.now() + Math.random(),
+                    nome: c["Nome do Projeto"],
+                    precoFixo: c["Preço Salvo (R$)"] !== "-" ? c["Preço Salvo (R$)"] : "",
+                    tempo: c["Tempo de Impressão (h)"],
+                    multi: c["Multi-Cor"] === "Sim"
+                }));
+            }
+
+            if (workbook.Sheets["Despesas"]) {
+                despesas = XLSX.utils.sheet_to_json(workbook.Sheets["Despesas"]).map(d => ({
+                    id: Date.now() + Math.random(),
+                    data: d["Data"],
+                    qtd: d["Quantidade"],
+                    nome: d["Descrição"],
+                    valor: d["Valor Total (R$)"]
+                }));
+            }
+
+            syncNuvem();
+            showToast("📥 Dados Importados com Sucesso!");
+            setTimeout(() => location.reload(), 1500);
         };
-        reader.readAsText(file);
-        input.value = ""; 
+        reader.readAsArrayBuffer(input.files[0]);
     };
 </script>
 </body>
