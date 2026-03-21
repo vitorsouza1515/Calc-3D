@@ -108,35 +108,7 @@ function descontarTaxas(valorBruto, qtdTotal) { var avgBruto = valorBruto / qtdT
 // 8. LIMPEZA E PREENCHIMENTO DO PROJETO
 // ==========================================
 
-function resetarInputProjeto() {
-    document.getElementById('nomeProjeto').value = "";
-    document.getElementById('qtdPecasProjeto').value = "1";
-    document.getElementById('tempoH').value = "";
-    document.getElementById('pesoPeca').value = "";
-    
-    var sel1 = document.getElementById('sel_est_1');
-    if(sel1) sel1.value = "";
-    
-    document.getElementById('tipoFilamento1').value = "";
-    document.getElementById('corFilamento1').value = "";
-    document.getElementById('marcaFilamento1').value = "";
-    document.getElementById('precoFilamento').value = "120,00";
-    document.getElementById('detalhes_1').style.display = 'none';
-    
-    var tMulti = document.getElementById('toggle_multi_mat');
-    if(tMulti && tMulti.checked) {
-        tMulti.checked = false;
-        tMulti.dispatchEvent(new Event('change'));
-    }
-    
-    document.getElementById('fotoUrlProjeto').value = "";
-    var prev = document.getElementById('previewFotoMain');
-    if(prev) prev.style.display = "none";
-    
-    // Limpa a memória principal
-    ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain', 'fotoUrlProjeto'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
-    
-    // O VERDADEIRO EXORCISMO: Limpa a memória fantasma de TODOS os filamentos extras!
+function limparFantasmasMultiCor() {
     for(var i = 2; i <= 15; i++) {
         localStorage.removeItem('3d4y_dark_tipoFilamento' + i);
         localStorage.removeItem('3d4y_dark_corFilamento' + i);
@@ -144,14 +116,43 @@ function resetarInputProjeto() {
         localStorage.removeItem('3d4y_dark_precoFilamento' + i);
         localStorage.removeItem('3d4y_dark_pesoPeca' + i);
     }
-    
     var qCores = document.getElementById('qtdCoresExtras');
     if (qCores) qCores.value = "1";
+    if(typeof renderCoresExtras === 'function') renderCoresExtras();
+}
+
+function resetarInputProjeto() {
+    document.getElementById('nomeProjeto').value = ""; document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = ""; 
+    var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = ""; 
+    document.getElementById('tipoFilamento1').value = ""; document.getElementById('corFilamento1').value = ""; document.getElementById('marcaFilamento1').value = ""; document.getElementById('precoFilamento').value = "120,00"; document.getElementById('detalhes_1').style.display = 'none'; 
+    var tMulti = document.getElementById('toggle_multi_mat'); 
+    if(tMulti && tMulti.checked) { tMulti.checked = false; tMulti.dispatchEvent(new Event('change')); } 
+    document.getElementById('fotoUrlProjeto').value = ""; var prev = document.getElementById('previewFotoMain'); if(prev) prev.style.display = "none"; 
     
-    // Força a tela a re-renderizar os campos extras (agora vazios)
-    if(typeof renderCoresExtras === 'function') {
-        renderCoresExtras();
-    }
+    ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain', 'fotoUrlProjeto'].forEach(id => localStorage.removeItem('3d4y_dark_' + id)); 
+    
+    limparFantasmasMultiCor();
+}
+
+function preencherFormProjeto(prod) {
+    var match = prod.nome.match(/^(\d+)x\s(.*)/), qtd = match ? parseInt(match[1]) : (prod.qtd || 1), baseNome = match ? match[2] : prod.nome; document.getElementById('nomeProjeto').value = baseNome; document.getElementById('qtdPecasProjeto').value = qtd; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim()), selCat = document.getElementById('sel_catalogo'); if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
+    var p_tipo1 = prod.tipo1 || (matchCat ? matchCat.tipo1 : ""), p_cor1 = prod.cor1 || (matchCat ? matchCat.cor1 : ""), p_marca1 = prod.marca1 || (matchCat ? matchCat.marca1 : ""), p_preco1 = prod.preco1 || (matchCat ? matchCat.preco1 : "120,00"), p_multi = prod.multi !== undefined ? prod.multi : (matchCat ? matchCat.multi : false), p_qtdCores = prod.qtdCores || (matchCat ? matchCat.qtdCores : "1"), p_extras = prod.extras || (matchCat ? matchCat.extras : []);
+    document.getElementById('tempoH').value = prod.tempo1 || (prod.tempo ? formatarMoeda((prod.tempo) / qtd) : (matchCat ? matchCat.tempo : "")); document.getElementById('pesoPeca').value = prod.peso1 || (prod.peso ? formatarMoeda((prod.peso) / qtd) : (matchCat ? matchCat.peso1 : "")); if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso; if (prod.margemLucro) { document.getElementById('margemInput').value = prod.margemLucro; document.getElementById('margemSlider').value = prod.margemLucro; updateSliderProgress(document.getElementById('margemSlider')); }
+    document.getElementById('tipoFilamento1').value = p_tipo1; document.getElementById('corFilamento1').value = p_cor1; document.getElementById('marcaFilamento1').value = p_marca1; document.getElementById('precoFilamento').value = p_preco1; var match1 = null; if(p_tipo1) { match1 = estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1 && e.marca === p_marca1) || estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1); } var sel1 = document.getElementById('sel_est_1'); if(match1) { if(sel1) sel1.value = match1.id.toString(); document.getElementById('marcaFilamento1').value = match1.marca; document.getElementById('precoFilamento').value = match1.preco; } else { if(sel1) sel1.value = ""; } document.getElementById('detalhes_1').style.display = (p_tipo1) ? 'block' : 'none';
+    var fotoUrl = prod.foto || (matchCat ? matchCat.foto : ""); document.getElementById('fotoUrlProjeto').value = fotoUrl; salvarDinamico('fotoUrlProjeto'); var preview = document.getElementById('previewFotoMain'); if (fotoUrl) { preview.style.backgroundImage = `url('${fotoUrl}')`; preview.style.display = "block"; } else { preview.style.display = "none"; }
+    
+    limparFantasmasMultiCor(); // EXORCIZA TUDO ANTES DE CARREGAR!
+    
+    var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = p_multi; tMulti.dispatchEvent(new Event('change')); } 
+    if(p_multi && p_extras && p_extras.length > 0) { 
+        document.getElementById('qtdCoresExtras').value = p_qtdCores; 
+        p_extras.forEach((ex, idx) => { var i = idx + 2; salvarDinamicoValor('tipoFilamento'+i, ex.tipo || ""); salvarDinamicoValor('corFilamento'+i, ex.cor || ""); salvarDinamicoValor('marcaFilamento'+i, ex.marca || ""); salvarDinamicoValor('precoFilamento'+i, ex.preco || ""); salvarDinamicoValor('pesoPeca'+i, ex.peso || ""); }); 
+        renderCoresExtras(); 
+        p_extras.forEach((ex, idx) => { var i = idx + 2; setTimeout(() => { var matchI = null; if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); } var selI = document.getElementById('sel_est_'+i); if(matchI) { if(selI) selI.value = matchI.id.toString(); document.getElementById('precoFilamento'+i).value = matchI.preco; document.getElementById('marcaFilamento'+i).value = matchI.marca; } else { if(selI) selI.value = ""; } }, 50); }); 
+    } else { 
+        if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1"; renderCoresExtras(); 
+    } 
+    ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
 }
 
 // ==========================================
@@ -176,10 +177,6 @@ function renderCarrinho() {
     carrinho.forEach(item => { totCusto += item.custo; totValorComLucro += item.valorComLucro; var htmlFoto = item.foto ? `<div style="width:30px; height:30px; border-radius:4px; background-image:url('${item.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : ''; lista.innerHTML += `<div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border); display:flex; align-items:center;">${htmlFoto}<div style="flex:1;"><button onclick="editarItemCarrinho(${item.id})" style="position: absolute; right: 35px; top: 5px; background: none; border: none; color: var(--sky); font-size: 1rem; cursor: pointer;">✎</button><button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-size: 1rem; font-weight: bold; cursor: pointer;">×</button><div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 50px;">${item.nome}</div><div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div></div></div>`; });
     var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1; var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual'); var totD = totValorComLucro + cLog + frete, vShopeeBase = totValorComLucro + cLog, avgBase = vShopeeBase / totalQtd, pAvg1 = (avgBase + 4) / 0.80, pAvg2 = (avgBase + 16) / 0.86, pAvg3 = (avgBase + 20) / 0.86, pAvg4 = (avgBase + 26) / 0.86, bestPAvg; if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2; else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4; var totS = bestPAvg * totalQtd, avgBaseML = vShopeeBase / totalQtd, pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100)), pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100)), totM = pAvgML * totalQtd; document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD); document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS); document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
 }
-
-// ==========================================
-// 10. CATÁLOGO
-// ==========================================
 
 // ==========================================
 // 10. CATÁLOGO
@@ -221,8 +218,6 @@ function salvarNoCatalogo() {
             var pAntigo = catalogo[idx];
             var nomeMinusculo = (pAntigo.nome || "").toLowerCase().trim();
             var vendasAfetadas = historico.filter(h => (h.nome || "").toLowerCase().trim().includes(nomeMinusculo));
-            
-            // Pergunta se deseja atualizar o histórico com as edições feitas
             if (vendasAfetadas.length > 0) {
                 if (confirm(`Deseja atualizar o PESO e TEMPO das ${vendasAfetadas.length} venda(s) deste produto no histórico e recalcular o lucro?`)) {
                     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'), custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh), novoTempoUnit = pegaValor('tempoH'), novoPesoUnit = pegaValor('pesoPeca'), precoFilamentoUnit = pegaValor('precoFilamento') || 120, taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
@@ -273,27 +268,11 @@ function renderCatalogo() {
 function carregarDoCatalogo() { var id = document.getElementById('sel_catalogo').value; if(!id) { resetarInputProjeto(); document.getElementById('canalVendaSelecionado').value = "Direta"; document.getElementById('valorPersonalizado').value = ""; mostrarValorPersonalizado(); var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none'; document.getElementById('precoFixoCatMain').value = ''; calcular(); return; } aplicarDadosNoForm(id, false); showToast("🏷️ Dados carregados!"); }
 
 function editarDoCatalogo(id) {
-    aplicarDadosNoForm(id, true);
-    editCatalogoId = id; // Seta o ID globalmente
-    
-    // Altera o botão principal da tela para o modo "Edição"
-    var btnMain = document.getElementById('btn_salvar_catalogo_main');
-    if (btnMain) {
-        btnMain.textContent = "💾 Confirmar Edição no Catálogo";
-        btnMain.style.background = "var(--sky)";
-    }
-    var btnCancel = document.getElementById('btn_cancelar_catalogo_main');
-    if (btnCancel) btnCancel.style.display = "inline-block";
-
-    // Fecha o modal e a gaveta para o usuário cair direto nos inputs da tela principal
-    window.fecharModal('catalogoModal');
-    window.fecharGaveta();
-
-    // Rola para o topo para o usuário ver os campos que vai editar
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    var dash = document.querySelector('.dashboard');
-    if (dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
-
+    aplicarDadosNoForm(id, true); editCatalogoId = id;
+    var btnMain = document.getElementById('btn_salvar_catalogo_main'); if (btnMain) { btnMain.textContent = "💾 Confirmar Edição no Catálogo"; btnMain.style.background = "var(--sky)"; }
+    var btnCancel = document.getElementById('btn_cancelar_catalogo_main'); if (btnCancel) btnCancel.style.display = "inline-block";
+    window.fecharModal('catalogoModal'); window.fecharGaveta();
+    window.scrollTo({ top: 0, behavior: 'smooth' }); var dash = document.querySelector('.dashboard'); if (dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
     showToast("✏️ Produto carregado para edição!");
 }
 
@@ -302,16 +281,14 @@ function aplicarDadosNoForm(id, isEditing = false) {
     var fakeProd = { nome: p.nome, qtd: 1, tempo1: p.tempo, peso1: p.peso1, tipo1: p.tipo1, cor1: p.cor1, marca1: p.marca1, preco1: p.preco1, multi: p.multi, qtdCores: p.qtdCores, extras: p.extras, foto: p.foto };
     preencherFormProjeto(fakeProd);
     var elPrecoFixo = document.getElementById('precoFixoCatMain'); var boxPreco = document.getElementById('boxPrecoFixo');
-    if(isEditing) { 
-        if(elPrecoFixo && boxPreco) { boxPreco.style.display = 'flex'; elPrecoFixo.value = p.precoFixo || ''; salvarDinamico('precoFixoCatMain'); } 
-    } else { 
-        if(boxPreco) boxPreco.style.display = 'none'; if(elPrecoFixo) { elPrecoFixo.value = ''; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); } 
-    }
+    if(isEditing) { if(elPrecoFixo && boxPreco) { boxPreco.style.display = 'flex'; elPrecoFixo.value = p.precoFixo || ''; salvarDinamico('precoFixoCatMain'); } } 
+    else { if(boxPreco) boxPreco.style.display = 'none'; if(elPrecoFixo) { elPrecoFixo.value = ''; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); } }
     if (p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0) { document.getElementById('canalVendaSelecionado').value = 'Personalizado'; document.getElementById('valorPersonalizado').value = p.precoFixo; salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado(); } else { document.getElementById('canalVendaSelecionado').value = 'Direta'; document.getElementById('valorPersonalizado').value = ''; salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado(); }
     calcular();
 }
 
 function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); renderCatalogo(); } }
+
 // ==========================================
 // 11. GESTÃO DE ESTOQUE
 // ==========================================
@@ -364,9 +341,8 @@ window.onload = function() {
         tMulti.addEventListener('change', () => { 
             sMulti.style.display = tMulti.checked ? 'block' : 'none'; 
             localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); 
-            if(tMulti.checked && !localStorage.getItem('3d4y_dark_tipoFilamento2')){
-                 var qCores = document.getElementById('qtdCoresExtras');
-                 if(qCores) qCores.value = "1";
+            if(!tMulti.checked) {
+                 limparFantasmasMultiCor(); // Wipes memory when turned OFF
             }
             calcular(); 
         }); 
@@ -459,10 +435,18 @@ function editarItemHistorico(id) {
         var match1 = null; if(prod.tipo1) { match1 = estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1 && e.marca === prod.marca1) || estoque.find(e => e.tipo === prod.tipo1 && e.cor === prod.cor1); }
         var sel1 = document.getElementById('sel_est_1'); if(match1) { if(sel1) sel1.value = match1.id.toString(); document.getElementById('marcaFilamento1').value = match1.marca; document.getElementById('precoFilamento').value = match1.preco; } else { if(sel1) sel1.value = ""; }
         document.getElementById('detalhes_1').style.display = (prod.tipo1) ? 'block' : 'none';
+        
+        limparFantasmasMultiCor(); // WIPE ANTES DE EDITAR
+
         var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = prod.multi || false; tMulti.dispatchEvent(new Event('change')); }
         if(prod.multi && prod.extras) {
-            document.getElementById('qtdCoresExtras').value = prod.qtdCores || "1"; renderCoresExtras();
-            prod.extras.forEach((ex, idx) => { var i = idx + 2; setTimeout(() => { if(document.getElementById('tipoFilamento'+i)) { document.getElementById('tipoFilamento'+i).value = ex.tipo || ""; document.getElementById('corFilamento'+i).value = ex.cor || ""; document.getElementById('pesoPeca'+i).value = ex.peso || ""; var matchI = null; if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); } var selI = document.getElementById('sel_est_'+i); if(matchI) { if(selI) selI.value = matchI.id.toString(); document.getElementById('precoFilamento'+i).value = matchI.preco; document.getElementById('marcaFilamento'+i).value = matchI.marca; } else { if(selI) selI.value = ""; document.getElementById('precoFilamento'+i).value = ex.preco || "120,00"; document.getElementById('marcaFilamento'+i).value = ex.marca || ""; } } }, 50); });
+            document.getElementById('qtdCoresExtras').value = prod.qtdCores || "1"; 
+            prod.extras.forEach((ex, idx) => { 
+                var i = idx + 2; 
+                salvarDinamicoValor('tipoFilamento'+i, ex.tipo || ""); salvarDinamicoValor('corFilamento'+i, ex.cor || ""); salvarDinamicoValor('marcaFilamento'+i, ex.marca || ""); salvarDinamicoValor('precoFilamento'+i, ex.preco || ""); salvarDinamicoValor('pesoPeca'+i, ex.peso || ""); 
+            });
+            renderCoresExtras();
+            prod.extras.forEach((ex, idx) => { var i = idx + 2; setTimeout(() => { var matchI = null; if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); } var selI = document.getElementById('sel_est_'+i); if(matchI) { if(selI) selI.value = matchI.id.toString(); document.getElementById('precoFilamento'+i).value = matchI.preco; document.getElementById('marcaFilamento'+i).value = matchI.marca; } else { if(selI) selI.value = ""; } }, 50); });
         }
         salvarDinamico('nomeProjeto'); salvarDinamico('qtdPecasProjeto'); salvarDinamico('tempoH'); salvarDinamico('pesoPeca');
     }
