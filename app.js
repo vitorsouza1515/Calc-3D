@@ -1,8 +1,3 @@
-Tá na mão! Código completinho, já com as duas correções inseridas (no `renderCoresExtras` e no `window.onload`). 
-
-É só copiar tudo aqui embaixo, dar aquele `Ctrl+A` e `Ctrl+V` no seu arquivo original e testar a assombração indo embora kkkk:
-
-```javascript
 // ==========================================
 // 1. INICIALIZAÇÃO, SERVICE WORKER E UI
 // ==========================================
@@ -539,4 +534,3 @@ window.forcarRecalculoGeral = function() {
     });
     syncNuvem(); renderHistorico(); showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); fecharModal('configModal');
 };
-```
