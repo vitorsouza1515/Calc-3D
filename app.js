@@ -108,14 +108,50 @@ function descontarTaxas(valorBruto, qtdTotal) { var avgBruto = valorBruto / qtdT
 // 8. LIMPEZA E PREENCHIMENTO DO PROJETO
 // ==========================================
 
-function resetarInputProjeto() { document.getElementById('nomeProjeto').value = ""; document.getElementById('qtdPecasProjeto').value = "1"; document.getElementById('tempoH').value = ""; document.getElementById('pesoPeca').value = ""; var sel1 = document.getElementById('sel_est_1'); if(sel1) sel1.value = ""; document.getElementById('tipoFilamento1').value = ""; document.getElementById('corFilamento1').value = ""; document.getElementById('marcaFilamento1').value = ""; document.getElementById('precoFilamento').value = "120,00"; document.getElementById('detalhes_1').style.display = 'none'; var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti && tMulti.checked) { tMulti.checked = false; tMulti.dispatchEvent(new Event('change')); } document.getElementById('fotoUrlProjeto').value = ""; var prev = document.getElementById('previewFotoMain'); if(prev) prev.style.display = "none"; ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain', 'fotoUrlProjeto'].forEach(id => localStorage.removeItem('3d4y_dark_' + id)); }
-function preencherFormProjeto(prod) {
-    var match = prod.nome.match(/^(\d+)x\s(.*)/), qtd = match ? parseInt(match[1]) : (prod.qtd || 1), baseNome = match ? match[2] : prod.nome; document.getElementById('nomeProjeto').value = baseNome; document.getElementById('qtdPecasProjeto').value = qtd; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim()), selCat = document.getElementById('sel_catalogo'); if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
-    var p_tipo1 = prod.tipo1 || (matchCat ? matchCat.tipo1 : ""), p_cor1 = prod.cor1 || (matchCat ? matchCat.cor1 : ""), p_marca1 = prod.marca1 || (matchCat ? matchCat.marca1 : ""), p_preco1 = prod.preco1 || (matchCat ? matchCat.preco1 : "120,00"), p_multi = prod.multi !== undefined ? prod.multi : (matchCat ? matchCat.multi : false), p_qtdCores = prod.qtdCores || (matchCat ? matchCat.qtdCores : "1"), p_extras = prod.extras || (matchCat ? matchCat.extras : []);
-    document.getElementById('tempoH').value = prod.tempo1 || (prod.tempo ? formatarMoeda((prod.tempo) / qtd) : (matchCat ? matchCat.tempo : "")); document.getElementById('pesoPeca').value = prod.peso1 || (prod.peso ? formatarMoeda((prod.peso) / qtd) : (matchCat ? matchCat.peso1 : "")); if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso; if (prod.margemLucro) { document.getElementById('margemInput').value = prod.margemLucro; document.getElementById('margemSlider').value = prod.margemLucro; updateSliderProgress(document.getElementById('margemSlider')); }
-    document.getElementById('tipoFilamento1').value = p_tipo1; document.getElementById('corFilamento1').value = p_cor1; document.getElementById('marcaFilamento1').value = p_marca1; document.getElementById('precoFilamento').value = p_preco1; var match1 = null; if(p_tipo1) { match1 = estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1 && e.marca === p_marca1) || estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1); } var sel1 = document.getElementById('sel_est_1'); if(match1) { if(sel1) sel1.value = match1.id.toString(); document.getElementById('marcaFilamento1').value = match1.marca; document.getElementById('precoFilamento').value = match1.preco; } else { if(sel1) sel1.value = ""; } document.getElementById('detalhes_1').style.display = (p_tipo1) ? 'block' : 'none';
-    var fotoUrl = prod.foto || (matchCat ? matchCat.foto : ""); document.getElementById('fotoUrlProjeto').value = fotoUrl; salvarDinamico('fotoUrlProjeto'); var preview = document.getElementById('previewFotoMain'); if (fotoUrl) { preview.style.backgroundImage = `url('${fotoUrl}')`; preview.style.display = "block"; } else { preview.style.display = "none"; }
-    var tMulti = document.getElementById('toggle_multi_mat'); if(tMulti) { tMulti.checked = p_multi; tMulti.dispatchEvent(new Event('change')); } if(p_multi && p_extras && p_extras.length > 0) { document.getElementById('qtdCoresExtras').value = p_qtdCores; p_extras.forEach((ex, idx) => { var i = idx + 2; salvarDinamicoValor('tipoFilamento'+i, ex.tipo || ""); salvarDinamicoValor('corFilamento'+i, ex.cor || ""); salvarDinamicoValor('marcaFilamento'+i, ex.marca || ""); salvarDinamicoValor('precoFilamento'+i, ex.preco || "120,00"); salvarDinamicoValor('pesoPeca'+i, ex.peso || ""); }); renderCoresExtras(); p_extras.forEach((ex, idx) => { var i = idx + 2; setTimeout(() => { var matchI = null; if(ex.tipo) { matchI = estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor && e.marca === ex.marca) || estoque.find(e => e.tipo === ex.tipo && e.cor === ex.cor); } var selI = document.getElementById('sel_est_'+i); if(matchI) { if(selI) selI.value = matchI.id.toString(); document.getElementById('precoFilamento'+i).value = matchI.preco; document.getElementById('marcaFilamento'+i).value = matchI.marca; } else { if(selI) selI.value = ""; } }, 50); }); } else { if(document.getElementById('qtdCoresExtras')) document.getElementById('qtdCoresExtras').value = "1"; renderCoresExtras(); } ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
+function resetarInputProjeto() {
+    document.getElementById('nomeProjeto').value = "";
+    document.getElementById('qtdPecasProjeto').value = "1";
+    document.getElementById('tempoH').value = "";
+    document.getElementById('pesoPeca').value = "";
+    
+    var sel1 = document.getElementById('sel_est_1');
+    if(sel1) sel1.value = "";
+    
+    document.getElementById('tipoFilamento1').value = "";
+    document.getElementById('corFilamento1').value = "";
+    document.getElementById('marcaFilamento1').value = "";
+    document.getElementById('precoFilamento').value = "120,00";
+    document.getElementById('detalhes_1').style.display = 'none';
+    
+    var tMulti = document.getElementById('toggle_multi_mat');
+    if(tMulti && tMulti.checked) {
+        tMulti.checked = false;
+        tMulti.dispatchEvent(new Event('change'));
+    }
+    
+    document.getElementById('fotoUrlProjeto').value = "";
+    var prev = document.getElementById('previewFotoMain');
+    if(prev) prev.style.display = "none";
+    
+    // Limpa a memória principal
+    ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain', 'fotoUrlProjeto'].forEach(id => localStorage.removeItem('3d4y_dark_' + id));
+    
+    // O VERDADEIRO EXORCISMO: Limpa a memória fantasma de TODOS os filamentos extras!
+    for(var i = 2; i <= 15; i++) {
+        localStorage.removeItem('3d4y_dark_tipoFilamento' + i);
+        localStorage.removeItem('3d4y_dark_corFilamento' + i);
+        localStorage.removeItem('3d4y_dark_marcaFilamento' + i);
+        localStorage.removeItem('3d4y_dark_precoFilamento' + i);
+        localStorage.removeItem('3d4y_dark_pesoPeca' + i);
+    }
+    
+    var qCores = document.getElementById('qtdCoresExtras');
+    if (qCores) qCores.value = "1";
+    
+    // Força a tela a re-renderizar os campos extras (agora vazios)
+    if(typeof renderCoresExtras === 'function') {
+        renderCoresExtras();
+    }
 }
 
 // ==========================================
