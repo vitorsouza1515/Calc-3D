@@ -145,16 +145,82 @@ function renderCarrinho() {
 // 10. CATÁLOGO
 // ==========================================
 
-window.cancelarEdicaoCatalogo = function() { editCatalogoId = null; var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; } document.getElementById('btn_cancelar_catalogo_main').style.display = "none"; resetarInputProjeto(); document.getElementById('sel_catalogo').value = ""; document.getElementById('boxPrecoFixo').style.display = 'none'; document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); calcular(); document.getElementById('boxEditCat').style.display = 'none'; showToast("❌ Edição cancelada"); };
+// ==========================================
+// 10. CATÁLOGO
+// ==========================================
+
+window.cancelarEdicaoCatalogo = function() {
+    editCatalogoId = null;
+    var btnMain = document.getElementById('btn_salvar_catalogo_main');
+    if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
+    var btnCancel = document.getElementById('btn_cancelar_catalogo_main');
+    if (btnCancel) btnCancel.style.display = "none";
+    resetarInputProjeto();
+    document.getElementById('sel_catalogo').value = "";
+    document.getElementById('boxPrecoFixo').style.display = 'none';
+    document.getElementById('precoFixoCatMain').value = "";
+    localStorage.removeItem('3d4y_dark_precoFixoCatMain');
+    calcular();
+    showToast("❌ Edição cancelada");
+};
+
 function salvarNoCatalogo() {
     var nome = pegaTexto('nomeProjeto'); if(!nome) { showToast("❌ Dê um nome ao projeto antes de salvar no catálogo.", true); return; }
     var precoFixo = pegaTexto('precoFixoCatMain'), fotoUrl = pegaTexto('fotoUrlProjeto'), extras = [], multiOn = document.getElementById('toggle_multi_mat').checked;
-    if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
+    
+    if(multiOn) { 
+        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; 
+        for(var i=2; i<=qtd+1; i++) { 
+            extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); 
+        } 
+    }
+    
     var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
-    if (existe) { showToast("❌ O projeto JÁ EXISTE no seu Catálogo de Produtos!", true); return; }
-    var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
-    catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
-    document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none'; resetarDados(); syncNuvem(); renderCatalogo();
+    
+    if (editCatalogoId) {
+        if (existe && existe.id !== editCatalogoId) { showToast("❌ Já existe outro projeto com este nome exato no seu catálogo.", true); return; }
+        var idx = catalogo.findIndex(p => p.id === editCatalogoId);
+        
+        if (idx > -1) {
+            var pAntigo = catalogo[idx];
+            var nomeMinusculo = (pAntigo.nome || "").toLowerCase().trim();
+            var vendasAfetadas = historico.filter(h => (h.nome || "").toLowerCase().trim().includes(nomeMinusculo));
+            
+            // Pergunta se deseja atualizar o histórico com as edições feitas
+            if (vendasAfetadas.length > 0) {
+                if (confirm(`Deseja atualizar o PESO e TEMPO das ${vendasAfetadas.length} venda(s) deste produto no histórico e recalcular o lucro?`)) {
+                    var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'), custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh), novoTempoUnit = pegaValor('tempoH'), novoPesoUnit = pegaValor('pesoPeca'), precoFilamentoUnit = pegaValor('precoFilamento') || 120, taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
+                    vendasAfetadas.forEach(h => {
+                        var qtdItem = h.totalQtd || 1;
+                        h.tempo = novoTempoUnit * qtdItem;
+                        h.peso = novoPesoUnit * qtdItem;
+                        h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso;
+                        var freteLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0), taxas = descontarTaxas(h.valorBruto, qtdItem);
+                        if(h.canal === "Shopee") h.valorLiquido = taxas.shopee - freteLog;
+                        else if(h.canal === "Meli") h.valorLiquido = taxas.meli - freteLog;
+                        else h.valorLiquido = h.valorBruto - freteLog;
+                        if(h.valorLiquido < 0) h.valorLiquido = 0;
+                    });
+                }
+            }
+            catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
+        }
+        
+        editCatalogoId = null;
+        var btnMain = document.getElementById('btn_salvar_catalogo_main');
+        if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        var btnCancel = document.getElementById('btn_cancelar_catalogo_main');
+        if(btnCancel) btnCancel.style.display = "none";
+        showToast("🏷️ Produto atualizado no catálogo!");
+        
+    } else {
+        if (existe) { showToast("❌ O projeto JÁ EXISTE no seu Catálogo de Produtos!", true); return; }
+        var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
+        catalogo.push(novoProduto);
+        showToast("🏷️ Produto salvo no catálogo!");
+    }
+    
+    document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none'; resetarDados(); syncNuvem(); renderCatalogo(); renderHistorico();
 }
 
 function renderCatalogo() {
@@ -169,23 +235,30 @@ function renderCatalogo() {
 }
 
 function carregarDoCatalogo() { var id = document.getElementById('sel_catalogo').value; if(!id) { resetarInputProjeto(); document.getElementById('canalVendaSelecionado').value = "Direta"; document.getElementById('valorPersonalizado').value = ""; mostrarValorPersonalizado(); var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none'; document.getElementById('precoFixoCatMain').value = ''; calcular(); return; } aplicarDadosNoForm(id, false); showToast("🏷️ Dados carregados!"); }
-function editarDoCatalogo(id) {
-    aplicarDadosNoForm(id, true); window.uploadingCatalogId = id;
-    var p = catalogo.find(e => e.id === id); var elNome = document.getElementById('nomeProdutoEditando'); if(p && elNome) elNome.textContent = p.nome;
-    document.getElementById('boxEditCat').style.display = "block";
-}
 
-window.confirmarEdicaoCatImagem = function() {
-    var p = catalogo.find(e => e.id === window.uploadingCatalogId);
-    if(p) {
-        var nomeMinusculo = (p.nome || "").toLowerCase().trim(), vendasAfetadas = historico.filter(h => (h.nome || "").toLowerCase().trim().includes(nomeMinusculo));
-        if (vendasAfetadas.length > 0) { if (confirm(`Deseja atualizar o PESO e TEMPO das ${vendasAfetadas.length} venda(s) deste produto no histórico e recalcular o lucro?`)) { var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'), custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh), novoTempoUnit = pegaValor('tempoH'), novoPesoUnit = pegaValor('pesoPeca'), precoFilamentoUnit = pegaValor('precoFilamento') || 120, taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100; vendasAfetadas.forEach(h => { var qtdItem = h.totalQtd || 1; h.tempo = novoTempoUnit * qtdItem; h.peso = novoPesoUnit * qtdItem; h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso; var freteLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0), taxas = descontarTaxas(h.valorBruto, qtdItem); if(h.canal === "Shopee") h.valorLiquido = taxas.shopee - freteLog; else if(h.canal === "Meli") h.valorLiquido = taxas.meli - freteLog; else h.valorLiquido = h.valorBruto - freteLog; if(h.valorLiquido < 0) h.valorLiquido = 0; }); } }
-        var multiOn = document.getElementById('toggle_multi_mat').checked, extras = []; if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
-        p.nome = pegaTexto('nomeProjeto'); p.precoFixo = pegaTexto('precoFixoCatMain'); p.peso1 = pegaTexto('pesoPeca'); p.tipo1 = pegaTexto('tipoFilamento1'); p.cor1 = pegaTexto('corFilamento1'); p.marca1 = pegaTexto('marcaFilamento1'); p.preco1 = pegaTexto('precoFilamento'); p.tempo = pegaTexto('tempoH'); p.multi = multiOn; p.qtdCores = multiOn ? pegaTexto('qtdCoresExtras') : "0"; p.extras = extras; 
-        if (document.getElementById('fotoUrlCat').value) { p.foto = document.getElementById('fotoUrlCat').value; }
-        syncNuvem(); renderCatalogo(); showToast("✅ Catálogo Atualizado!");
+function editarDoCatalogo(id) {
+    aplicarDadosNoForm(id, true);
+    editCatalogoId = id; // Seta o ID globalmente
+    
+    // Altera o botão principal da tela para o modo "Edição"
+    var btnMain = document.getElementById('btn_salvar_catalogo_main');
+    if (btnMain) {
+        btnMain.textContent = "💾 Confirmar Edição no Catálogo";
+        btnMain.style.background = "var(--sky)";
     }
-    document.getElementById('boxEditCat').style.display = "none"; window.removerFotoCat(); window.uploadingCatalogId = null; resetarDados();
+    var btnCancel = document.getElementById('btn_cancelar_catalogo_main');
+    if (btnCancel) btnCancel.style.display = "inline-block";
+
+    // Fecha o modal e a gaveta para o usuário cair direto nos inputs da tela principal
+    window.fecharModal('catalogoModal');
+    window.fecharGaveta();
+
+    // Rola para o topo para o usuário ver os campos que vai editar
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    var dash = document.querySelector('.dashboard');
+    if (dash) dash.scrollTo({ top: 0, behavior: 'smooth' });
+
+    showToast("✏️ Produto carregado para edição!");
 }
 
 function aplicarDadosNoForm(id, isEditing = false) {
@@ -195,13 +268,14 @@ function aplicarDadosNoForm(id, isEditing = false) {
     var elPrecoFixo = document.getElementById('precoFixoCatMain'); var boxPreco = document.getElementById('boxPrecoFixo');
     if(isEditing) { 
         if(elPrecoFixo && boxPreco) { boxPreco.style.display = 'flex'; elPrecoFixo.value = p.precoFixo || ''; salvarDinamico('precoFixoCatMain'); } 
-        document.getElementById('fotoUrlCat').value = p.foto || ""; var prC = document.getElementById('previewFotoCat'); if(p.foto){ prC.style.backgroundImage = `url('${p.foto}')`; prC.style.display="block"; document.getElementById('btnRemoverFotoCat').style.display="block"; } else { prC.style.display="none"; document.getElementById('btnRemoverFotoCat').style.display="none"; }
-    } else { if(boxPreco) boxPreco.style.display = 'none'; if(elPrecoFixo) { elPrecoFixo.value = ''; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); } }
+    } else { 
+        if(boxPreco) boxPreco.style.display = 'none'; if(elPrecoFixo) { elPrecoFixo.value = ''; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); } 
+    }
     if (p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0) { document.getElementById('canalVendaSelecionado').value = 'Personalizado'; document.getElementById('valorPersonalizado').value = p.precoFixo; salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado(); } else { document.getElementById('canalVendaSelecionado').value = 'Direta'; document.getElementById('valorPersonalizado').value = ''; salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado(); }
     calcular();
 }
-function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); renderCatalogo(); } }
 
+function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); renderCatalogo(); } }
 // ==========================================
 // 11. GESTÃO DE ESTOQUE
 // ==========================================
