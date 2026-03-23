@@ -102,8 +102,60 @@ window.fecharModal = function(idModal) {
 }
 
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
-function descontarTaxas(valorBruto, qtdTotal) { var avgBruto = valorBruto / qtdTotal, feeShpUnit = 0; if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4; else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16; else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20; else feeShpUnit = (avgBruto * 0.14) + 26; var netShopee = valorBruto - (feeShpUnit * qtdTotal); if (netShopee < 0) netShopee = 0; var txMl = pegaValor('taxaMeli') / 100, fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli'), feeMlUnit = (avgBruto * txMl) + fixMl, netMeli = valorBruto - (feeMlUnit * qtdTotal); if (netMeli < 0) netMeli = 0; return { shopee: netShopee, meli: netMeli }; }
-
+function descontarTaxas(valorBruto, qtdTotal) { 
+    var feeShpTotal = 0;
+    var feeMlTotal = 0;
+    var txMl = pegaValor('taxaMeli') / 100;
+    var isCart = carrinho && carrinho.length > 0;
+    
+    if (isCart) {
+        // Se for carrinho, distribui o valor bruto proporcionalmente para cada item
+        var totBase = carrinho.reduce((a,b)=>a + (b.valorComLucro * b.qtd), 0);
+        if (totBase === 0) totBase = 1;
+        
+        carrinho.forEach(i => {
+            var itemRatio = (i.valorComLucro * i.qtd) / totBase;
+            var itemGrossTotal = valorBruto * itemRatio;
+            var itemGrossUnit = itemGrossTotal / i.qtd;
+            
+            // Lógica oficial Shopee 2026 aplicada por unidade real
+            var feeSUnit = 0;
+            if (itemGrossUnit <= 79.991) feeSUnit = (itemGrossUnit * 0.20) + 4;
+            else if (itemGrossUnit <= 99.991) feeSUnit = (itemGrossUnit * 0.14) + 16;
+            else if (itemGrossUnit <= 199.991) feeSUnit = (itemGrossUnit * 0.14) + 20;
+            else feeSUnit = (itemGrossUnit * 0.14) + 26;
+            feeShpTotal += (feeSUnit * i.qtd);
+            
+            // Lógica Meli por unidade real
+            var fixMl = (itemGrossUnit >= 79.99) ? 0 : pegaValor('fixaMeli');
+            var feeMUnit = (itemGrossUnit * txMl) + fixMl;
+            feeMlTotal += (feeMUnit * i.qtd);
+        });
+    } else {
+        // Se for peça única, usa o cálculo normal
+        var avgBruto = valorBruto / qtdTotal;
+        var feeShpUnit = 0;
+        
+        if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4;
+        else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16;
+        else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20;
+        else feeShpUnit = (avgBruto * 0.14) + 26;
+        
+        feeShpTotal = feeShpUnit * qtdTotal;
+        
+        var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
+        var feeMlUnit = (avgBruto * txMl) + fixMl;
+        feeMlTotal = feeMlUnit * qtdTotal;
+    }
+    
+    var netShopee = valorBruto - feeShpTotal;
+    if (netShopee < 0) netShopee = 0;
+    
+    var netMeli = valorBruto - feeMlTotal;
+    if (netMeli < 0) netMeli = 0;
+    
+    return { shopee: netShopee, meli: netMeli }; 
+}
 // ==========================================
 // 8. LIMPEZA E PREENCHIMENTO DO PROJETO
 // ==========================================
