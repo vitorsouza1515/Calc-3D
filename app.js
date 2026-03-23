@@ -596,7 +596,7 @@ function mudarStatus(id, novoStatus) {
 window.registrarFalha = function(id) {
     var h = historico.find(x => x.id === id);
     if (!h) return;
-    var pesoPerdidoStr = prompt(`🚨 Registrar Falha / Espaguete para: ${h.nome}\n\nQuantas gramas de filamento foram perdidas na falha?`, formatarMoeda(h.peso));
+    var pesoPerdidoStr = prompt(`🚨 Registrar Refugo / Perda para: ${h.nome}\n\nQuantas gramas de filamento foram perdidas?`, formatarMoeda(h.peso));
     
     if (pesoPerdidoStr) {
         var pesoPerdido = parseLocal(pesoPerdidoStr);
@@ -608,7 +608,7 @@ window.registrarFalha = function(id) {
                 id: Date.now(),
                 data: new Date().toLocaleDateString('pt-BR'),
                 qtd: 1,
-                nome: "⚠️ Refugo/Falha: " + h.nome,
+                nome: "⚠️ Refugo de Material: " + h.nome,
                 valor: custoPrejuizo
             });
             
@@ -624,7 +624,7 @@ window.registrarFalha = function(id) {
             syncNuvem();
             renderDespesas();
             renderEstoque();
-            showToast("🍝 Prejuízo registrado nas despesas e estoque!");
+            showToast("🗑️ Refugo registrado nas despesas e estoque!");
         }
     }
 };
@@ -673,7 +673,7 @@ function renderHistorico() {
         if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
         var htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         
-        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;margin-left:5px;" title="Registrar Falha / Perda">🍝</button>`;
+        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;margin-left:5px;" title="Registrar Refugo / Perda">🗑️</button>`;
         var botoesHTML = `${isFila ? `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>` : ''}${btnFalha}<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button><button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>`;
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente}"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">${htmlFoto}<div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}</h4><div style="margin-top: 6px;"><select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)"><option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option><option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option><option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option><option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option><option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option><option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option></select></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div></div>${crmHtml}<div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;"><span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span><span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span><span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span></div></div>`;
     });
