@@ -294,8 +294,44 @@ function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catá
 // ==========================================
 
 window.cancelarEdicaoEstoque = function() { editEstoqueId = null; document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar"; document.getElementById('btn_cancelar_estoque').style.display = "none"; showToast("❌ Edição cancelada"); };
-function salvarItemEstoque() { var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value; if(!t || !p) { showToast("❌ Preencha pelo menos o Tipo e o Preço para salvar no estoque.", true); return; } if (editEstoqueId) { var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; }); if (itemIndex > -1) { estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; } editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar"; document.getElementById('btn_cancelar_estoque').style.display = "none"; } else { estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p }); } syncNuvem(); document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; showToast("📦 Estoque Atualizado!"); renderEstoque(); }
-function renderEstoque() { var lista = document.getElementById('lista_estoque'); if(!lista) return; var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || "")); lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : ''; estoqueOrdenado.forEach(function(item) { lista.innerHTML += `<div class="history-item"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; color:var(--success); word-wrap: break-word;">${item.tipo} ${item.cor} <span style="color:#fff">(${item.marca})</span></h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Preço: R$ ${item.preco}</div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarItemEstoque(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerItemEstoque(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; }); atualizarDropdownsEstoque(); }
+
+function salvarItemEstoque() { 
+    var t = pegaTexto('est_tipo'), c = pegaTexto('est_cor'), m = pegaTexto('est_marca'), p = document.getElementById('est_preco').value; 
+    if(!t || !p) { showToast("❌ Preencha pelo menos o Tipo e o Preço para salvar no estoque.", true); return; } 
+    
+    if (editEstoqueId) { 
+        var itemIndex = estoque.findIndex(function(e) { return e.id === editEstoqueId; }); 
+        if (itemIndex > -1) { 
+            estoque[itemIndex].tipo = t; estoque[itemIndex].cor = c; estoque[itemIndex].marca = m; estoque[itemIndex].preco = p; 
+            let novoP = prompt("Peso atual da bobina em gramas (Ex: 1000 para 1kg):", estoque[itemIndex].pesoAtual !== undefined ? estoque[itemIndex].pesoAtual : 1000);
+            if (novoP !== null) estoque[itemIndex].pesoAtual = parseLocal(novoP);
+        } 
+        editEstoqueId = null; 
+        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar"; 
+        document.getElementById('btn_cancelar_estoque').style.display = "none"; 
+    } else { 
+        let novoP = prompt("Peso inicial desta bobina em gramas (Ex: 1000 para 1kg novo):", "1000");
+        let pesoSalvar = novoP !== null ? parseLocal(novoP) : 1000;
+        estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p, pesoAtual: pesoSalvar }); 
+    } 
+    syncNuvem(); 
+    document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; 
+    showToast("📦 Estoque Atualizado!"); 
+    renderEstoque(); 
+}
+
+function renderEstoque() { 
+    var lista = document.getElementById('lista_estoque'); if(!lista) return; 
+    var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || "")); 
+    lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : ''; 
+    estoqueOrdenado.forEach(function(item) { 
+        var pesoAtual = item.pesoAtual !== undefined ? item.pesoAtual : 1000;
+        var corPeso = pesoAtual < 200 ? '#ef4444' : (pesoAtual < 500 ? '#facc15' : '#10b981');
+        lista.innerHTML += `<div class="history-item"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; color:var(--success); word-wrap: break-word;">${item.tipo} ${item.cor} <span style="color:#fff">(${item.marca})</span></h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Preço: R$ ${item.preco} | <span style="color:${corPeso}; font-weight:bold;">Restante: ${formatarMoeda(pesoAtual)}g</span></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarItemEstoque(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerItemEstoque(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; 
+    }); 
+    atualizarDropdownsEstoque(); 
+}
+
 function removerItemEstoque(id) { if(confirm("Deseja apagar este material do estoque?")) { estoque = estoque.filter(function(e) { return e.id !== id; }); syncNuvem(); renderEstoque(); } }
 function editarItemEstoque(id) { var item = estoque.find(function(e) { return e.id === id; }); if(item) { document.getElementById('est_tipo').value = item.tipo; document.getElementById('est_cor').value = item.cor; document.getElementById('est_marca').value = item.marca; document.getElementById('est_preco').value = item.preco; editEstoqueId = id; document.getElementById('btn_salvar_estoque').textContent = "💾 Confirmar Edição"; document.getElementById('btn_cancelar_estoque').style.display = "block"; } }
 function atualizarDropdownsEstoque() { var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || "")); var optionsHTML = '<option value="">-- Puxar material do Estoque --</option>'; estoqueOrdenado.forEach(function(item) { optionsHTML += '<option value="'+item.id+'">'+(item.tipo + ' ' + item.cor + ' (' + item.marca + ') - R$ ' + item.preco).trim()+'</option>'; }); var s1 = document.getElementById('sel_est_1'); if (s1) { var val1 = s1.value; s1.innerHTML = optionsHTML; s1.value = val1; } var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { var si = document.getElementById('sel_est_'+i); if (si) { var vali = si.value; si.innerHTML = optionsHTML; si.value = vali; } } }
@@ -328,9 +364,6 @@ window.isDraggingFiltro = false; window.mudarFiltro = function(status) { if (win
 window.onload = function() {
     document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
     
-    // ==========================================
-    // NOVA CAIXA LÍQUIDO EXATO
-    // ==========================================
     var divPerso = document.getElementById('divValorPersonalizado');
     if (divPerso && !document.getElementById('boxLiquidoExato')) {
         var elCB = document.createElement('div');
@@ -339,7 +372,6 @@ window.onload = function() {
         elCB.innerHTML = '<input type="checkbox" id="isLiquidoExato" style="width:18px;height:18px;accent-color:var(--sky);cursor:pointer;"><label for="isLiquidoExato" style="font-size:0.75rem;color:var(--sky);cursor:pointer;font-weight:600;line-height:1.2;">A Taxa deu diferença?<br><span style="font-size:0.6rem;font-weight:normal;opacity:0.8;">Marque aqui e digite acima apenas o LÍQUIDO EXATO que vai receber.</span></label>';
         divPerso.appendChild(elCB);
     }
-    // ==========================================
 
     var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (el.type === 'checkbox') { el.checked = (saved === 'true'); } else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } } } if (el) { if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); } el.addEventListener('input', function() { if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); } if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } } if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular(); }); } });
@@ -432,7 +464,6 @@ function salvarHistorico() {
     
     var freteFinal = (canal === "Shopee" || canal === "Meli") ? 0 : freteCalculado, net = descontarTaxas(valorBruto, totalQtd), valorVendaFinal = 0;
     
-    // ======== A MÁGICA DO LÍQUIDO EXATO AQUI ========
     if (isLiquidoExato) {
         valorVendaFinal = valorBruto;
         valorBruto = oldItem ? (oldItem.valorBruto || oldItem.valorVenda) : valorCalculadoBruto;
@@ -441,7 +472,6 @@ function salvarHistorico() {
         else if(canal === "Meli") { valorVendaFinal = net.meli; } 
         else { valorVendaFinal = valorBruto; }
     }
-    // ================================================
     
     if(valorVendaFinal < 0) valorVendaFinal = 0;
     var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', multiOnSave = document.getElementById('toggle_multi_mat').checked, extrasArrSave = [];
@@ -455,7 +485,7 @@ function salvarHistorico() {
 
     var urlFotoSalvar = isCart ? (carrinho.length > 0 ? carrinho[0].foto : '') : pegaTexto('fotoUrlProjeto');
 
-    var novo = { id: editHistoricoId ? editHistoricoId : Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteFinal, logistica: cLog, peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')), foto: urlFotoSalvar };
+    var novo = { id: editHistoricoId ? editHistoricoId : Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteFinal, logistica: cLog, peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')), foto: urlFotoSalvar, estoqueBaixado: (oldItem ? oldItem.estoqueBaixado : false) };
     
     if (editHistoricoId) { var idx = historico.findIndex(h => h.id === editHistoricoId); if (idx > -1) { historico[idx] = novo; } editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)"; var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none"; } 
     else { historico.unshift(novo); }
@@ -511,7 +541,7 @@ function editarItemHistorico(id) {
     document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar); 
     salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado();
     
-    var cbLiq = document.getElementById('isLiquidoExato'); if(cbLiq) cbLiq.checked = false; // Desmarca a caixa por padrão
+    var cbLiq = document.getElementById('isLiquidoExato'); if(cbLiq) cbLiq.checked = false; 
 
     if (item.logistica > 0 || item.frete > 0) { var qtd = item.totalQtd || 1; document.getElementById('custoEmbalagem').value = formatarMoeda((item.logistica || 0) / qtd); document.getElementById('custoDeslocamento').value = "0,00"; var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0); }
     calcular(); editHistoricoId = id;
@@ -520,7 +550,84 @@ function editarItemHistorico(id) {
     showToast("✏️ Venda carregada para edição!"); var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function mudarStatus(id, novoStatus) { var index = historico.findIndex(h => h.id === id); if (index > -1) { historico[index].status = novoStatus; syncNuvem(); renderHistorico(); } }
+window.darBaixaEstoqueVenda = function(h) {
+    if (h.materiais && h.materiais !== "Não informado") {
+        let mats = h.materiais.split(' + ');
+        mats.forEach(m => {
+            let match = m.match(/(.+?)\s+\(([\d.,]+)g\)/);
+            if (match) {
+                let nomeMat = match[1].trim(); 
+                let pesoGasto = parseLocal(match[2]);
+                
+                let itemEstoque = estoque.find(e => {
+                    let n = (e.tipo + " " + e.cor + " " + (e.marca || "")).trim();
+                    let nCurto = (e.tipo + " " + e.cor).trim();
+                    return n === nomeMat || nCurto === nomeMat;
+                });
+                
+                if (itemEstoque) {
+                    itemEstoque.pesoAtual = (itemEstoque.pesoAtual || 1000) - pesoGasto;
+                    if (itemEstoque.pesoAtual < 0) itemEstoque.pesoAtual = 0;
+                }
+            }
+        });
+        showToast("📉 Materiais descontados do estoque!");
+        renderEstoque();
+    }
+};
+
+function mudarStatus(id, novoStatus) { 
+    var index = historico.findIndex(h => h.id === id); 
+    if (index > -1) { 
+        var h = historico[index];
+        h.status = novoStatus; 
+        
+        if ((novoStatus === 'Finalizado' || novoStatus === 'Enviado / Entregue') && !h.estoqueBaixado) {
+            if (confirm("Deseja dar baixa dos materiais gastos nesta peça (" + formatarMoeda(h.peso) + "g) no Estoque?")) {
+                window.darBaixaEstoqueVenda(h);
+                h.estoqueBaixado = true;
+            }
+        }
+        
+        syncNuvem(); renderHistorico(); 
+    } 
+}
+
+window.registrarFalha = function(id) {
+    var h = historico.find(x => x.id === id);
+    if (!h) return;
+    var pesoPerdidoStr = prompt(`🚨 Registrar Falha / Espaguete para: ${h.nome}\n\nQuantas gramas de filamento foram perdidas na falha?`, formatarMoeda(h.peso));
+    
+    if (pesoPerdidoStr) {
+        var pesoPerdido = parseLocal(pesoPerdidoStr);
+        if (pesoPerdido > 0) {
+            var custoPorGrama = h.peso > 0 ? (h.custo / h.peso) : (120/1000);
+            var custoPrejuizo = custoPorGrama * pesoPerdido;
+            
+            despesas.unshift({
+                id: Date.now(),
+                data: new Date().toLocaleDateString('pt-BR'),
+                qtd: 1,
+                nome: "⚠️ Refugo/Falha: " + h.nome,
+                valor: custoPrejuizo
+            });
+            
+            var t1 = h.tipo1, c1 = h.cor1, m1 = h.marca1;
+            if (t1) {
+                 let itemEstoque = estoque.find(e => e.tipo === t1 && e.cor === c1 && e.marca === m1) || estoque.find(e => e.tipo === t1 && e.cor === c1);
+                 if (itemEstoque) {
+                      itemEstoque.pesoAtual = (itemEstoque.pesoAtual || 1000) - pesoPerdido;
+                      if(itemEstoque.pesoAtual < 0) itemEstoque.pesoAtual = 0;
+                 }
+            }
+            
+            syncNuvem();
+            renderDespesas();
+            renderEstoque();
+            showToast("🍝 Prejuízo registrado nas despesas e estoque!");
+        }
+    }
+};
 
 function renderHistorico() {
     var lista = document.getElementById('listaHistorico'); if(!lista) return; var filtroDiv = document.getElementById('filtroHistorico');
@@ -560,13 +667,15 @@ function renderHistorico() {
         var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
         var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '', bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);'; if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
         var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
+        var checkEstoque = item.estoqueBaixado ? `<span style="font-size:0.55rem; color:#10b981; margin-left:5px;" title="Estoque Descontado">📉 OK</span>` : '';
         
         var fotoParaMostrar = item.foto;
         if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
         var htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         
-        var botoesHTML = `${isFila ? `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>` : ''}<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button><button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>`;
-        lista.innerHTML += `<div class="history-item" style="${bordaUrgente}"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">${htmlFoto}<div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}</h4><div style="margin-top: 6px;"><select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)"><option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option><option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option><option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option><option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option><option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option><option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option></select></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div></div>${crmHtml}<div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;"><span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span><span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span><span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span></div></div>`;
+        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;margin-left:5px;" title="Registrar Falha / Perda">🍝</button>`;
+        var botoesHTML = `${isFila ? `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>` : ''}${btnFalha}<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button><button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>`;
+        lista.innerHTML += `<div class="history-item" style="${bordaUrgente}"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">${htmlFoto}<div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}</h4><div style="margin-top: 6px;"><select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)"><option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option><option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option><option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option><option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option><option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option><option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option></select></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div></div>${crmHtml}<div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;"><span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span><span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span><span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span></div></div>`;
     });
     
     document.getElementById('tot_qtd').textContent = qtdValida; document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); document.getElementById('tot_logistica').textContent = formatarMoeda(somaLogistica); document.getElementById('tot_faturamento_bruto').textContent = formatarMoeda(somaBruto); document.getElementById('tot_faturamento').textContent = formatarMoeda(somaLiquido); document.getElementById('tot_lucro').textContent = formatarMoeda(somaLucro); 
