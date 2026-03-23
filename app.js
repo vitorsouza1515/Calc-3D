@@ -427,7 +427,9 @@ function calcular() {
 }
 
 function salvarHistorico() {
-    var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), originalCanal = elCanal ? elCanal.value : "Direta", canal = originalCanal, isUrgente = document.getElementById('toggle_urgente').checked;
+    var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), originalCanal = elCanal ? elCanal.value : "Direta", canal = originalCanal;
+    var elUrgente = document.getElementById('toggle_urgente');
+    var isUrgente = elUrgente ? elUrgente.checked : false;
     
     var cbLiq = document.getElementById('isLiquidoExato');
     var isLiquidoExato = (cbLiq && cbLiq.checked && originalCanal === 'Personalizado');
@@ -438,22 +440,47 @@ function salvarHistorico() {
         nomeFinal = carrinho.map(i => i.nome).join(' + '); custoProducaoFinal = carrinho.reduce((a,b) => a + b.custo, 0); pesoFinal = carrinho.reduce((a,b) => a + b.peso, 0); tempoFinal = carrinho.reduce((a,b) => a + b.tempo, 0); totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1;
         carrinho.forEach(i => { if(i.materiais && i.materiais !== "Não informado") materiaisArray.push(i.materiais); });
         
-        var cShopee = parseLocal(document.getElementById('cart_tot_vs').textContent), cMeli = parseLocal(document.getElementById('cart_tot_vm').textContent), cDireta = parseLocal(document.getElementById('cart_tot_vd').textContent);
+        var elCartS = document.getElementById('cart_tot_vs'), cShopee = elCartS ? parseLocal(elCartS.textContent) : 0;
+        var elCartM = document.getElementById('cart_tot_vm'), cMeli = elCartM ? parseLocal(elCartM.textContent) : 0;
+        var elCartD = document.getElementById('cart_tot_vd'), cDireta = elCartD ? parseLocal(elCartD.textContent) : 0;
         
-        if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; valorCalculadoBruto = (canal === "Shopee") ? cShopee : (canal === "Meli" ? cMeli : cDireta); } 
+        if (canal === "Personalizado") { 
+            valorBruto = pegaValor('valorPersonalizado'); 
+            var dest = document.getElementById('canalPersonalizadoDestino');
+            canal = dest ? dest.value : "Shopee"; 
+            valorCalculadoBruto = (canal === "Shopee") ? cShopee : (canal === "Meli" ? cMeli : cDireta); 
+        } 
         else if(canal === "Direta") { valorBruto = cDireta; valorCalculadoBruto = cDireta; } 
         else if(canal === "Shopee") { valorBruto = cShopee; valorCalculadoBruto = cShopee; } 
         else { valorBruto = cMeli; valorCalculadoBruto = cMeli; }
+        
         cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); freteCalculado = pegaValor('valorFreteManual');
     } else {
-        var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome", qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1; totalQtd = qtdPecas; nomeFinal = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase; custoProducaoFinal = parseLocal(document.getElementById('r_gasto').textContent); tempoFinal = pegaValor('tempoH') * qtdPecas; pesoFinal = pegaValor('pesoPeca') * qtdPecas;
-        var multiOn = document.getElementById('toggle_multi_mat').checked; if(multiOn) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); } }
+        var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome", qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1; totalQtd = qtdPecas; nomeFinal = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase; 
+        
+        var elGasto = document.getElementById('r_gasto');
+        custoProducaoFinal = elGasto ? parseLocal(elGasto.textContent) : 0; 
+        
+        tempoFinal = pegaValor('tempoH') * qtdPecas; pesoFinal = pegaValor('pesoPeca') * qtdPecas;
+        
+        var multiOn = false, tMulti = document.getElementById('toggle_multi_mat');
+        if(tMulti) multiOn = tMulti.checked;
+        
+        if(multiOn) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtdEx+1; i++) { pesoFinal += (pegaValor('pesoPeca'+i) * qtdPecas); } }
         cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); freteCalculado = pegaValor('valorFreteManual');
         var t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), p1 = pegaValor('pesoPeca') * qtdPecas, nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim(); if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(p1 > 0) { materiaisArray.push(nomeMat1 + ' (' + p1 + 'g)'); }
         if (multiOn) { var qCores = document.getElementById('qtdCoresExtras'), qtdExtras = qCores ? (parseInt(pegaValor('qtdCoresExtras')) || 1) : 1; for(var i = 2; i <= qtdExtras + 1; i++) { var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), pi = pegaValor('pesoPeca'+i) * qtdPecas, nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pi > 0) { materiaisArray.push(nomeMatI + ' (' + pi + 'g)'); } } }
         
-        var rS = parseLocal(document.getElementById('r_vendaS').textContent), rM = parseLocal(document.getElementById('r_vendaM').textContent), rD = parseLocal(document.getElementById('r_vendaD').textContent);
-        if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; valorCalculadoBruto = (canal === "Shopee") ? rS : (canal === "Meli" ? rM : rD); } 
+        var elRS = document.getElementById('r_vendaS'), rS = elRS ? parseLocal(elRS.textContent) : 0;
+        var elRM = document.getElementById('r_vendaM'), rM = elRM ? parseLocal(elRM.textContent) : 0;
+        var elRD = document.getElementById('r_vendaD'), rD = elRD ? parseLocal(elRD.textContent) : 0;
+        
+        if (canal === "Personalizado") { 
+            valorBruto = pegaValor('valorPersonalizado'); 
+            var dest2 = document.getElementById('canalPersonalizadoDestino');
+            canal = dest2 ? dest2.value : "Shopee"; 
+            valorCalculadoBruto = (canal === "Shopee") ? rS : (canal === "Meli" ? rM : rD); 
+        } 
         else if(canal === "Direta") { valorBruto = rD; valorCalculadoBruto = rD; } 
         else if(canal === "Shopee") { valorBruto = rS; valorCalculadoBruto = rS; } 
         else { valorBruto = rM; valorCalculadoBruto = rM; }
@@ -474,7 +501,10 @@ function salvarHistorico() {
     }
     
     if(valorVendaFinal < 0) valorVendaFinal = 0;
-    var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', multiOnSave = document.getElementById('toggle_multi_mat').checked, extrasArrSave = [];
+    var stringMateriais = materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado', multiOnSave = false, tMultiS = document.getElementById('toggle_multi_mat');
+    if(tMultiS) multiOnSave = tMultiS.checked;
+    
+    var extrasArrSave = [];
     if(multiOnSave) { var qtdExSave = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtdExSave+1; i++) { extrasArrSave.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
     
     var cartToSave = [];
@@ -535,7 +565,7 @@ function editarItemHistorico(id) {
     document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
     var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
-    if (canalReal === "Personalizado") { document.getElementById('canalVendaSelecionado').value = "Personalizado"; document.getElementById('canalPersonalizadoDestino').value = item.canal; } else { document.getElementById('canalVendaSelecionado').value = item.canal; }
+    if (canalReal === "Personalizado") { document.getElementById('canalVendaSelecionado').value = "Personalizado"; var dP = document.getElementById('canalPersonalizadoDestino'); if(dP) dP.value = item.canal; } else { document.getElementById('canalVendaSelecionado').value = item.canal; }
     
     var valParaEditar = item.valorLiquido !== undefined ? item.valorLiquido : item.valorVenda; 
     document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar); 
