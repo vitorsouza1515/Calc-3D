@@ -214,20 +214,48 @@ function preencherFormProjeto(prod) {
 function adicionarAoCarrinho() {
     var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome", qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1; var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase, tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false, tempoItem = pegaValor('tempoH') * qtdPecas, pesoItem = pegaValor('pesoPeca') * qtdPecas, depCalc = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem, eneCalc = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem, precoMatCalc = pegaValor('precoFilamento'); if(precoMatCalc === 0) precoMatCalc = 120;
     var matTotalCalc = (precoMatCalc / 1000) * pesoItem, materiaisArray = [], t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim(); if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(pesoItem > 0) materiaisArray.push(nomeMat1 + ' (' + pesoItem + 'g)'); var extras = [];
-    if (multiMatEnabled) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i = 2; i <= qtdEx + 1; i++) { var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE; var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120; matTotalCalc += (precoE / 1000) * pesoE; var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)'); extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
-    var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100), mInputCalc = pegaValor('margemInput'), vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100)), novoItem = { id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000), nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, tempo: tempoItem, peso: pesoItem, materiais: (materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado'), tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value, multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value, foto: pegaTexto('fotoUrlProjeto') };
-    if (editandoCarrinhoId) { var idx = carrinho.findIndex(i => i.id === editandoCarrinhoId); if (idx > -1) carrinho[idx] = novoItem; editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; showToast("🛒 Item atualizado no Pedido!"); } else { carrinho.push(novoItem); showToast("🛒 Item adicionado ao Pedido!"); }
+    
+    if (multiMatEnabled) { 
+        var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; 
+        for(var i = 2; i <= qtdEx + 1; i++) { 
+            var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE; 
+            var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120; 
+            matTotalCalc += (precoE / 1000) * pesoE; 
+            var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)'); 
+            extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); 
+        } 
+    }
+    
+    var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; 
+    var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100), mInputCalc = pegaValor('margemInput'), vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100));
+    
+    // ==========================================
+    // CORREÇÃO: PUXAR O VALOR PERSONALIZADO/FIXO
+    // ==========================================
+    var canalSel = document.getElementById('canalVendaSelecionado');
+    if (canalSel && canalSel.value === 'Personalizado') {
+        var vPerso = pegaValor('valorPersonalizado');
+        if (vPerso > 0) {
+            vDCalc = vPerso; // Substitui o valor calculado pelo seu valor fixo!
+        }
+    }
+    // ==========================================
+
+    var novoItem = { id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000), nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, tempo: tempoItem, peso: pesoItem, materiais: (materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado'), tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value, multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value, foto: pegaTexto('fotoUrlProjeto') };
+    
+    if (editandoCarrinhoId) { 
+        var idx = carrinho.findIndex(i => i.id === editandoCarrinhoId); 
+        if (idx > -1) carrinho[idx] = novoItem; 
+        editandoCarrinhoId = null; 
+        var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); 
+        if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } 
+        if(btnCancel) btnCancel.style.display = "none"; 
+        showToast("🛒 Item atualizado no Pedido!"); 
+    } else { 
+        carrinho.push(novoItem); 
+        showToast("🛒 Item adicionado ao Pedido!"); 
+    }
     resetarInputProjeto(); renderCarrinho(); calcular();
-}
-
-function cancelarEdicaoCarrinho() { editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; resetarInputProjeto(); calcular(); showToast("❌ Edição cancelada"); }
-function removerDoCarrinho(id) { carrinho = carrinho.filter(i => i.id !== id); renderCarrinho(); calcular(); }
-function editarItemCarrinho(id) { var item = carrinho.find(i => i.id === id); if(!item) return; preencherFormProjeto(item); editandoCarrinhoId = id; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; } if(btnCancel) btnCancel.style.display = "block"; showToast("✏️ Item carregado para edição!"); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
-function renderCarrinho() {
-    var container = document.getElementById('carrinho_container'); var lista = document.getElementById('lista_itens_carrinho'); if(!container || !lista) return; if(carrinho.length === 0) { container.style.display = 'none'; return; } container.style.display = 'block'; lista.innerHTML = ''; var totCusto = 0, totValorComLucro = 0;
-    carrinho.forEach(item => { totCusto += item.custo; totValorComLucro += item.valorComLucro; var htmlFoto = item.foto ? `<div style="width:30px; height:30px; border-radius:4px; background-image:url('${item.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : ''; lista.innerHTML += `<div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border); display:flex; align-items:center;">${htmlFoto}<div style="flex:1;"><button onclick="editarItemCarrinho(${item.id})" style="position: absolute; right: 35px; top: 5px; background: none; border: none; color: var(--sky); font-size: 1rem; cursor: pointer;">✎</button><button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-size: 1rem; font-weight: bold; cursor: pointer;">×</button><div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 50px;">${item.nome}</div><div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div></div></div>`; });
-    var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1; var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual'); var totD = totValorComLucro + cLog + frete, vShopeeBase = totValorComLucro + cLog, avgBase = vShopeeBase / totalQtd, pAvg1 = (avgBase + 4) / 0.80, pAvg2 = (avgBase + 16) / 0.86, pAvg3 = (avgBase + 20) / 0.86, pAvg4 = (avgBase + 26) / 0.86, bestPAvg; if (pAvg1 <= 79.991) bestPAvg = pAvg1; else if (pAvg2 <= 99.991) bestPAvg = pAvg2; else if (pAvg3 <= 199.991) bestPAvg = pAvg3; else bestPAvg = pAvg4; var totS = bestPAvg * totalQtd, avgBaseML = vShopeeBase / totalQtd, pAvgML_noFix = avgBaseML / (1 - (pegaValor('taxaMeli')/100)), pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBaseML + pegaValor('fixaMeli')) / (1 - (pegaValor('taxaMeli')/100)), totM = pAvgML * totalQtd; document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD); document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS); document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
 }
 
 // ==========================================
