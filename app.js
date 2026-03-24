@@ -460,13 +460,15 @@ function salvarHistorico() {
     }
     
     var posFila = Date.now(), oldItem = null;
-    if (editHistoricoId) { oldItem = historico.find(h => h.id === editHistoricoId); if(oldItem && oldItem.posicaoFila) posFila = oldItem.posicaoFila; }
+    if (editHistoricoId) { oldItem = historico.find(h => h.id === editHistoricoId); if(oldItem && oldItem.posicaoFila !== undefined) posFila = oldItem.posicaoFila; }
     
     var freteFinal = (canal === "Shopee" || canal === "Meli") ? 0 : freteCalculado, net = descontarTaxas(valorBruto, totalQtd), valorVendaFinal = 0;
     
     if (isLiquidoExato) {
         valorVendaFinal = valorBruto;
-        valorBruto = oldItem ? (oldItem.valorBruto || oldItem.valorVenda) : valorCalculadoBruto;
+        // CORREÇÃO: Resgate seguro do Gross/Bruto de vendas antigas que não tinham as variáveis novas
+        var fallbackBruto = oldItem ? (oldItem.valorBruto !== undefined ? oldItem.valorBruto : (oldItem.valorLiquido !== undefined ? oldItem.valorLiquido : (oldItem.valorVenda !== undefined ? oldItem.valorVenda : oldItem.pix))) : valorCalculadoBruto;
+        valorBruto = fallbackBruto || valorCalculadoBruto || 0;
     } else {
         if(canal === "Shopee") { valorVendaFinal = net.shopee; } 
         else if(canal === "Meli") { valorVendaFinal = net.meli; } 
@@ -485,7 +487,31 @@ function salvarHistorico() {
 
     var urlFotoSalvar = isCart ? (carrinho.length > 0 ? carrinho[0].foto : '') : pegaTexto('fotoUrlProjeto');
 
-    var novo = { id: editHistoricoId ? editHistoricoId : Date.now(), nome: nomeFinal, cliente: cliNome, telefone: cliTel, canal: canal, materiais: stringMateriais, valorVenda: valorVendaFinal, valorBruto: valorBruto, valorLiquido: valorVendaFinal, custo: custoProducaoFinal, frete: freteFinal, logistica: cLog, peso: pesoFinal, tempo: tempoFinal, cartItems: cartToSave, totalQtd: totalQtd, urgente: isUrgente, posicaoFila: posFila, status: (oldItem ? oldItem.status : "Orçamento"), data: (oldItem ? oldItem.data : new Date().toLocaleDateString('pt-BR')), foto: urlFotoSalvar, estoqueBaixado: (oldItem ? oldItem.estoqueBaixado : false) };
+    // CORREÇÃO: Objeto 'novo' formatado para evitar o erro 'undefined' no Firebase
+    var novo = { 
+        id: editHistoricoId ? editHistoricoId : Date.now(), 
+        nome: nomeFinal || "", 
+        cliente: cliNome || "", 
+        telefone: cliTel || "", 
+        canal: canal || "Direta", 
+        materiais: stringMateriais || "Não informado", 
+        valorVenda: valorVendaFinal || 0, 
+        valorBruto: valorBruto || 0, 
+        valorLiquido: valorVendaFinal || 0, 
+        custo: custoProducaoFinal || 0, 
+        frete: freteFinal || 0, 
+        logistica: cLog || 0, 
+        peso: pesoFinal || 0, 
+        tempo: tempoFinal || 0, 
+        cartItems: cartToSave || [], 
+        totalQtd: totalQtd || 1, 
+        urgente: !!isUrgente, 
+        posicaoFila: posFila || Date.now(), 
+        status: oldItem ? (oldItem.status || "Orçamento") : "Orçamento", 
+        data: oldItem ? (oldItem.data || new Date().toLocaleDateString('pt-BR')) : new Date().toLocaleDateString('pt-BR'), 
+        foto: urlFotoSalvar || "", 
+        estoqueBaixado: oldItem ? !!oldItem.estoqueBaixado : false 
+    };
     
     if (editHistoricoId) { var idx = historico.findIndex(h => h.id === editHistoricoId); if (idx > -1) { historico[idx] = novo; } editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)"; var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none"; } 
     else { historico.unshift(novo); }
