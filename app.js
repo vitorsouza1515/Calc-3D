@@ -165,7 +165,17 @@ function adicionarAoCarrinho() {
     if (multiMatEnabled) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i = 2; i <= qtdEx + 1; i++) { var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE; var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120; matTotalCalc += (precoE / 1000) * pesoE; var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)'); extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
     var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100), mInputCalc = pegaValor('margemInput'), vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100)), novoItem = { id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000), nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, tempo: tempoItem, peso: pesoItem, materiais: (materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado'), tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value, multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value, foto: pegaTexto('fotoUrlProjeto') };
     if (editandoCarrinhoId) { var idx = carrinho.findIndex(i => i.id === editandoCarrinhoId); if (idx > -1) carrinho[idx] = novoItem; editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; showToast("🛒 Item atualizado no Pedido!"); } else { carrinho.push(novoItem); showToast("🛒 Item adicionado ao Pedido!"); }
-    resetarInputProjeto(); renderCarrinho(); calcular();
+    resetarInputProjeto(); 
+    var canalSel = document.getElementById('canalVendaSelecionado');
+    if (canalSel) canalSel.value = "Direta";
+    var elPerso = document.getElementById('valorPersonalizado');
+    if (elPerso) elPerso.value = '';
+    localStorage.removeItem('3d4y_dark_valorPersonalizado');
+    var cbLiq = document.getElementById('isLiquidoExato'); 
+    if(cbLiq) cbLiq.checked = false;
+    if(typeof mostrarValorPersonalizado === 'function') mostrarValorPersonalizado();
+    renderCarrinho(); 
+    calcular();
 }
 
 function cancelarEdicaoCarrinho() { editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; resetarInputProjeto(); calcular(); showToast("❌ Edição cancelada"); }
@@ -217,7 +227,11 @@ function salvarNoCatalogo() {
         if (idx > -1) {
             var pAntigo = catalogo[idx];
             var nomeMinusculo = (pAntigo.nome || "").toLowerCase().trim();
-            var vendasAfetadas = historico.filter(h => (h.nome || "").toLowerCase().trim().includes(nomeMinusculo) && !h.vendaIsolada);
+            var vendasAfetadas = historico.filter(h => {
+                if (h.vendaIsolada) return false;
+                var nomeHistoricoClean = (h.nome || "").toLowerCase().trim().replace(/^\d+x\s/, '');
+                return nomeHistoricoClean === nomeMinusculo;
+            });
             if (vendasAfetadas.length > 0) {
                 if (confirm(`Deseja atualizar o PESO, TEMPO e CUSTO das ${vendasAfetadas.length} venda(s) PADRÃO deste produto no histórico?\n\n(Pedidos que você editou manualmente estão protegidos por 🔒 e não serão afetados).`)) {
                     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'), custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh), novoTempoUnit = pegaValor('tempoH'), novoPesoUnit = pegaValor('pesoPeca'), precoFilamentoUnit = pegaValor('precoFilamento') || 120, taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
@@ -511,7 +525,7 @@ function salvarHistorico() {
         data: oldItem ? (oldItem.data || new Date().toLocaleDateString('pt-BR')) : new Date().toLocaleDateString('pt-BR'), 
         foto: urlFotoSalvar || "", 
         estoqueBaixado: oldItem ? !!oldItem.estoqueBaixado : false,
-        vendaIsolada: editHistoricoId ? true : (oldItem ? !!oldItem.vendaIsolada : false)
+        vendaIsolada: editHistoricoId ? true : (oldItem ? !!oldItem.vendaIsolada : false)
     };
     
     if (editHistoricoId) { var idx = historico.findIndex(h => h.id === editHistoricoId); if (idx > -1) { historico[idx] = novo; } editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)"; var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none"; } 
@@ -695,7 +709,7 @@ function renderHistorico() {
         var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '', bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);'; if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
         var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
         var checkEstoque = item.estoqueBaixado ? `<span style="font-size:0.55rem; color:#10b981; margin-left:5px;" title="Estoque Descontado">📉 OK</span>` : '';
-        var lockIcon = item.vendaIsolada ? `<span style="font-size:0.65rem; margin-left:5px;" title="Venda Protegida: Alterações no catálogo não afetam este pedido">🔒</span>` : '';
+        var lockIcon = item.vendaIsolada ? `<span style="font-size:0.65rem; margin-left:5px;" title="Venda Protegida: Alterações no catálogo não afetam este pedido">🔒</span>` : '';
         
         var fotoParaMostrar = item.foto;
         if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
