@@ -804,17 +804,39 @@ window.importarBackupJSON = function(input) {
 };
 
 window.forcarRecalculoGeral = function() {
-    if(!confirm("⚠️ ATENÇÃO: Isto vai varrer todo o seu histórico e recalcular os lucros, fretes e embalagens com a regra nova (1x por pedido). Deseja continuar?")) return;
-    var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'), cLogGlobal = emb + des, corrigidos = 0;
+    if(!confirm("⚠️ ATENÇÃO: Isto vai varrer todo o seu histórico e recalcular os lucros, fretes e embalagens com a regra nova. ALÉM DISSO, vai dar baixa no estoque de TODOS os pedidos finalizados/enviados antigos que ainda não foram descontados. Deseja continuar?")) return;
+    
+    var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'), cLogGlobal = emb + des, corrigidos = 0, baixadosEstoque = 0;
+    
     historico.forEach(h => {
         if (h.status === 'Orçamento' || h.status === 'Devolução') return;
+        
+        // 1. Recálculo financeiro e logístico
         h.logistica = cLogGlobal;
         var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda)), vFrete = parseLocal(h.frete || 0), qtd = h.totalQtd || 1;
         if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtd).shopee - vFrete - h.logistica; }
         else if (h.canal === "Meli") { h.valorLiquido = descontarTaxas(vBruto, qtd).meli - vFrete - h.logistica; }
         else { h.valorLiquido = vBruto; }
         if (h.valorLiquido < 0) h.valorLiquido = 0;
+        
         corrigidos++;
+
+        // 2. Baixa retroativa do Estoque de filamentos
+        var st = h.status || "Finalizado"; 
+        if (st === 'Enviado') st = 'Enviado / Entregue'; // Normaliza o status caso seja antigo
+        
+        // Só dá baixa se for Finalizado/Enviado e se a flag de 'estoqueBaixado' ainda não for true
+        if ((st === 'Finalizado' || st === 'Enviado / Entregue') && !h.estoqueBaixado) {
+            window.darBaixaEstoqueVenda(h); // Chama a função que desconta as gramas
+            h.estoqueBaixado = true;        // Marca que já foi descontado para não duplicar futuramente
+            baixadosEstoque++;
+        }
     });
-    syncNuvem(); renderHistorico(); showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); fecharModal('configModal');
+    
+    syncNuvem(); 
+    renderHistorico(); 
+    renderEstoque(); // Atualiza a tela de estoque para mostrar os novos pesos
+    
+    showToast("✅ " + corrigidos + " vendas atualizadas e " + baixadosEstoque + " estoques baixados!"); 
+    fecharModal('configModal');
 };
