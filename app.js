@@ -744,69 +744,81 @@ function resetarDados() {
     resetarInputProjeto(); calcular(); setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100); var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function wpp(tipo) {
+// === NOVA FUNÇÃO DE ENCURTAR LINK ===
+window.encurtarUrl = async function(url) {
+    if (!url || url.length < 35) return url;
+    try {
+        let res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://is.gd/create.php?format=json&url=' + encodeURIComponent(url))}`);
+        let data = await res.json();
+        let innerData = JSON.parse(data.contents);
+        return innerData.shorturl || url;
+    } catch(e) { return url; }
+};
+
+window.wpp = async function(tipo) {
+    var w = window.open('', '_blank');
+    if(w) w.document.write('<h3 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#3b82f6;">A gerar link curto do WhatsApp... Aguarde ⏳</h3>');
+
     var txt = "*Orçamento 3D 4You*\n\n", valF = 0, isCart = carrinho && carrinho.length > 0, isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado', canalPerso = document.getElementById('canalPersonalizadoDestino').value;
-    
     if(isCart) { 
         txt += "*Itens do Pedido:*\n"; 
-        carrinho.forEach(i => { 
+        for (let i of carrinho) {
             txt += "- " + i.nome + "\n"; 
-            if(i.foto) txt += "  📷 Visualizar: " + i.foto + "\n";
-        }); 
+            if(i.foto) {
+                let linkCurto = await encurtarUrl(i.foto);
+                txt += "  📷 Ver Peça: " + linkCurto + "\n";
+            }
+        }
         valF = tipo === 'direta' ? document.getElementById('cart_tot_vd').textContent : (tipo === 'shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent); 
     } 
     else { 
         var nProj = document.getElementById('nomeProjeto'), nome = nProj && nProj.value ? nProj.value : "Peça 3D", elQtd = document.getElementById('qtdPecasProjeto'), qtd = elQtd && elQtd.value !== "1" ? elQtd.value + "x " : ""; 
         txt += "*Projeto:* " + qtd + nome + "\n"; 
         var fotoUrl = pegaTexto('fotoUrlProjeto');
-        if (fotoUrl) { txt += "📷 *Visualizar Peça:* " + fotoUrl + "\n"; }
+        if (fotoUrl) { 
+            let linkCurto = await encurtarUrl(fotoUrl);
+            txt += "📷 *Ver Peça:* " + linkCurto + "\n"; 
+        }
         valF = tipo === 'direta' ? document.getElementById('r_vendaD').textContent : (tipo === 'shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent); 
     }
-    
-    if (isPersonalizado) { 
-        var vPerso = pegaTexto('valorPersonalizado'); 
-        if (vPerso) { 
-            if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) { valF = vPerso; } 
-        } 
-    }
-    
+    if (isPersonalizado) { var vPerso = pegaTexto('valorPersonalizado'); if (vPerso) { if ((tipo === 'direta' && canalPerso === 'Direta') || (tipo === 'shopee' && canalPerso === 'Shopee') || (tipo === 'meli' && canalPerso === 'Meli')) { valF = vPerso; } } }
     txt += "\n*Valor Total:* R$ " + valF; 
     var tCli = document.getElementById('telefoneCliente'), tel = tCli && tCli.value ? tCli.value.replace(/\D/g, '') : ""; 
-    window.open("https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt), '_blank');
-}
+    var finalUrl = "https://wa.me/" + (tel ? "55"+tel : "") + "?text=" + encodeURIComponent(txt);
+    if(w) { w.location.href = finalUrl; } else { window.open(finalUrl, '_blank'); }
+};
 
-window.gerarOrcamentoPDF = function() {
+window.gerarOrcamentoPDF = async function() {
+    showToast("⏳ A gerar PDF com links... Aguarde!", false);
     const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(20); doc.text("ORÇAMENTO - 3D 4You", 14, 20); doc.setFontSize(12); doc.text("Data: " + new Date().toLocaleDateString('pt-BR'), 14, 30);
     var cliNome = pegaTexto('nomeCliente') || "Cliente Balcão"; doc.text("Cliente: " + cliNome, 14, 38);
     var isCart = carrinho && carrinho.length > 0, valF = 0, isPersonalizado = document.getElementById('canalVendaSelecionado').value === 'Personalizado', tipoCanal = document.getElementById('canalVendaSelecionado').value;
-    
-    if(isCart) { 
-        valF = tipoCanal === 'Direta' ? document.getElementById('cart_tot_vd').textContent : (tipoCanal === 'Shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent); 
-    } else { 
-        valF = tipoCanal === 'Direta' ? document.getElementById('r_vendaD').textContent : (tipoCanal === 'Shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent); 
-    }
+    if(isCart) { valF = tipoCanal === 'Direta' ? document.getElementById('cart_tot_vd').textContent : (tipoCanal === 'Shopee' ? document.getElementById('cart_tot_vs').textContent : document.getElementById('cart_tot_vm').textContent); } else { valF = tipoCanal === 'Direta' ? document.getElementById('r_vendaD').textContent : (tipoCanal === 'Shopee' ? document.getElementById('r_vendaS').textContent : document.getElementById('r_vendaM').textContent); }
     if (isPersonalizado) { var vPerso = pegaTexto('valorPersonalizado'); if (vPerso) valF = vPerso; }
-    
     let startY = 50, tableData = [];
-    
     if(isCart) { 
-        carrinho.forEach(i => { 
+        for(let i of carrinho) {
             var descItem = i.nome;
-            if(i.foto) descItem += "\n📷 Foto da Peça: " + i.foto;
+            if(i.foto) {
+                let linkCurto = await encurtarUrl(i.foto);
+                descItem += "\n📷 Link da Foto: " + linkCurto;
+            }
             tableData.push([descItem, "R$ " + formatarMoeda(i.valorComLucro)]); 
-        }); 
+        }
     } else { 
         var nProj = document.getElementById('nomeProjeto').value || "Peça 3D", qtd = document.getElementById('qtdPecasProjeto').value || "1"; 
         var descItemUnico = qtd + "x " + nProj;
         var fotoUrl = pegaTexto('fotoUrlProjeto');
-        if(fotoUrl) descItemUnico += "\n📷 Foto da Peça: " + fotoUrl;
+        if(fotoUrl) {
+            let linkCurto = await encurtarUrl(fotoUrl);
+            descItemUnico += "\n📷 Link da Foto: " + linkCurto;
+        }
         tableData.push([descItemUnico, "R$ " + valF]); 
     }
-    
     doc.autoTable({ startY: startY, head: [['Descrição do Item', 'Valor Estimado']], body: tableData, theme: 'grid', headStyles: { fillColor: [59, 130, 246] }, styles: { overflow: 'linebreak' } });
     let finalY = doc.lastAutoTable.finalY + 15; doc.setFontSize(16); doc.setFont(undefined, 'bold'); doc.text("VALOR TOTAL: R$ " + valF, 14, finalY); doc.setFontSize(10); doc.setFont(undefined, 'normal'); doc.text("Orçamento sujeito a alteração. Válido por 7 dias.", 14, finalY + 10);
-    doc.save("Orcamento_Cliente_3D4You.pdf"); showToast("📄 Orçamento PDF Gerado!");
-}
+    doc.save("Orcamento_Cliente_3D4You.pdf"); showToast("✅ Orçamento PDF Gerado!");
+};
 
 window.gerarRelatorioGeral = function() {
     if (historico.length === 0) { showToast("⚠️ Nenhum dado para exportar", true); return; }
