@@ -992,16 +992,64 @@ window.importarBackupJSON = function(input) {
 
 window.forcarRecalculoGeral = function() {
     if(!confirm("⚠️ ATENÇÃO: Isto vai varrer todo o seu histórico e recalcular os lucros, fretes e embalagens com a regra nova (1x por pedido). Deseja continuar?")) return;
-    var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'), cLogGlobal = emb + des, corrigidos = 0;
+    
+    var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'), cLogGlobal = emb + des, corrigidos = 0, baixadosEstoque = 0;
+    
     historico.forEach(h => {
         if (h.status === 'Orçamento' || h.status === 'Devolução') return;
         h.logistica = cLogGlobal;
-        var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda)), vFrete = parseLocal(h.frete || 0), qtd = h.totalQtd || 1;
+        
+        var isCart = h.cartItems && h.cartItems.length > 0;
+        var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda));
+        var vFrete = parseLocal(h.frete || 0), qtd = h.totalQtd || 1;
+
+        // SE FOR CARRINHO, precisamos refazer o Valor Bruto correto antes de descontar!
+        if (isCart && !h.vendaIsolada && h.canal !== "Personalizado" && h.canal !== "Direta") {
+            var totValorComLucro = h.cartItems.reduce((a,b) => a + (b.valorComLucro || 0), 0);
+            var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
+            var novoTotS = 0, novoTotM = 0;
+            
+            h.cartItems.forEach(i => {
+                var itemRatio = (i.valorComLucro || 0) / totBaseForRatio;
+                var itemBaseTotal = (i.valorComLucro || 0) + (cLogGlobal * itemRatio);
+                var itemBaseUnit = itemBaseTotal / (i.qtd || 1);
+                
+                var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+                if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+                novoTotS += (bestPShp * (i.qtd || 1));
+                
+                var txMl = pegaValor('taxaMeli') / 100;
+                var pAvgML_noFix = itemBaseUnit / (1 - txMl);
+                var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
+                novoTotM += (bestPMeli * (i.qtd || 1));
+            });
+
+            if (h.canal === "Shopee") vBruto = novoTotS;
+            if (h.canal === "Meli") vBruto = novoTotM;
+            h.valorBruto = vBruto; // Salva o novo valor bruto corrigido no histórico!
+        }
+
         if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).shopee - vFrete - h.logistica; }
         else if (h.canal === "Meli") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).meli - vFrete - h.logistica; }
         else { h.valorLiquido = vBruto; }
+        
         if (h.valorLiquido < 0) h.valorLiquido = 0;
         corrigidos++;
+
+        // Baixa retroativa do Estoque de filamentos
+        var st = h.status || "Finalizado"; 
+        if (st === 'Enviado') st = 'Enviado / Entregue'; 
+        if ((st === 'Finalizado' || st === 'Enviado / Entregue') && !h.estoqueBaixado) {
+            window.darBaixaEstoqueVenda(h); 
+            h.estoqueBaixado = true;        
+            baixadosEstoque++;
+        }
     });
-    syncNuvem(); renderHistorico(); showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); fecharModal('configModal');
+    
+    syncNuvem(); 
+    renderHistorico(); 
+    renderEstoque(); 
+    
+    showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); 
+    fecharModal('configModal');
 };
