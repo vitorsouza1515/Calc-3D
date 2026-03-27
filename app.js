@@ -752,12 +752,19 @@ function editarItemHistorico(id) {
     var elIdPed = document.getElementById('idPedidoMarketplace'); if(elIdPed) { elIdPed.value = item.idPedido || ""; salvarDinamico('idPedidoMarketplace'); }
     
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
-    var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
-    if (canalReal === "Personalizado") { document.getElementById('canalVendaSelecionado').value = "Personalizado"; document.getElementById('canalPersonalizadoDestino').value = item.canal; } else { document.getElementById('canalVendaSelecionado').value = item.canal; }
     
-    var valParaEditar = item.valorLiquido !== undefined ? item.valorLiquido : item.valorVenda; 
+    // ========================================================
+    // NOVA MAGIA DE EDIÇÃO: FORÇA O VALOR PERSONALIZADO E BRUTO
+    // ========================================================
+    document.getElementById('canalVendaSelecionado').value = "Personalizado"; 
+    var cDest = document.getElementById('canalPersonalizadoDestino');
+    if(cDest) cDest.value = item.canal || "Direta";
+    
+    var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : (item.valorLiquido !== undefined ? item.valorLiquido : item.valorVenda); 
     document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar); 
-    salvarDinamico('valorPersonalizado'); mostrarValorPersonalizado();
+    salvarDinamico('valorPersonalizado'); 
+    mostrarValorPersonalizado();
+    // ========================================================
     
     var cbLiq = document.getElementById('isLiquidoExato'); if(cbLiq) cbLiq.checked = false; 
 
