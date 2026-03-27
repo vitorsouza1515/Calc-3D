@@ -376,7 +376,14 @@ function salvarNoCatalogo() {
 
 function renderCatalogo() {
     var sel = document.getElementById('sel_catalogo'); var lista = document.getElementById('lista_catalogo'); if(!sel || !lista) return;
-    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")); var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>'; var htmlLista = catalogoOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>' : '';
+    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")); 
+    var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>'; 
+    
+    // Novo Botão de Sincronização Global no Topo!
+    var htmlLista = '<div style="margin-bottom:15px; text-align:center;"><button onclick="sincronizarTudoComCatalogo()" style="background:var(--purple); width:100%; padding:10px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;"><span style="font-size:1.2rem">🔄</span> Sincronizar Todas as Vendas com o Catálogo Atual</button></div>';
+    
+    if(catalogoOrdenado.length === 0) htmlLista += '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>';
+    
     catalogoOrdenado.forEach(function(p) {
         htmlSel += `<option value="${p.id}">${p.nome}</option>`; var pesoTotal = parseLocal(p.peso1); if(p.multi && p.extras && p.extras.length > 0) { p.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
         var pesoStr = formatarMoeda(pesoTotal) + 'g', htmlPrecoFixo = p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0 ? ' | Venda Fixo: R$ ' + p.precoFixo : '', htmlFoto = p.foto ? `<div style="width:40px; height:40px; border-radius:6px; background-image:url('${p.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
@@ -1072,4 +1079,119 @@ window.forcarRecalculoGeral = function() {
     
     syncNuvem(); renderHistorico(); renderEstoque(); 
     showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); fecharModal('configModal');
+};
+// ==========================================
+// 14. SINCRONIZADOR GLOBAL DO CATÁLOGO
+// ==========================================
+
+window.sincronizarTudoComCatalogo = function() {
+    if(!confirm("⚠️ ATENÇÃO: Isso vai varrer todo o seu histórico e atualizar o PESO, TEMPO, MATERIAIS e CUSTOS de TODAS as vendas baseando-se nos valores exatos atuais do Catálogo.\n\nPedidos manuais com 🔒 não serão afetados.\n\nDeseja continuar?")) return;
+    
+    var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
+    var custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh);
+    var taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
+    var cLogGlobal = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+    var atualizadas = 0;
+
+    historico.forEach(h => {
+        if (h.status === 'Orçamento' || h.status === 'Devolução' || h.vendaIsolada) return;
+        var alterou = false;
+        
+        if (h.cartItems && h.cartItems.length > 0) {
+            var novoCustoTotalCart = 0, novoPesoTotalCart = 0, novoTempoTotalCart = 0, novosMateriaisCart = [];
+            h.cartItems.forEach(ci => {
+                var matchNome = ci.nome.match(/^(\d+)x\s(.*)/);
+                var baseNome = matchNome ? matchNome[2].trim().toLowerCase() : ci.nome.trim().toLowerCase();
+                var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome);
+                
+                if (matchCat) {
+                    alterou = true;
+                    var qtd = parseLocal(ci.qtd || 1), tempoUnit = parseLocal(matchCat.tempo), pesoUnit = parseLocal(matchCat.peso1), pFil = parseLocal(matchCat.preco1) || 120;
+                    var matCost = (pFil / 1000) * pesoUnit, matArr = [];
+                    var n1 = (matchCat.tipo1 + ' ' + matchCat.cor1 + ' ' + (matchCat.marca1||'')).trim() || 'Filamento 1';
+                    if(pesoUnit > 0) matArr.push(n1 + ' (' + (pesoUnit * qtd) + 'g)');
+                    
+                    if(matchCat.multi && matchCat.extras && matchCat.extras.length > 0) {
+                        matchCat.extras.forEach(ex => {
+                            var pE = parseLocal(ex.preco) || 120, pesE = parseLocal(ex.peso) || 0;
+                            matCost += (pE / 1000) * pesE; pesoUnit += pesE;
+                            var nx = (ex.tipo + ' ' + ex.cor + ' ' + (ex.marca||'')).trim() || 'Filamento Extra';
+                            if(pesE > 0) matArr.push(nx + ' (' + (pesE * qtd) + 'g)');
+                        });
+                    }
+                    var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso;
+                    ci.tempo = tempoUnit * qtd; ci.peso = pesoUnit * qtd; ci.custo = cUnit * qtd; ci.materiais = matArr.join(' + ');
+                    var margem = parseLocal(ci.margemLucro || pegaValor('margemInput') || 80);
+                    ci.valorComLucro = ci.custo + (ci.custo * (margem / 100));
+                }
+                novoCustoTotalCart += parseLocal(ci.custo); novoPesoTotalCart += parseLocal(ci.peso); novoTempoTotalCart += parseLocal(ci.tempo);
+                if(ci.materiais && ci.materiais !== "Não informado") novosMateriaisCart.push(ci.materiais);
+            });
+            if (alterou) { h.custo = novoCustoTotalCart; h.peso = novoPesoTotalCart; h.tempo = novoTempoTotalCart; h.materiais = novosMateriaisCart.join(' + ') || "Não informado"; }
+        } else {
+            var matchNome = h.nome.match(/^(\d+)x\s(.*)/);
+            var baseNome = matchNome ? matchNome[2].trim().toLowerCase() : h.nome.trim().toLowerCase();
+            var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome);
+            
+            if (matchCat) {
+                alterou = true;
+                var qtd = parseLocal(h.totalQtd || 1), tempoUnit = parseLocal(matchCat.tempo), pesoUnit = parseLocal(matchCat.peso1), pFil = parseLocal(matchCat.preco1) || 120;
+                var matCost = (pFil / 1000) * pesoUnit, matArr = [];
+                var n1 = (matchCat.tipo1 + ' ' + matchCat.cor1 + ' ' + (matchCat.marca1||'')).trim() || 'Filamento 1';
+                if(pesoUnit > 0) matArr.push(n1 + ' (' + (pesoUnit * qtd) + 'g)');
+                
+                if(matchCat.multi && matchCat.extras && matchCat.extras.length > 0) {
+                    matchCat.extras.forEach(ex => {
+                        var pE = parseLocal(ex.preco) || 120, pesE = parseLocal(ex.peso) || 0;
+                        matCost += (pE / 1000) * pesE; pesoUnit += pesE;
+                        var nx = (ex.tipo + ' ' + ex.cor + ' ' + (ex.marca||'')).trim() || 'Filamento Extra';
+                        if(pesE > 0) matArr.push(nx + ' (' + (pesE * qtd) + 'g)');
+                    });
+                }
+                var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso;
+                h.tempo = tempoUnit * qtd; h.peso = pesoUnit * qtd; h.custo = cUnit * qtd; h.materiais = matArr.join(' + ');
+            }
+        }
+        
+        if (alterou) {
+            h.logistica = cLogGlobal;
+            var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda));
+            var vFrete = parseLocal(h.frete || 0), qtdH = parseLocal(h.totalQtd || 1);
+
+            if (h.cartItems && h.cartItems.length > 0 && h.canal !== "Personalizado" && h.canal !== "Direta") {
+                var totValorComLucro = h.cartItems.reduce((a,b) => a + parseLocal(b.valorComLucro || 0), 0);
+                var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
+                var novoTotS = 0, novoTotM = 0;
+                h.cartItems.forEach(i => {
+                    var iQtd = parseLocal(i.qtd || 1), iPrecoExato = parseLocal(i.precoVendaExato || 0);
+                    if (iPrecoExato > 0) { novoTotS += iPrecoExato; novoTotM += iPrecoExato; } 
+                    else {
+                        var itemRatio = parseLocal(i.valorComLucro || 0) / totBaseForRatio, itemBaseTotal = parseLocal(i.valorComLucro || 0) + (cLogGlobal * itemRatio), itemBaseUnit = itemBaseTotal / iQtd;
+                        var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+                        if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+                        novoTotS += (Math.round(bestPShp * 100) / 100) * iQtd;
+                        var txMl = pegaValor('taxaMeli') / 100, pAvgML_noFix = itemBaseUnit / (1 - txMl);
+                        var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
+                        novoTotM += (Math.round(bestPMeli * 100) / 100) * iQtd;
+                    }
+                });
+                if (h.canal === "Shopee") vBruto = novoTotS;
+                if (h.canal === "Meli") vBruto = novoTotM;
+                h.valorBruto = vBruto; 
+            }
+
+            if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtdH, h.cartItems).shopee - vFrete - h.logistica; }
+            else if (h.canal === "Meli") { h.valorLiquido = descontarTaxas(vBruto, qtdH, h.cartItems).meli - vFrete - h.logistica; }
+            else { h.valorLiquido = vBruto; }
+            if (h.valorLiquido < 0) h.valorLiquido = 0;
+            atualizadas++;
+        }
+    });
+    
+    if (atualizadas > 0) {
+        syncNuvem(); renderHistorico(); calcular();
+        showToast("✅ " + atualizadas + " Vendas Atualizadas com o Catálogo!");
+    } else {
+        showToast("✅ Nenhuma diferença encontrada para atualizar.", false);
+    }
 };
