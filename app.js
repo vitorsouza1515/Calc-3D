@@ -118,6 +118,7 @@ window.fecharModal = function(idModal) {
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
 
 // MÁGICA DO ARREDONDAMENTO ITEM A ITEM
+// MÁGICA DO ARREDONDAMENTO ITEM A ITEM
 function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) { 
     var feeShpTotal = 0, feeMlTotal = 0, txMl = pegaValor('taxaMeli') / 100;
     var items = (cartItemsArray && cartItemsArray.length > 0) ? cartItemsArray : (carrinho && carrinho.length > 0 ? carrinho : []);
@@ -151,27 +152,35 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
             var iQtd = parseLocal(i.qtd || 1);
             var actualUnitGross = Math.round((simulatedGrossList[idx] * scale) * 100) / 100;
             var feeSUnit = 0;
+            // AQUI É A MAGIA: O CÁLCULO INDIVIDUAL DA SHOPEE POR PEÇA
             if (actualUnitGross <= 79.991) feeSUnit = (Math.round(actualUnitGross * 0.20 * 100) / 100) + 4;
             else if (actualUnitGross <= 99.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 16;
             else if (actualUnitGross <= 199.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 20;
             else feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 26;
-            feeShpTotal += (feeSUnit * iQtd);
+            
+            feeShpTotal += (feeSUnit * iQtd); // MULTIPLICA A TAXA UNITÁRIA PELA QTD!
             
             var fixMl = (actualUnitGross >= 79.99) ? 0 : pegaValor('fixaMeli');
             var feeMUnit = (Math.round(actualUnitGross * txMl * 100) / 100) + fixMl;
             feeMlTotal += (feeMUnit * iQtd);
         });
     } else {
-        var avgBruto = Math.round((parseLocal(valorBruto) / parseLocal(qtdTotal)) * 100) / 100;
+        // VENDA SIMPLES (FORA DO CARRINHO)
+        var qTotalLocal = parseLocal(qtdTotal);
+        if (qTotalLocal < 1) qTotalLocal = 1;
+        var avgBruto = Math.round((parseLocal(valorBruto) / qTotalLocal) * 100) / 100;
+        
         var feeShpUnit = 0;
         if (avgBruto <= 79.991) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
         else if (avgBruto <= 99.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 16;
         else if (avgBruto <= 199.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 20;
         else feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 26;
-        feeShpTotal = feeShpUnit * parseLocal(qtdTotal);
+        
+        feeShpTotal = feeShpUnit * qTotalLocal; // O SEGREDO ESTÁ AQUI: MULTIPLICA PELA QTD
+
         var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
         var feeMlUnit = (Math.round(avgBruto * txMl * 100) / 100) + fixMl;
-        feeMlTotal = feeMlUnit * parseLocal(qtdTotal);
+        feeMlTotal = feeMlUnit * qTotalLocal;
     }
     
     var netShopee = parseLocal(valorBruto) - feeShpTotal; if (netShopee < 0) netShopee = 0;
