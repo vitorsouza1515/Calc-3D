@@ -52,10 +52,6 @@ function isWithinDays(dateStr, dias) {
     return diffDays <= parseInt(dias);
 }
 
-// ==========================================
-// 4. INTEGRAÇÃO IMGBB (UPLOAD DE FOTOS)
-// ==========================================
-
 window.uploadingCatalogId = null;
 window.handleUploadCat = function(input) {
     var file = input.files[0]; if (!file) return; var formData = new FormData(); formData.append("image", file);
@@ -87,10 +83,6 @@ function iniciarApp() {
 
 function syncNuvem() { window.configGlobais = { maquina: pegaTexto('maquina') || "3.275", vidaUtil: pegaTexto('vidaUtil') || "3.000", consumoW: pegaTexto('consumoW') || "350", precoKwh: pegaTexto('precoKwh') || "1,20", qa_aviso: pegaTexto('qa_aviso') || "100", custoEmbalagem: pegaTexto('custoEmbalagem') || "0,00", custoDeslocamento: pegaTexto('custoDeslocamento') || "0,00", taxaMeli: pegaTexto('taxaMeli') || "17", fixaMeli: pegaTexto('fixaMeli') || "6,75", taxaSucesso: pegaTexto('taxaSucesso') || "80", margemLucro: pegaTexto('margemInput') || "80" }; if(nuvemRef) { nuvemRef.set({ historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas, qaOffset: window.qaOffset || 0, configGlobais: window.configGlobais }).catch(function(error) { showToast("❌ Erro ao Sincronizar Nuvem", true); }); } }
 
-// ==========================================
-// 6. FUNÇÕES DE FORMATAÇÃO E MÁSCARAS
-// ==========================================
-
 function mascaraData(el) { if(!el) return; var val = el.value.replace(/\D/g, ''); if(val.length > 8) val = val.slice(0, 8); if(val.length >= 5) { val = val.slice(0,2) + '/' + val.slice(2,4) + '/' + val.slice(4); } else if(val.length >= 3) { val = val.slice(0,2) + '/' + val.slice(2); } el.value = val; }
 function aplicarMascara(el) { if (!el) return; var start = el.selectionStart, oldVal = el.value, partsDot = oldVal.split('.'); if (partsDot.length === 2 && oldVal.indexOf(',') === -1 && partsDot[1].length <= 3) { oldVal = oldVal.replace('.', ','); } var v = oldVal.replace(/\./g, '').replace(/[^0-9,]/g, ''), parts = v.split(','); if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join(''); var intPart = parts[0]; if (intPart) { if (intPart.length > 1 && intPart.charAt(0) === '0') { intPart = parseInt(intPart, 10).toString(); } intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "."); } var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart; if (el.value !== newVal) { el.value = newVal; var newStart = start + (newVal.length - oldVal.length); if (newStart < 0) newStart = 0; try { el.setSelectionRange(newStart, newStart); } catch(e) {} } }
 function mascaraTelefone(el) { if (!el) return; var val = el.value.replace(/\D/g, ''); if (val.length > 11) val = val.slice(0, 11); if (val.length > 2) val = '(' + val.slice(0,2) + ') ' + val.slice(2); if (val.length > 10) val = val.slice(0, 10) + '-' + val.slice(10); el.value = val; }
@@ -100,9 +92,9 @@ function pegaTexto(id) { var el = document.getElementById(id); if (el) { return 
 function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 function salvarDinamico(idCampo) { var el = document.getElementById(idCampo); if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); } }
 function salvarDinamicoValor(idCampo, valor) { var el = document.getElementById(idCampo); if (el) el.value = valor; localStorage.setItem('3d4y_dark_' + idCampo, valor); }
-var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto'];
+// ADICIONADO idPedidoMarketplace
+var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto', 'idPedidoMarketplace'];
 function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
-
 // ==========================================
 // 7. MODAIS E CONFIGURAÇÕES
 // ==========================================
@@ -117,7 +109,6 @@ window.fecharModal = function(idModal) {
 }
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
 
-// MÁGICA DO ARREDONDAMENTO ITEM A ITEM
 // MÁGICA DO ARREDONDAMENTO ITEM A ITEM
 function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) { 
     var feeShpTotal = 0, feeMlTotal = 0, txMl = pegaValor('taxaMeli') / 100;
@@ -152,32 +143,27 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
             var iQtd = parseLocal(i.qtd || 1);
             var actualUnitGross = Math.round((simulatedGrossList[idx] * scale) * 100) / 100;
             var feeSUnit = 0;
-            // AQUI É A MAGIA: O CÁLCULO INDIVIDUAL DA SHOPEE POR PEÇA
             if (actualUnitGross <= 79.991) feeSUnit = (Math.round(actualUnitGross * 0.20 * 100) / 100) + 4;
             else if (actualUnitGross <= 99.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 16;
             else if (actualUnitGross <= 199.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 20;
             else feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 26;
-            
-            feeShpTotal += (feeSUnit * iQtd); // MULTIPLICA A TAXA UNITÁRIA PELA QTD!
+            feeShpTotal += (feeSUnit * iQtd);
             
             var fixMl = (actualUnitGross >= 79.99) ? 0 : pegaValor('fixaMeli');
             var feeMUnit = (Math.round(actualUnitGross * txMl * 100) / 100) + fixMl;
             feeMlTotal += (feeMUnit * iQtd);
         });
     } else {
-        // VENDA SIMPLES (FORA DO CARRINHO)
         var qTotalLocal = parseLocal(qtdTotal);
         if (qTotalLocal < 1) qTotalLocal = 1;
         var avgBruto = Math.round((parseLocal(valorBruto) / qTotalLocal) * 100) / 100;
-        
         var feeShpUnit = 0;
         if (avgBruto <= 79.991) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
         else if (avgBruto <= 99.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 16;
         else if (avgBruto <= 199.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 20;
         else feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 26;
+        feeShpTotal = feeShpUnit * qTotalLocal;
         
-        feeShpTotal = feeShpUnit * qTotalLocal; // O SEGREDO ESTÁ AQUI: MULTIPLICA PELA QTD
-
         var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
         var feeMlUnit = (Math.round(avgBruto * txMl * 100) / 100) + fixMl;
         feeMlTotal = feeMlUnit * qTotalLocal;
@@ -187,6 +173,7 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
     var netMeli = parseLocal(valorBruto) - feeMlTotal; if (netMeli < 0) netMeli = 0;
     return { shopee: netShopee, meli: netMeli }; 
 }
+
 // ==========================================
 // 8. LIMPEZA E PREENCHIMENTO DO PROJETO
 // ==========================================
@@ -339,38 +326,69 @@ window.cancelarEdicaoCatalogo = function() {
 function salvarNoCatalogo() {
     var nome = pegaTexto('nomeProjeto'); if(!nome) { showToast("❌ Dê um nome ao projeto antes de salvar no catálogo.", true); return; }
     var precoFixo = pegaTexto('precoFixoCatMain'), fotoUrl = pegaTexto('fotoUrlProjeto'), extras = [], multiOn = document.getElementById('toggle_multi_mat').checked;
-    if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
+    
+    if(multiOn) { 
+        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; 
+        for(var i=2; i<=qtd+1; i++) { 
+            extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); 
+        } 
+    }
+    
     var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
+    
     if (editCatalogoId) {
         if (existe && existe.id !== editCatalogoId) { showToast("❌ Já existe outro projeto com este nome exato no seu catálogo.", true); return; }
         var idx = catalogo.findIndex(p => p.id === editCatalogoId);
+        
         if (idx > -1) {
             var pAntigo = catalogo[idx];
             var nomeMinusculo = (pAntigo.nome || "").toLowerCase().trim();
-            var vendasAfetadas = historico.filter(h => { if (h.vendaIsolada) return false; var nomeHistoricoClean = (h.nome || "").toLowerCase().trim().replace(/^\d+x\s/, ''); return nomeHistoricoClean === nomeMinusculo; });
+            var vendasAfetadas = historico.filter(h => {
+                if (h.vendaIsolada) return false;
+                var nomeHistoricoClean = (h.nome || "").toLowerCase().trim().replace(/^\d+x\s/, '');
+                return nomeHistoricoClean === nomeMinusculo;
+            });
             if (vendasAfetadas.length > 0) {
                 if (confirm(`Deseja atualizar o PESO, TEMPO e CUSTO das ${vendasAfetadas.length} venda(s) PADRÃO deste produto no histórico?\n\n(Pedidos manuais com 🔒 não serão afetados, e O VALOR QUE VOCÊ RECEBEU FICARÁ INTACTO).`)) {
                     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'), custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh), novoTempoUnit = pegaValor('tempoH'), novoPesoUnit = pegaValor('pesoPeca'), precoFilamentoUnit = pegaValor('precoFilamento') || 120, taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
-                    vendasAfetadas.forEach(h => { var qtdItem = parseLocal(h.totalQtd || 1); h.tempo = novoTempoUnit * qtdItem; h.peso = novoPesoUnit * qtdItem; h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso; });
+                    
+                    vendasAfetadas.forEach(h => {
+                        var qtdItem = parseLocal(h.totalQtd || 1);
+                        h.tempo = novoTempoUnit * qtdItem;
+                        h.peso = novoPesoUnit * qtdItem;
+                        h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso;
+                    });
                 }
             }
             catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
         }
-        editCatalogoId = null; var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
-        var btnCancel = document.getElementById('btn_cancelar_catalogo_main'); if(btnCancel) btnCancel.style.display = "none"; showToast("🏷️ Produto atualizado no catálogo!");
+        
+        editCatalogoId = null;
+        var btnMain = document.getElementById('btn_salvar_catalogo_main');
+        if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        var btnCancel = document.getElementById('btn_cancelar_catalogo_main');
+        if(btnCancel) btnCancel.style.display = "none";
+        showToast("🏷️ Produto atualizado no catálogo!");
+        
     } else {
         if (existe) { showToast("❌ O projeto JÁ EXISTE no seu Catálogo de Produtos!", true); return; }
         var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
-        catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
+        catalogo.push(novoProduto);
+        showToast("🏷️ Produto salvo no catálogo!");
     }
+    
     document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none'; resetarDados(); syncNuvem(); renderCatalogo(); renderHistorico();
 }
 
 function renderCatalogo() {
     var sel = document.getElementById('sel_catalogo'); var lista = document.getElementById('lista_catalogo'); if(!sel || !lista) return;
-    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")); var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>'; 
+    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")); 
+    var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>'; 
+    
     var htmlLista = '<div style="margin-bottom:15px; text-align:center;"><button onclick="sincronizarTudoComCatalogo()" style="background:var(--purple); width:100%; padding:10px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;"><span style="font-size:1.2rem">🔄</span> Sincronizar CUSTOS com o Catálogo Atual</button></div>';
+    
     if(catalogoOrdenado.length === 0) htmlLista += '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>';
+    
     catalogoOrdenado.forEach(function(p) {
         htmlSel += `<option value="${p.id}">${p.nome}</option>`; var pesoTotal = parseLocal(p.peso1); if(p.multi && p.extras && p.extras.length > 0) { p.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
         var pesoStr = formatarMoeda(pesoTotal) + 'g', htmlPrecoFixo = p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0 ? ' | Venda Fixo: R$ ' + p.precoFixo : '', htmlFoto = p.foto ? `<div style="width:40px; height:40px; border-radius:6px; background-image:url('${p.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
@@ -378,6 +396,7 @@ function renderCatalogo() {
     });
     sel.innerHTML = htmlSel; lista.innerHTML = htmlLista;
 }
+
 function carregarDoCatalogo() { var id = document.getElementById('sel_catalogo').value; if(!id) { resetarInputProjeto(); document.getElementById('canalVendaSelecionado').value = "Direta"; document.getElementById('valorPersonalizado').value = ""; mostrarValorPersonalizado(); var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none'; document.getElementById('precoFixoCatMain').value = ''; calcular(); return; } aplicarDadosNoForm(id, false); showToast("🏷️ Dados carregados!"); }
 
 function editarDoCatalogo(id) {
@@ -401,7 +420,6 @@ function aplicarDadosNoForm(id, isEditing = false) {
 }
 
 function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); renderCatalogo(); } }
-
 // ==========================================
 // 11. GESTÃO DE ESTOQUE
 // ==========================================
@@ -496,6 +514,7 @@ function editarDespesa(id) {
         editDespesaId = id; document.getElementById('btn_salvar_despesa').textContent = "💾 Confirmar Edição"; document.getElementById('btn_cancelar_despesa').style.display = "block"; 
     } 
 }
+
 // ==========================================
 // 13. LÓGICA PRINCIPAL (CÁLCULOS E VENDAS)
 // ==========================================
@@ -504,7 +523,6 @@ function atualizarLucroReal() { var valLucro = parseLocal(document.getElementByI
 window.cancelarEdicaoVenda = function() { editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)"; var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none"; resetarDados(); showToast("❌ Edição de venda cancelada"); }
 window.moverFila = function(id, direcao) { var filaItems = historico.filter(h => h.status === 'Na Fila').sort((a, b) => (a.posicaoFila || a.id) - (b.posicaoFila || b.id)), index = filaItems.findIndex(h => h.id === id); if (index < 0) return; var swapIndex = index + direcao; if (swapIndex < 0 || swapIndex >= filaItems.length) return; var itemAtual = filaItems[index], itemTroca = filaItems[swapIndex], posAtual = itemAtual.posicaoFila || itemAtual.id, posTroca = itemTroca.posicaoFila || itemTroca.id; if (posAtual === posTroca) { if(direcao === -1) posTroca -= 1; else posTroca += 1; } itemAtual.posicaoFila = posTroca; itemTroca.posicaoFila = posAtual; syncNuvem(); renderHistorico(); };
 window.isDraggingFiltro = false; window.mudarFiltro = function(status) { if (window.isDraggingFiltro) return; window.filtroStatusAtual = status; renderHistorico(); };
-
 window.onload = function() {
     document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
     
@@ -520,7 +538,7 @@ window.onload = function() {
 
     var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (el.type === 'checkbox') { el.checked = (saved === 'true'); } else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } } } if (el) { if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); } el.addEventListener('input', function() { if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); } if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } } if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular(); }); } });
-    dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto' && id !== 'dataProjeto') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
+    dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto' && id !== 'dataProjeto' && id !== 'idPedidoMarketplace') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
     
     var savedFoto = localStorage.getItem('3d4y_dark_fotoUrlProjeto'); if(savedFoto) { var p = document.getElementById('previewFotoMain'); if(p) { p.style.backgroundImage = `url('${savedFoto}')`; p.style.display = "block"; } }
 
@@ -602,6 +620,7 @@ function salvarHistorico() {
     var isLiquidoExato = (cbLiq && cbLiq.checked && originalCanal === 'Personalizado');
     
     var dataInputForm = pegaTexto('dataProjeto') || new Date().toLocaleDateString('pt-BR');
+    var idPedForm = pegaTexto('idPedidoMarketplace') || "";
 
     var isCart = carrinho && carrinho.length > 0, nomeFinal = "", valorBruto = 0, custoProducaoFinal = 0, pesoFinal = 0, tempoFinal = 0, materiaisArray = [], cLog = 0, freteCalculado = 0, totalQtd = 1, valorCalculadoBruto = 0;
     
@@ -658,6 +677,7 @@ function salvarHistorico() {
 
     var novo = { 
         id: editHistoricoId ? editHistoricoId : Date.now(), 
+        idPedido: idPedForm,
         nome: nomeFinal || "", 
         cliente: cliNome || "", 
         telefone: cliTel || "", 
@@ -728,8 +748,8 @@ function editarItemHistorico(id) {
     } else { document.getElementById('fotoUrlProjeto').value = ""; var p = document.getElementById('previewFotoMain'); if(p) p.style.display = "none"; }
 
     document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
-    
     var elDataP = document.getElementById('dataProjeto'); if (elDataP) { elDataP.value = item.data || new Date().toLocaleDateString('pt-BR'); salvarDinamico('dataProjeto'); }
+    var elIdPed = document.getElementById('idPedidoMarketplace'); if(elIdPed) { elIdPed.value = item.idPedido || ""; salvarDinamico('idPedidoMarketplace'); }
     
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
     var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
@@ -834,17 +854,38 @@ function renderHistorico() {
     var campoBusca = document.getElementById('buscaCliente'), termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
     
     var historicoFiltradoDias = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
-    counts['Todos'] = historicoFiltradoDias.length;
-
+    
+    var itensFiltrados = historicoFiltradoDias.filter(function(item) { 
+        var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; 
+        var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; 
+        var passaBusca = true; 
+        if (termoBusca !== '') { 
+            var nomeC = (item.cliente || '').toLowerCase(), nomeP = (item.nome || '').toLowerCase(), idP = (item.idPedido || '').toLowerCase(), sysId = (item.id || '').toString().toLowerCase(); 
+            if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca) && !idP.includes(termoBusca) && !sysId.includes(termoBusca)) { passaBusca = false; } 
+        } 
+        return passaStatus && passaBusca; 
+    });
+    
+    counts['Todos'] = itensFiltrados.length;
+    
     historicoFiltradoDias.forEach(function(item) {
-        var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; counts[st] = (counts[st] || 0) + 1;
-        if (st !== 'Orçamento' && st !== 'Devolução') {
+        var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; 
+        
+        var matchBusca = true;
+        if (termoBusca !== '') { 
+            var nC = (item.cliente || '').toLowerCase(), nP = (item.nome || '').toLowerCase(), iPd = (item.idPedido || '').toLowerCase(), sId = (item.id || '').toString().toLowerCase(); 
+            if (!nC.includes(termoBusca) && !nP.includes(termoBusca) && !iPd.includes(termoBusca) && !sId.includes(termoBusca)) matchBusca = false; 
+        }
+        
+        if(matchBusca) counts[st] = (counts[st] || 0) + 1;
+        
+        if (st !== 'Orçamento' && st !== 'Devolução' && matchBusca) {
             var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem;
             somaCusto += custoItem; somaLogistica += freteLogItem; somaBruto += valBruto; somaLiquido += valLiq; somaLucro += lucroItem; qtdValida++;
             if(canalStr === "Shopee") { somaShopee += valLiq; qtdShopee++; } else if(canalStr === "Meli") { somaMeli += valLiq; qtdMeli++; } else { somaDireta += valLiq; qtdDireta++; }
         }
-        if (st === 'Devolução') { var valLiqDev = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)); totDevolvido += valLiqDev; }
-        if (st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') { window.horasTotaisImpressasGlobal += parseLocal(item.tempo); }
+        if (st === 'Devolução' && matchBusca) { var valLiqDev = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)); totDevolvido += valLiqDev; }
+        if ((st === 'Imprimindo' || st === 'Finalizado' || st === 'Enviado / Entregue') && matchBusca) { window.horasTotaisImpressasGlobal += parseLocal(item.tempo); }
     });
 
     var lblOdometro = document.getElementById('lbl_horas_totais_maquina'); if (lblOdometro) lblOdometro.textContent = formatarMoeda(window.horasTotaisImpressasGlobal) + "h";
@@ -858,14 +899,15 @@ function renderHistorico() {
 
     if (filtroDiv) { filtroDiv.innerHTML = `<button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Devolução' ? 'active' : ''}" onclick="mudarFiltro('Devolução')">❌ Devol. (${counts['Devolução']})</button> <select onchange="window.mudarFiltroDias(this.value)" style="margin-left:10px; padding:6px; border-radius:6px; background:#1e293b; color:var(--sky); border:1px solid var(--border); font-weight:bold; cursor:pointer; outline:none;"><option value="Total" ${window.filtroDiasAtual === 'Total' ? 'selected' : ''}>📅 Período: Total</option><option value="30" ${window.filtroDiasAtual === '30' ? 'selected' : ''}>📅 Últimos 30 Dias</option><option value="60" ${window.filtroDiasAtual === '60' ? 'selected' : ''}>📅 Últimos 60 Dias</option><option value="90" ${window.filtroDiasAtual === '90' ? 'selected' : ''}>📅 Últimos 90 Dias</option></select>`; }
 
-    var itensFiltrados = historicoFiltradoDias.filter(function(item) { var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; var passaBusca = true; if (termoBusca !== '') { var nomeC = (item.cliente || '').toLowerCase(), nomeP = (item.nome || '').toLowerCase(); if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca)) { passaBusca = false; } } return passaStatus && passaBusca; });
     var isFila = window.filtroStatusAtual === 'Na Fila'; if (isFila) { itensFiltrados.sort((a, b) => { return (a.posicaoFila || a.id) - (b.posicaoFila || b.id); }); }
     lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado no período</p>' : '';
     
     itensFiltrados.forEach(function(item, index) {
         var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem, tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981", st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
         var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
-        var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 6px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
+        var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 3px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
+        if (item.idPedido) crmHtml += '<div style="font-size: 0.65rem; color: var(--orange); margin-bottom: 6px; font-weight: 600;">#️⃣ ID Pedido: ' + item.idPedido + '</div>';
+        
         var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
         var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '', bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);'; if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
         var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
@@ -891,7 +933,7 @@ function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?
 
 function resetarDados() {
     carrinho = []; renderCarrinho(); document.getElementById('fotoUrlProjeto').value = ""; var p = document.getElementById('previewFotoMain'); if(p) p.style.display = "none";
-    ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+    ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain', 'idPedidoMarketplace'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
     var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = window.configGlobais.custoEmbalagem || "0,00"; var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = window.configGlobais.custoDeslocamento || "0,00"; var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
     var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = ""; var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none';
     
@@ -903,7 +945,7 @@ function resetarDados() {
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente && tUrgente.checked) { tUrgente.checked = false; tUrgente.dispatchEvent(new Event('change')); }
     var cDestino = document.getElementById('canalPersonalizadoDestino'); if(cDestino) cDestino.value = 'Shopee';
     
-    var dp = document.getElementById('dataProjeto'); if (dp) dp.value = new Date().toLocaleDateString('pt-BR');
+    var dp = document.getElementById('dataProjeto'); if (dp) { dp.value = new Date().toLocaleDateString('pt-BR'); salvarDinamico('dataProjeto'); }
     
     resetarInputProjeto(); calcular(); setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100); var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
