@@ -1085,7 +1085,7 @@ window.forcarRecalculoGeral = function() {
 // ==========================================
 
 window.sincronizarTudoComCatalogo = function() {
-    if(!confirm("⚠️ ATENÇÃO: Isso vai varrer todo o seu histórico e atualizar o PESO, TEMPO, MATERIAIS e CUSTO DE FABRICAÇÃO de TODAS as vendas com base no Catálogo atual.\n\nFique tranquilo: O VALOR DA VENDA (Bruto/Líquido) que você já recebeu ficará 100% INTACTO. Só o seu lucro vai reajustar para refletir o custo real.\n\nDeseja continuar?")) return;
+    if(!confirm("⚠️ ATENÇÃO: Isso vai atualizar APENAS:\n- Tempo de Impressão\n- Peso de Filamento\n- Custo de Fabricação\n- Materiais\n\nOs valores de Venda Bruta e Líquida ficarão 100% INTACTOS. Deseja continuar?")) return;
     
     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
     var custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh);
@@ -1098,6 +1098,7 @@ window.sincronizarTudoComCatalogo = function() {
         
         if (h.cartItems && h.cartItems.length > 0) {
             var novoCustoTotalCart = 0, novoPesoTotalCart = 0, novoTempoTotalCart = 0, novosMateriaisCart = [];
+            
             h.cartItems.forEach(ci => {
                 var matchNome = ci.nome.match(/^(\d+)x\s(.*)/);
                 var baseNome = matchNome ? matchNome[2].trim().toLowerCase() : ci.nome.trim().toLowerCase();
@@ -1105,61 +1106,93 @@ window.sincronizarTudoComCatalogo = function() {
                 
                 if (matchCat) {
                     alterou = true;
-                    var qtd = parseLocal(ci.qtd || 1), tempoUnit = parseLocal(matchCat.tempo), pesoUnit = parseLocal(matchCat.peso1), pFil = parseLocal(matchCat.preco1) || 120;
-                    var matCost = (pFil / 1000) * pesoUnit, matArr = [];
+                    var qtd = parseLocal(ci.qtd || 1);
+                    var tempoUnit = parseLocal(matchCat.tempo);
+                    var pesoUnit = parseLocal(matchCat.peso1);
+                    var pFil = parseLocal(matchCat.preco1) || 120;
+                    var matCost = (pFil / 1000) * pesoUnit;
+                    var matArr = [];
+                    
                     var n1 = (matchCat.tipo1 + ' ' + matchCat.cor1 + ' ' + (matchCat.marca1||'')).trim() || 'Filamento 1';
-                    if(pesoUnit > 0) matArr.push(n1 + ' (' + (pesoUnit * qtd) + 'g)');
+                    if(pesoUnit > 0) matArr.push(n1 + ' (' + formatarMoeda(pesoUnit * qtd) + 'g)');
                     
                     if(matchCat.multi && matchCat.extras && matchCat.extras.length > 0) {
                         matchCat.extras.forEach(ex => {
                             var pE = parseLocal(ex.preco) || 120, pesE = parseLocal(ex.peso) || 0;
-                            matCost += (pE / 1000) * pesE; pesoUnit += pesE;
+                            matCost += (pE / 1000) * pesE; 
+                            pesoUnit += pesE;
                             var nx = (ex.tipo + ' ' + ex.cor + ' ' + (ex.marca||'')).trim() || 'Filamento Extra';
-                            if(pesE > 0) matArr.push(nx + ' (' + (pesE * qtd) + 'g)');
+                            if(pesE > 0) matArr.push(nx + ' (' + formatarMoeda(pesE * qtd) + 'g)');
                         });
                     }
                     var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso;
-                    ci.tempo = tempoUnit * qtd; ci.peso = pesoUnit * qtd; ci.custo = cUnit * qtd; ci.materiais = matArr.join(' + ');
-                    // AQUI ESTAVA O ERRO: O sistema antes reescrevia o valorComLucro (Preço de venda). Removido!
+                    
+                    // ==================================================
+                    // BLINDAGEM: ATUALIZA APENAS OS CUSTOS E MATERIAIS
+                    // ==================================================
+                    ci.tempo = tempoUnit * qtd; 
+                    ci.peso = pesoUnit * qtd; 
+                    ci.custo = cUnit * qtd; 
+                    ci.materiais = matArr.join(' + ');
                 }
-                novoCustoTotalCart += parseLocal(ci.custo); novoPesoTotalCart += parseLocal(ci.peso); novoTempoTotalCart += parseLocal(ci.tempo);
+                
+                novoCustoTotalCart += parseLocal(ci.custo); 
+                novoPesoTotalCart += parseLocal(ci.peso); 
+                novoTempoTotalCart += parseLocal(ci.tempo);
                 if(ci.materiais && ci.materiais !== "Não informado") novosMateriaisCart.push(ci.materiais);
             });
-            if (alterou) { h.custo = novoCustoTotalCart; h.peso = novoPesoTotalCart; h.tempo = novoTempoTotalCart; h.materiais = novosMateriaisCart.join(' + ') || "Não informado"; }
+            
+            if (alterou) { 
+                h.custo = novoCustoTotalCart; 
+                h.peso = novoPesoTotalCart; 
+                h.tempo = novoTempoTotalCart; 
+                h.materiais = novosMateriaisCart.join(' + ') || "Não informado"; 
+                atualizadas++;
+            }
         } else {
+            // Venda Simples (Sem carrinho)
             var matchNome = h.nome.match(/^(\d+)x\s(.*)/);
             var baseNome = matchNome ? matchNome[2].trim().toLowerCase() : h.nome.trim().toLowerCase();
             var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome);
             
             if (matchCat) {
                 alterou = true;
-                var qtd = parseLocal(h.totalQtd || 1), tempoUnit = parseLocal(matchCat.tempo), pesoUnit = parseLocal(matchCat.peso1), pFil = parseLocal(matchCat.preco1) || 120;
-                var matCost = (pFil / 1000) * pesoUnit, matArr = [];
+                var qtd = parseLocal(h.totalQtd || 1);
+                var tempoUnit = parseLocal(matchCat.tempo);
+                var pesoUnit = parseLocal(matchCat.peso1);
+                var pFil = parseLocal(matchCat.preco1) || 120;
+                var matCost = (pFil / 1000) * pesoUnit;
+                var matArr = [];
+                
                 var n1 = (matchCat.tipo1 + ' ' + matchCat.cor1 + ' ' + (matchCat.marca1||'')).trim() || 'Filamento 1';
-                if(pesoUnit > 0) matArr.push(n1 + ' (' + (pesoUnit * qtd) + 'g)');
+                if(pesoUnit > 0) matArr.push(n1 + ' (' + formatarMoeda(pesoUnit * qtd) + 'g)');
                 
                 if(matchCat.multi && matchCat.extras && matchCat.extras.length > 0) {
                     matchCat.extras.forEach(ex => {
                         var pE = parseLocal(ex.preco) || 120, pesE = parseLocal(ex.peso) || 0;
-                        matCost += (pE / 1000) * pesE; pesoUnit += pesE;
+                        matCost += (pE / 1000) * pesE; 
+                        pesoUnit += pesE;
                         var nx = (ex.tipo + ' ' + ex.cor + ' ' + (ex.marca||'')).trim() || 'Filamento Extra';
-                        if(pesE > 0) matArr.push(nx + ' (' + (pesE * qtd) + 'g)');
+                        if(pesE > 0) matArr.push(nx + ' (' + formatarMoeda(pesE * qtd) + 'g)');
                     });
                 }
                 var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso;
-                h.tempo = tempoUnit * qtd; h.peso = pesoUnit * qtd; h.custo = cUnit * qtd; h.materiais = matArr.join(' + ');
+                
+                // ==================================================
+                // BLINDAGEM PAI: ATUALIZA APENAS OS CUSTOS E MATERIAIS
+                // ==================================================
+                h.tempo = tempoUnit * qtd; 
+                h.peso = pesoUnit * qtd; 
+                h.custo = cUnit * qtd; 
+                h.materiais = matArr.join(' + ');
+                atualizadas++;
             }
-        }
-        
-        if (alterou) {
-            // AQUI TAMBÉM TINHA ERRO: O sistema rodava a função "descontarTaxas" e alterava o h.valorLiquido e Bruto.
-            // Agora ele SÓ conta a atualização, deixando o valor da sua venda original intacto!
-            atualizadas++;
         }
     });
     
     if (atualizadas > 0) {
-        syncNuvem(); renderHistorico(); calcular();
+        syncNuvem(); 
+        renderHistorico(); 
         showToast("✅ " + atualizadas + " Vendas Atualizadas com o Catálogo!");
     } else {
         showToast("✅ Nenhuma diferença encontrada para atualizar.", false);
