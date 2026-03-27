@@ -38,13 +38,8 @@ var editEstoqueId = null, editCatalogoId = null, editHistoricoId = null, editDes
 window.qaOffset = 0; window.horasTotaisImpressasGlobal = 0; window.oldBaseVals = {};
 window.configGlobais = { maquina: "3.275", vidaUtil: "3.000", consumoW: "350", precoKwh: "1,20", qa_aviso: "100", custoEmbalagem: "0,00", custoDeslocamento: "0,00", taxaMeli: "17", fixaMeli: "6,75", taxaSucesso: "80", margemLucro: "80" };
 
-// --- NOVA LÓGICA DE FILTRO DE DATAS ---
 window.filtroDiasAtual = 'Total';
-window.mudarFiltroDias = function(dias) { 
-    window.filtroDiasAtual = dias; 
-    renderHistorico(); 
-    renderDespesas(); 
-};
+window.mudarFiltroDias = function(dias) { window.filtroDiasAtual = dias; renderHistorico(); renderDespesas(); };
 function isWithinDays(dateStr, dias) {
     if (dias === 'Total' || !dias) return true;
     if (!dateStr) return true;
@@ -56,7 +51,6 @@ function isWithinDays(dateStr, dias) {
     var diffDays = Math.floor((today - itemDate) / (1000 * 60 * 60 * 24));
     return diffDays <= parseInt(dias);
 }
-// --------------------------------------
 
 // ==========================================
 // 4. INTEGRAÇÃO IMGBB (UPLOAD DE FOTOS)
@@ -97,6 +91,7 @@ function syncNuvem() { window.configGlobais = { maquina: pegaTexto('maquina') ||
 // 6. FUNÇÕES DE FORMATAÇÃO E MÁSCARAS
 // ==========================================
 
+function mascaraData(el) { if(!el) return; var val = el.value.replace(/\D/g, ''); if(val.length > 8) val = val.slice(0, 8); if(val.length >= 5) { val = val.slice(0,2) + '/' + val.slice(2,4) + '/' + val.slice(4); } else if(val.length >= 3) { val = val.slice(0,2) + '/' + val.slice(2); } el.value = val; }
 function aplicarMascara(el) { if (!el) return; var start = el.selectionStart, oldVal = el.value, partsDot = oldVal.split('.'); if (partsDot.length === 2 && oldVal.indexOf(',') === -1 && partsDot[1].length <= 3) { oldVal = oldVal.replace('.', ','); } var v = oldVal.replace(/\./g, '').replace(/[^0-9,]/g, ''), parts = v.split(','); if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join(''); var intPart = parts[0]; if (intPart) { if (intPart.length > 1 && intPart.charAt(0) === '0') { intPart = parseInt(intPart, 10).toString(); } intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, "."); } var newVal = parts.length > 1 ? intPart + ',' + parts[1] : intPart; if (el.value !== newVal) { el.value = newVal; var newStart = start + (newVal.length - oldVal.length); if (newStart < 0) newStart = 0; try { el.setSelectionRange(newStart, newStart); } catch(e) {} } }
 function mascaraTelefone(el) { if (!el) return; var val = el.value.replace(/\D/g, ''); if (val.length > 11) val = val.slice(0, 11); if (val.length > 2) val = '(' + val.slice(0,2) + ') ' + val.slice(2); if (val.length > 10) val = val.slice(0, 10) + '-' + val.slice(10); el.value = val; }
 function formatarMoeda(num) { var n = parseFloat(num); if (isNaN(n)) return "0,00"; return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
@@ -105,7 +100,7 @@ function pegaTexto(id) { var el = document.getElementById(id); if (el) { return 
 function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 function salvarDinamico(idCampo) { var el = document.getElementById(idCampo); if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); } }
 function salvarDinamicoValor(idCampo, valor) { var el = document.getElementById(idCampo); if (el) el.value = valor; localStorage.setItem('3d4y_dark_' + idCampo, valor); }
-var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto'];
+var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto'];
 function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 
 // ==========================================
@@ -120,7 +115,6 @@ window.fecharModal = function(idModal) {
     if (idModal === 'logisticaModal') { var nEmb = pegaValor('custoEmbalagem'), nDes = pegaValor('custoDeslocamento'), oldEmb = parseLocal(window.configGlobais.custoEmbalagem || "0"), oldDes = parseLocal(window.configGlobais.custoDeslocamento || "0"); if (nEmb !== oldEmb || nDes !== oldDes) { if(confirm("⚠️ Você alterou os custos Fixos de Logística.\n\n[ OK ] Atualiza TODAS as vendas já feitas no histórico.\n[ CANCELAR ] O novo custo valerá apenas a partir de agora.")) { historico.forEach(h => { var novoLog = nEmb + nDes, deltaLogistica = novoLog - parseLocal(h.logistica || 0); h.logistica = novoLog; h.valorLiquido = (parseLocal(h.valorLiquido) || 0) - deltaLogistica; if (h.valorLiquido < 0) h.valorLiquido = 0; }); showToast("✅ Logística Atualizada no Histórico!"); } } }
     syncNuvem(); renderHistorico(); calcular();
 }
-
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
 
 // MÁGICA DO ARREDONDAMENTO ITEM A ITEM
@@ -184,7 +178,6 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
     var netMeli = parseLocal(valorBruto) - feeMlTotal; if (netMeli < 0) netMeli = 0;
     return { shopee: netShopee, meli: netMeli }; 
 }
-
 // ==========================================
 // 8. LIMPEZA E PREENCHIMENTO DO PROJETO
 // ==========================================
@@ -209,6 +202,8 @@ function resetarInputProjeto() {
     var tMulti = document.getElementById('toggle_multi_mat'); 
     if(tMulti && tMulti.checked) { tMulti.checked = false; tMulti.dispatchEvent(new Event('change')); } 
     document.getElementById('fotoUrlProjeto').value = ""; var prev = document.getElementById('previewFotoMain'); if(prev) prev.style.display = "none"; 
+    
+    var dp = document.getElementById('dataProjeto'); if (dp) { dp.value = new Date().toLocaleDateString('pt-BR'); salvarDinamico('dataProjeto'); }
     
     ['nomeProjeto', 'qtdPecasProjeto', 'tempoH', 'pesoPeca', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'precoFilamento', 'precoFixoCatMain', 'fotoUrlProjeto'].forEach(id => localStorage.removeItem('3d4y_dark_' + id)); 
     
@@ -335,69 +330,38 @@ window.cancelarEdicaoCatalogo = function() {
 function salvarNoCatalogo() {
     var nome = pegaTexto('nomeProjeto'); if(!nome) { showToast("❌ Dê um nome ao projeto antes de salvar no catálogo.", true); return; }
     var precoFixo = pegaTexto('precoFixoCatMain'), fotoUrl = pegaTexto('fotoUrlProjeto'), extras = [], multiOn = document.getElementById('toggle_multi_mat').checked;
-    
-    if(multiOn) { 
-        var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; 
-        for(var i=2; i<=qtd+1; i++) { 
-            extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); 
-        } 
-    }
-    
+    if(multiOn) { var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i=2; i<=qtd+1; i++) { extras.push({ tipo: pegaTexto('tipoFilamento'+i), cor: pegaTexto('corFilamento'+i), marca: pegaTexto('marcaFilamento'+i), preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
     var existe = catalogo.find(p => p.nome.toLowerCase().trim() === nome.toLowerCase().trim());
-    
     if (editCatalogoId) {
         if (existe && existe.id !== editCatalogoId) { showToast("❌ Já existe outro projeto com este nome exato no seu catálogo.", true); return; }
         var idx = catalogo.findIndex(p => p.id === editCatalogoId);
-        
         if (idx > -1) {
             var pAntigo = catalogo[idx];
             var nomeMinusculo = (pAntigo.nome || "").toLowerCase().trim();
-            var vendasAfetadas = historico.filter(h => {
-                if (h.vendaIsolada) return false;
-                var nomeHistoricoClean = (h.nome || "").toLowerCase().trim().replace(/^\d+x\s/, '');
-                return nomeHistoricoClean === nomeMinusculo;
-            });
+            var vendasAfetadas = historico.filter(h => { if (h.vendaIsolada) return false; var nomeHistoricoClean = (h.nome || "").toLowerCase().trim().replace(/^\d+x\s/, ''); return nomeHistoricoClean === nomeMinusculo; });
             if (vendasAfetadas.length > 0) {
                 if (confirm(`Deseja atualizar o PESO, TEMPO e CUSTO das ${vendasAfetadas.length} venda(s) PADRÃO deste produto no histórico?\n\n(Pedidos manuais com 🔒 não serão afetados, e O VALOR QUE VOCÊ RECEBEU FICARÁ INTACTO).`)) {
                     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'), custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh), novoTempoUnit = pegaValor('tempoH'), novoPesoUnit = pegaValor('pesoPeca'), precoFilamentoUnit = pegaValor('precoFilamento') || 120, taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
-                    
-                    vendasAfetadas.forEach(h => {
-                        var qtdItem = parseLocal(h.totalQtd || 1);
-                        h.tempo = novoTempoUnit * qtdItem;
-                        h.peso = novoPesoUnit * qtdItem;
-                        h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso;
-                    });
+                    vendasAfetadas.forEach(h => { var qtdItem = parseLocal(h.totalQtd || 1); h.tempo = novoTempoUnit * qtdItem; h.peso = novoPesoUnit * qtdItem; h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso; });
                 }
             }
             catalogo[idx] = { id: editCatalogoId, nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
         }
-        
-        editCatalogoId = null;
-        var btnMain = document.getElementById('btn_salvar_catalogo_main');
-        if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
-        var btnCancel = document.getElementById('btn_cancelar_catalogo_main');
-        if(btnCancel) btnCancel.style.display = "none";
-        showToast("🏷️ Produto atualizado no catálogo!");
-        
+        editCatalogoId = null; var btnMain = document.getElementById('btn_salvar_catalogo_main'); if(btnMain) { btnMain.textContent = "💾 Salvar Novo Projeto no Catálogo"; btnMain.style.background = "var(--orange)"; }
+        var btnCancel = document.getElementById('btn_cancelar_catalogo_main'); if(btnCancel) btnCancel.style.display = "none"; showToast("🏷️ Produto atualizado no catálogo!");
     } else {
         if (existe) { showToast("❌ O projeto JÁ EXISTE no seu Catálogo de Produtos!", true); return; }
         var novoProduto = { id: Date.now(), nome: nome, precoFixo: precoFixo, peso1: pegaTexto('pesoPeca'), tipo1: pegaTexto('tipoFilamento1'), cor1: pegaTexto('corFilamento1'), marca1: pegaTexto('marcaFilamento1'), preco1: pegaTexto('precoFilamento'), tempo: pegaTexto('tempoH'), multi: multiOn, qtdCores: multiOn ? pegaTexto('qtdCoresExtras') : "0", extras: extras, foto: fotoUrl };
-        catalogo.push(novoProduto);
-        showToast("🏷️ Produto salvo no catálogo!");
+        catalogo.push(novoProduto); showToast("🏷️ Produto salvo no catálogo!");
     }
-    
     document.getElementById('precoFixoCatMain').value = ""; localStorage.removeItem('3d4y_dark_precoFixoCatMain'); document.getElementById('boxPrecoFixo').style.display = 'none'; resetarDados(); syncNuvem(); renderCatalogo(); renderHistorico();
 }
 
 function renderCatalogo() {
     var sel = document.getElementById('sel_catalogo'); var lista = document.getElementById('lista_catalogo'); if(!sel || !lista) return;
-    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")); 
-    var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>'; 
-    
+    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || "")); var htmlSel = '<option value="">-- Escolher produto cadastrado --</option>'; 
     var htmlLista = '<div style="margin-bottom:15px; text-align:center;"><button onclick="sincronizarTudoComCatalogo()" style="background:var(--purple); width:100%; padding:10px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;"><span style="font-size:1.2rem">🔄</span> Sincronizar CUSTOS com o Catálogo Atual</button></div>';
-    
     if(catalogoOrdenado.length === 0) htmlLista += '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>';
-    
     catalogoOrdenado.forEach(function(p) {
         htmlSel += `<option value="${p.id}">${p.nome}</option>`; var pesoTotal = parseLocal(p.peso1); if(p.multi && p.extras && p.extras.length > 0) { p.extras.forEach(function(ex) { pesoTotal += parseLocal(ex.peso); }); }
         var pesoStr = formatarMoeda(pesoTotal) + 'g', htmlPrecoFixo = p.precoFixo && parseFloat(p.precoFixo.replace('.','').replace(',','.')) > 0 ? ' | Venda Fixo: R$ ' + p.precoFixo : '', htmlFoto = p.foto ? `<div style="width:40px; height:40px; border-radius:6px; background-image:url('${p.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
@@ -405,7 +369,6 @@ function renderCatalogo() {
     });
     sel.innerHTML = htmlSel; lista.innerHTML = htmlLista;
 }
-
 function carregarDoCatalogo() { var id = document.getElementById('sel_catalogo').value; if(!id) { resetarInputProjeto(); document.getElementById('canalVendaSelecionado').value = "Direta"; document.getElementById('valorPersonalizado').value = ""; mostrarValorPersonalizado(); var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none'; document.getElementById('precoFixoCatMain').value = ''; calcular(); return; } aplicarDadosNoForm(id, false); showToast("🏷️ Dados carregados!"); }
 
 function editarDoCatalogo(id) {
@@ -447,26 +410,20 @@ function salvarItemEstoque() {
             let novoP = prompt("Peso atual da bobina em gramas (Ex: 1000 para 1kg):", estoque[itemIndex].pesoAtual !== undefined ? estoque[itemIndex].pesoAtual : 1000);
             if (novoP !== null) estoque[itemIndex].pesoAtual = parseLocal(novoP);
         } 
-        editEstoqueId = null; 
-        document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar"; 
-        document.getElementById('btn_cancelar_estoque').style.display = "none"; 
+        editEstoqueId = null; document.getElementById('btn_salvar_estoque').textContent = "➕ Salvar / Atualizar"; document.getElementById('btn_cancelar_estoque').style.display = "none"; 
     } else { 
-        let novoP = prompt("Peso inicial desta bobina em gramas (Ex: 1000 para 1kg novo):", "1000");
-        let pesoSalvar = novoP !== null ? parseLocal(novoP) : 1000;
+        let novoP = prompt("Peso inicial desta bobina em gramas (Ex: 1000 para 1kg novo):", "1000"); let pesoSalvar = novoP !== null ? parseLocal(novoP) : 1000;
         estoque.push({ id: Date.now(), tipo: t, cor: c, marca: m, preco: p, pesoAtual: pesoSalvar }); 
     } 
-    syncNuvem(); 
-    document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; 
-    showToast("📦 Estoque Atualizado!"); 
-    renderEstoque(); 
+    syncNuvem(); document.getElementById('est_tipo').value = ""; document.getElementById('est_cor').value = ""; document.getElementById('est_marca').value = ""; document.getElementById('est_preco').value = ""; showToast("📦 Estoque Atualizado!"); renderEstoque(); 
 }
+
 function renderEstoque() { 
     var lista = document.getElementById('lista_estoque'); if(!lista) return; 
     var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || "")); 
     lista.innerHTML = estoqueOrdenado.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Estoque Vazio</p>' : ''; 
     estoqueOrdenado.forEach(function(item) { 
-        var pesoAtual = item.pesoAtual !== undefined ? item.pesoAtual : 1000;
-        var corPeso = pesoAtual < 200 ? '#ef4444' : (pesoAtual < 500 ? '#facc15' : '#10b981');
+        var pesoAtual = item.pesoAtual !== undefined ? item.pesoAtual : 1000; var corPeso = pesoAtual < 200 ? '#ef4444' : (pesoAtual < 500 ? '#facc15' : '#10b981');
         lista.innerHTML += `<div class="history-item"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; color:var(--success); word-wrap: break-word;">${item.tipo} ${item.cor} <span style="color:#fff">(${item.marca})</span></h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Preço: R$ ${item.preco} | <span style="color:${corPeso}; font-weight:bold;">Restante: ${formatarMoeda(pesoAtual)}g</span></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarItemEstoque(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerItemEstoque(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; 
     }); 
     atualizarDropdownsEstoque(); 
@@ -486,8 +443,27 @@ function renderCoresExtras() { var qtdInput = document.getElementById('qtdCoresE
 function mostrarValorPersonalizado() { var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); if (seletor && divPersonalizado) { divPersonalizado.style.display = seletor.value === 'Personalizado' ? 'block' : 'none'; } }
 function calcularSimulador() { var vVenda = pegaValor('simuladorVenda'), elS = document.getElementById('sim_shopee'), elM = document.getElementById('sim_meli'); if (vVenda <= 0) { if(elS) elS.textContent = "0,00"; if(elM) elM.textContent = "0,00"; return; } var isCart = carrinho && carrinho.length > 0, totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1); if (totalQtd < 1) totalQtd = 1; var net = descontarTaxas(vVenda, totalQtd, isCart ? carrinho : null); if(elS) elS.textContent = formatarMoeda(net.shopee); if(elM) elM.textContent = formatarMoeda(net.meli); }
 
-window.cancelarEdicaoDespesa = function() { editDespesaId = null; document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = ""; document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("❌ Edição cancelada"); };
-function salvarDespesa() { var qtd = parseInt(pegaValor('desp_qtd')) || 1, nome = pegaTexto('desp_nome'), val = document.getElementById('desp_valor').value; if(!nome || !val) { showToast("❌ Preencha o produto/material e o valor pago.", true); return; } if (editDespesaId) { var idx = despesas.findIndex(d => d.id === editDespesaId); if(idx > -1) { despesas[idx].qtd = qtd; despesas[idx].nome = nome; despesas[idx].valor = parseLocal(val); } editDespesaId = null; document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("💸 Despesa Atualizada!"); } else { despesas.unshift({ id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), qtd: qtd, nome: nome, valor: parseLocal(val) }); showToast("💸 Despesa Registrada!"); } syncNuvem(); document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = ""; renderDespesas(); }
+window.cancelarEdicaoDespesa = function() { 
+    editDespesaId = null; document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = ""; 
+    var elDD = document.getElementById('dataDespesa'); if(elDD) elDD.value = new Date().toLocaleDateString('pt-BR');
+    document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("❌ Edição cancelada"); 
+};
+
+function salvarDespesa() { 
+    var qtd = parseInt(pegaValor('desp_qtd')) || 1, nome = pegaTexto('desp_nome'), val = document.getElementById('desp_valor').value, dataInput = pegaTexto('dataDespesa') || new Date().toLocaleDateString('pt-BR'); 
+    if(!nome || !val) { showToast("❌ Preencha o produto/material e o valor pago.", true); return; } 
+    if (editDespesaId) { 
+        var idx = despesas.findIndex(d => d.id === editDespesaId); 
+        if(idx > -1) { despesas[idx].qtd = qtd; despesas[idx].nome = nome; despesas[idx].valor = parseLocal(val); despesas[idx].data = dataInput; } 
+        editDespesaId = null; document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("💸 Despesa Atualizada!"); 
+    } else { 
+        despesas.unshift({ id: Date.now(), data: dataInput, qtd: qtd, nome: nome, valor: parseLocal(val) }); showToast("💸 Despesa Registrada!"); 
+    } 
+    syncNuvem(); 
+    document.getElementById('desp_qtd').value = "1"; document.getElementById('desp_nome').value = ""; document.getElementById('desp_valor').value = ""; 
+    var elDD = document.getElementById('dataDespesa'); if(elDD) elDD.value = new Date().toLocaleDateString('pt-BR');
+    renderDespesas(); 
+}
 
 function renderDespesas() { 
     var lista = document.getElementById('lista_despesas'); if(!lista) return; 
@@ -503,8 +479,14 @@ function renderDespesas() {
 }
 
 function removerDespesa(id) { if(confirm("Deseja apagar esta despesa?")) { despesas = despesas.filter(d => d.id !== id); syncNuvem(); renderDespesas(); } }
-function editarDespesa(id) { var d = despesas.find(e => e.id === id); if(d) { document.getElementById('desp_qtd').value = d.qtd; document.getElementById('desp_nome').value = d.nome; document.getElementById('desp_valor').value = formatarMoeda(d.valor); editDespesaId = id; document.getElementById('btn_salvar_despesa').textContent = "💾 Confirmar Edição"; document.getElementById('btn_cancelar_despesa').style.display = "block"; } }
-
+function editarDespesa(id) { 
+    var d = despesas.find(e => e.id === id); 
+    if(d) { 
+        document.getElementById('desp_qtd').value = d.qtd; document.getElementById('desp_nome').value = d.nome; document.getElementById('desp_valor').value = formatarMoeda(d.valor); 
+        var elDD = document.getElementById('dataDespesa'); if(elDD) elDD.value = d.data || new Date().toLocaleDateString('pt-BR');
+        editDespesaId = id; document.getElementById('btn_salvar_despesa').textContent = "💾 Confirmar Edição"; document.getElementById('btn_cancelar_despesa').style.display = "block"; 
+    } 
+}
 // ==========================================
 // 13. LÓGICA PRINCIPAL (CÁLCULOS E VENDAS)
 // ==========================================
@@ -519,34 +501,23 @@ window.onload = function() {
     
     var divPerso = document.getElementById('divValorPersonalizado');
     if (divPerso && !document.getElementById('boxLiquidoExato')) {
-        var elCB = document.createElement('div');
-        elCB.id = 'boxLiquidoExato';
-        elCB.style = 'margin-top: 12px; display: flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.1); padding: 10px; border-radius: 6px; border: 1px dashed rgba(56, 189, 248, 0.4);';
+        var elCB = document.createElement('div'); elCB.id = 'boxLiquidoExato'; elCB.style = 'margin-top: 12px; display: flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.1); padding: 10px; border-radius: 6px; border: 1px dashed rgba(56, 189, 248, 0.4);';
         elCB.innerHTML = '<input type="checkbox" id="isLiquidoExato" style="width:18px;height:18px;accent-color:var(--sky);cursor:pointer;"><label for="isLiquidoExato" style="font-size:0.75rem;color:var(--sky);cursor:pointer;font-weight:600;line-height:1.2;">A Taxa deu diferença?<br><span style="font-size:0.6rem;font-weight:normal;opacity:0.8;">Marque aqui e digite acima apenas o LÍQUIDO EXATO que vai receber.</span></label>';
         divPerso.appendChild(elCB);
     }
 
+    var elDataP = document.getElementById('dataProjeto'); if (elDataP) { if (!elDataP.value) elDataP.value = new Date().toLocaleDateString('pt-BR'); elDataP.addEventListener('input', function() { mascaraData(this); salvarDinamico('dataProjeto'); }); }
+    var elDataD = document.getElementById('dataDespesa'); if (elDataD) { if (!elDataD.value) elDataD.value = new Date().toLocaleDateString('pt-BR'); elDataD.addEventListener('input', function() { mascaraData(this); }); }
+
     var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (el.type === 'checkbox') { el.checked = (saved === 'true'); } else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } } } if (el) { if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); } el.addEventListener('input', function() { if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); } if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } } if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular(); }); } });
-    dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
+    dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto' && id !== 'dataProjeto') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
     
-    var savedFoto = localStorage.getItem('3d4y_dark_fotoUrlProjeto');
-    if(savedFoto) { var p = document.getElementById('previewFotoMain'); if(p) { p.style.backgroundImage = `url('${savedFoto}')`; p.style.display = "block"; } }
+    var savedFoto = localStorage.getItem('3d4y_dark_fotoUrlProjeto'); if(savedFoto) { var p = document.getElementById('previewFotoMain'); if(p) { p.style.backgroundImage = `url('${savedFoto}')`; p.style.display = "block"; } }
 
     var elQtd = document.getElementById('qtdPecasProjeto'); if(elQtd && (!elQtd.value || elQtd.value === "0")) { elQtd.value = "1"; salvarDinamico('qtdPecasProjeto'); }
-    
     var tMulti = document.getElementById('toggle_multi_mat'), sMulti = document.getElementById('secao_multi_mat'); 
-    if(tMulti && sMulti) { 
-        tMulti.addEventListener('change', () => { 
-            sMulti.style.display = tMulti.checked ? 'block' : 'none'; 
-            localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); 
-            if(!tMulti.checked) {
-                 limparFantasmasMultiCor(); 
-            }
-            calcular(); 
-        }); 
-        sMulti.style.display = tMulti.checked ? 'block' : 'none'; 
-    }
+    if(tMulti && sMulti) { tMulti.addEventListener('change', () => { sMulti.style.display = tMulti.checked ? 'block' : 'none'; localStorage.setItem('3d4y_dark_toggle_multi_mat', tMulti.checked); if(!tMulti.checked) { limparFantasmasMultiCor(); } calcular(); }); sMulti.style.display = tMulti.checked ? 'block' : 'none'; }
 
     var qCores = document.getElementById('qtdCoresExtras'); if(qCores) { qCores.addEventListener('input', renderCoresExtras); } if(pegaTexto('tipoFilamento1')) document.getElementById('detalhes_1').style.display = 'block';
     renderCoresExtras(); var mSli = document.getElementById('margemSlider'); if(mSli) { updateSliderProgress(mSli); } if(pegaTexto('precoFixoCatMain')) { document.getElementById('boxPrecoFixo').style.display = 'flex'; } calcular(); mostrarValorPersonalizado();
@@ -614,11 +585,14 @@ function calcular() {
     var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS); 
     var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
 }
+
 function salvarHistorico() {
     var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), originalCanal = elCanal ? elCanal.value : "Direta", canal = originalCanal, isUrgente = document.getElementById('toggle_urgente').checked;
     
     var cbLiq = document.getElementById('isLiquidoExato');
     var isLiquidoExato = (cbLiq && cbLiq.checked && originalCanal === 'Personalizado');
+    
+    var dataInputForm = pegaTexto('dataProjeto') || new Date().toLocaleDateString('pt-BR');
 
     var isCart = carrinho && carrinho.length > 0, nomeFinal = "", valorBruto = 0, custoProducaoFinal = 0, pesoFinal = 0, tempoFinal = 0, materiaisArray = [], cLog = 0, freteCalculado = 0, totalQtd = 1, valorCalculadoBruto = 0;
     
@@ -646,7 +620,6 @@ function salvarHistorico() {
         else if(canal === "Shopee") { valorBruto = rS; valorCalculadoBruto = rS; } 
         else { valorBruto = rM; valorCalculadoBruto = rM; }
     }
-    
     var posFila = Date.now(), oldItem = null;
     if (editHistoricoId) { oldItem = historico.find(h => h.id === editHistoricoId); if(oldItem && oldItem.posicaoFila !== undefined) posFila = oldItem.posicaoFila; }
     
@@ -694,7 +667,7 @@ function salvarHistorico() {
         urgente: !!isUrgente, 
         posicaoFila: posFila || Date.now(), 
         status: oldItem ? (oldItem.status || "Orçamento") : "Orçamento", 
-        data: oldItem ? (oldItem.data || new Date().toLocaleDateString('pt-BR')) : new Date().toLocaleDateString('pt-BR'), 
+        data: dataInputForm, 
         foto: urlFotoSalvar || "", 
         estoqueBaixado: oldItem ? !!oldItem.estoqueBaixado : false,
         vendaIsolada: editHistoricoId ? true : (oldItem ? !!oldItem.vendaIsolada : false)
@@ -746,6 +719,9 @@ function editarItemHistorico(id) {
     } else { document.getElementById('fotoUrlProjeto').value = ""; var p = document.getElementById('previewFotoMain'); if(p) p.style.display = "none"; }
 
     document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
+    
+    var elDataP = document.getElementById('dataProjeto'); if (elDataP) { elDataP.value = item.data || new Date().toLocaleDateString('pt-BR'); salvarDinamico('dataProjeto'); }
+    
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
     var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
     if (canalReal === "Personalizado") { document.getElementById('canalVendaSelecionado').value = "Personalizado"; document.getElementById('canalPersonalizadoDestino').value = item.canal; } else { document.getElementById('canalVendaSelecionado').value = item.canal; }
@@ -917,6 +893,9 @@ function resetarDados() {
     editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none";
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente && tUrgente.checked) { tUrgente.checked = false; tUrgente.dispatchEvent(new Event('change')); }
     var cDestino = document.getElementById('canalPersonalizadoDestino'); if(cDestino) cDestino.value = 'Shopee';
+    
+    var dp = document.getElementById('dataProjeto'); if (dp) dp.value = new Date().toLocaleDateString('pt-BR');
+    
     resetarInputProjeto(); calcular(); setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100); var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
