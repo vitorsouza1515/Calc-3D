@@ -120,29 +120,31 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
             var itemGrossUnit = itemGrossTotal / (i.qtd || 1);
             
             var feeSUnit = 0;
-            if (itemGrossUnit <= 79.991) feeSUnit = (itemGrossUnit * 0.20) + 4;
-            else if (itemGrossUnit <= 99.991) feeSUnit = (itemGrossUnit * 0.14) + 16;
-            else if (itemGrossUnit <= 199.991) feeSUnit = (itemGrossUnit * 0.14) + 20;
-            else feeSUnit = (itemGrossUnit * 0.14) + 26;
+            // CORREÇÃO: Math.round() antes de somar a taxa fixa, igual as plataformas fazem com os centavos!
+            if (itemGrossUnit <= 79.991) feeSUnit = (Math.round(itemGrossUnit * 0.20 * 100) / 100) + 4;
+            else if (itemGrossUnit <= 99.991) feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 16;
+            else if (itemGrossUnit <= 199.991) feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 20;
+            else feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 26;
             feeShpTotal += (feeSUnit * (i.qtd || 1));
             
             var fixMl = (itemGrossUnit >= 79.99) ? 0 : pegaValor('fixaMeli');
-            var feeMUnit = (itemGrossUnit * txMl) + fixMl;
+            var feeMUnit = (Math.round(itemGrossUnit * txMl * 100) / 100) + fixMl;
             feeMlTotal += (feeMUnit * (i.qtd || 1));
         });
     } else {
         var avgBruto = valorBruto / qtdTotal;
         var feeShpUnit = 0;
         
-        if (avgBruto <= 79.991) feeShpUnit = (avgBruto * 0.20) + 4;
-        else if (avgBruto <= 99.991) feeShpUnit = (avgBruto * 0.14) + 16;
-        else if (avgBruto <= 199.991) feeShpUnit = (avgBruto * 0.14) + 20;
-        else feeShpUnit = (avgBruto * 0.14) + 26;
+        // CORREÇÃO: Math.round() antes de somar a taxa fixa
+        if (avgBruto <= 79.991) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
+        else if (avgBruto <= 99.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 16;
+        else if (avgBruto <= 199.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 20;
+        else feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 26;
         
         feeShpTotal = feeShpUnit * qtdTotal;
         
         var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
-        var feeMlUnit = (avgBruto * txMl) + fixMl;
+        var feeMlUnit = (Math.round(avgBruto * txMl * 100) / 100) + fixMl;
         feeMlTotal = feeMlUnit * qtdTotal;
     }
     
@@ -596,7 +598,6 @@ function salvarHistorico() {
     
     if (isLiquidoExato) {
         valorVendaFinal = valorBruto;
-        // CORREÇÃO: Resgate seguro do Gross/Bruto de vendas antigas que não tinham as variáveis novas
         var fallbackBruto = oldItem ? (oldItem.valorBruto !== undefined ? oldItem.valorBruto : (oldItem.valorLiquido !== undefined ? oldItem.valorLiquido : (oldItem.valorVenda !== undefined ? oldItem.valorVenda : oldItem.pix))) : valorCalculadoBruto;
         valorBruto = fallbackBruto || valorCalculadoBruto || 0;
     } else {
@@ -617,7 +618,6 @@ function salvarHistorico() {
 
     var urlFotoSalvar = isCart ? (carrinho.length > 0 ? carrinho[0].foto : '') : pegaTexto('fotoUrlProjeto');
 
-    // CORREÇÃO: Objeto 'novo' formatado para evitar o erro 'undefined' no Firebase
     var novo = { 
         id: editHistoricoId ? editHistoricoId : Date.now(), 
         nome: nomeFinal || "", 
@@ -1003,7 +1003,6 @@ window.forcarRecalculoGeral = function() {
         var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda));
         var vFrete = parseLocal(h.frete || 0), qtd = h.totalQtd || 1;
 
-        // SE FOR CARRINHO, precisamos refazer o Valor Bruto correto antes de descontar!
         if (isCart && !h.vendaIsolada && h.canal !== "Personalizado" && h.canal !== "Direta") {
             var totValorComLucro = h.cartItems.reduce((a,b) => a + (b.valorComLucro || 0), 0);
             var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
@@ -1026,7 +1025,7 @@ window.forcarRecalculoGeral = function() {
 
             if (h.canal === "Shopee") vBruto = novoTotS;
             if (h.canal === "Meli") vBruto = novoTotM;
-            h.valorBruto = vBruto; // Salva o novo valor bruto corrigido no histórico!
+            h.valorBruto = vBruto; 
         }
 
         if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).shopee - vFrete - h.logistica; }
@@ -1036,7 +1035,6 @@ window.forcarRecalculoGeral = function() {
         if (h.valorLiquido < 0) h.valorLiquido = 0;
         corrigidos++;
 
-        // Baixa retroativa do Estoque de filamentos
         var st = h.status || "Finalizado"; 
         if (st === 'Enviado') st = 'Enviado / Entregue'; 
         if ((st === 'Finalizado' || st === 'Enviado / Entregue') && !h.estoqueBaixado) {
