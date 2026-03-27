@@ -1022,44 +1022,23 @@ window.importarBackupJSON = function(input) {
 };
 
 window.forcarRecalculoGeral = function() {
-    if(!confirm("⚠️ ATENÇÃO: Isto vai varrer todo o seu histórico e recalcular os lucros, fretes e embalagens com a regra nova (1x por pedido). Deseja continuar?")) return;
+    if(!confirm("⚠️ ATENÇÃO: Isto vai atualizar CUSTOS LOGÍSTICOS e RECALCULAR AS TAXAS de todas as vendas baseando-se no Valor Bruto atual.\n\nFique tranquilo: O Valor Bruto da venda ficará INTACTO. Deseja continuar?")) return;
     
     var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'), cLogGlobal = emb + des, corrigidos = 0, baixadosEstoque = 0;
     
     historico.forEach(h => {
+        // Ignora orçamentos, devoluções e vendas que você trancou com 🔒
         if (h.status === 'Orçamento' || h.status === 'Devolução' || h.vendaIsolada) return;
         
         h.logistica = cLogGlobal;
-        var isCart = h.cartItems && h.cartItems.length > 0;
         var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda));
         var vFrete = parseLocal(h.frete || 0), qtd = parseLocal(h.totalQtd || 1);
 
-        if (isCart && h.canal !== "Personalizado" && h.canal !== "Direta") {
-            var totValorComLucro = h.cartItems.reduce((a,b) => a + parseLocal(b.valorComLucro || 0), 0);
-            var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
-            var novoTotS = 0, novoTotM = 0;
-            
-            h.cartItems.forEach(i => {
-                var iQtd = parseLocal(i.qtd || 1), iPrecoExato = parseLocal(i.precoVendaExato || 0);
-                if (iPrecoExato > 0) {
-                    novoTotS += iPrecoExato; novoTotM += iPrecoExato;
-                } else {
-                    var itemRatio = parseLocal(i.valorComLucro || 0) / totBaseForRatio;
-                    var itemBaseTotal = parseLocal(i.valorComLucro || 0) + (cLogGlobal * itemRatio);
-                    var itemBaseUnit = itemBaseTotal / iQtd;
-                    var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-                    if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-                    novoTotS += (Math.round(bestPShp * 100) / 100) * iQtd;
-                    var txMl = pegaValor('taxaMeli') / 100, pAvgML_noFix = itemBaseUnit / (1 - txMl);
-                    var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-                    novoTotM += (Math.round(bestPMeli * 100) / 100) * iQtd;
-                }
-            });
-
-            if (h.canal === "Shopee") vBruto = novoTotS;
-            if (h.canal === "Meli") vBruto = novoTotM;
-            h.valorBruto = vBruto; 
-        }
+        // =========================================================
+        // BLINDAGEM: O SISTEMA NUNCA RECALCULA O VALOR BRUTO AQUI! 
+        // Ele usa o valor original pago pelo cliente, mantendo tudo a salvo.
+        // =========================================================
+        h.valorBruto = vBruto; 
 
         if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).shopee - vFrete - h.logistica; }
         else if (h.canal === "Meli") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).meli - vFrete - h.logistica; }
@@ -1078,7 +1057,7 @@ window.forcarRecalculoGeral = function() {
     });
     
     syncNuvem(); renderHistorico(); renderEstoque(); 
-    showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); fecharModal('configModal');
+    showToast("✅ " + corrigidos + " vendas recalculadas com segurança!"); fecharModal('configModal');
 };
 // ==========================================
 // 14. SINCRONIZADOR GLOBAL DO CATÁLOGO
