@@ -46,7 +46,7 @@ window.mudarFiltroDias = function(dias) {
     renderDespesas(); 
 };
 function isWithinDays(dateStr, dias) {
-    if (dias === 'Total') return true;
+    if (dias === 'Total' || !dias) return true;
     if (!dateStr) return true;
     var parts = dateStr.split('/');
     if (parts.length !== 3) return true;
@@ -184,6 +184,7 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
     var netMeli = parseLocal(valorBruto) - feeMlTotal; if (netMeli < 0) netMeli = 0;
     return { shopee: netShopee, meli: netMeli }; 
 }
+
 // ==========================================
 // 8. LIMPEZA E PREENCHIMENTO DO PROJETO
 // ==========================================
@@ -213,7 +214,6 @@ function resetarInputProjeto() {
     
     limparFantasmasMultiCor();
 }
-
 function preencherFormProjeto(prod) {
     var match = prod.nome.match(/^(\d+)x\s(.*)/), qtd = match ? parseInt(match[1]) : (prod.qtd || 1), baseNome = match ? match[2] : prod.nome; document.getElementById('nomeProjeto').value = baseNome; document.getElementById('qtdPecasProjeto').value = qtd; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim()), selCat = document.getElementById('sel_catalogo'); if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
     var p_tipo1 = prod.tipo1 || (matchCat ? matchCat.tipo1 : ""), p_cor1 = prod.cor1 || (matchCat ? matchCat.cor1 : ""), p_marca1 = prod.marca1 || (matchCat ? matchCat.marca1 : ""), p_preco1 = prod.preco1 || (matchCat ? matchCat.preco1 : "120,00"), p_multi = prod.multi !== undefined ? prod.multi : (matchCat ? matchCat.multi : false), p_qtdCores = prod.qtdCores || (matchCat ? matchCat.qtdCores : "1"), p_extras = prod.extras || (matchCat ? matchCat.extras : []);
@@ -429,6 +429,7 @@ function aplicarDadosNoForm(id, isEditing = false) {
 }
 
 function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); renderCatalogo(); } }
+
 // ==========================================
 // 11. GESTÃO DE ESTOQUE
 // ==========================================
@@ -459,7 +460,6 @@ function salvarItemEstoque() {
     showToast("📦 Estoque Atualizado!"); 
     renderEstoque(); 
 }
-
 function renderEstoque() { 
     var lista = document.getElementById('lista_estoque'); if(!lista) return; 
     var estoqueOrdenado = [...estoque].sort((a, b) => (a.tipo || "").localeCompare(b.tipo || "")); 
@@ -614,7 +614,6 @@ function calcular() {
     var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS); 
     var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
 }
-
 function salvarHistorico() {
     var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), originalCanal = elCanal ? elCanal.value : "Direta", canal = originalCanal, isUrgente = document.getElementById('toggle_urgente').checked;
     
@@ -647,6 +646,7 @@ function salvarHistorico() {
         else if(canal === "Shopee") { valorBruto = rS; valorCalculadoBruto = rS; } 
         else { valorBruto = rM; valorCalculadoBruto = rM; }
     }
+    
     var posFila = Date.now(), oldItem = null;
     if (editHistoricoId) { oldItem = historico.find(h => h.id === editHistoricoId); if(oldItem && oldItem.posicaoFila !== undefined) posFila = oldItem.posicaoFila; }
     
@@ -848,10 +848,10 @@ function renderHistorico() {
     var counts = { 'Todos': 0, 'Orçamento': 0, 'Na Fila': 0, 'Imprimindo': 0, 'Finalizado': 0, 'Enviado / Entregue': 0, 'Devolução': 0 }; window.horasTotaisImpressasGlobal = 0;
     var campoBusca = document.getElementById('buscaCliente'), termoBusca = campoBusca ? campoBusca.value.toLowerCase().trim() : '';
     
-    var histFiltradoTempo = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
-    counts['Todos'] = histFiltradoTempo.length;
+    var historicoFiltradoDias = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
+    counts['Todos'] = historicoFiltradoDias.length;
 
-    histFiltradoTempo.forEach(function(item) {
+    historicoFiltradoDias.forEach(function(item) {
         var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; counts[st] = (counts[st] || 0) + 1;
         if (st !== 'Orçamento' && st !== 'Devolução') {
             var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem;
@@ -873,7 +873,7 @@ function renderHistorico() {
 
     if (filtroDiv) { filtroDiv.innerHTML = `<button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Devolução' ? 'active' : ''}" onclick="mudarFiltro('Devolução')">❌ Devol. (${counts['Devolução']})</button> <select onchange="window.mudarFiltroDias(this.value)" style="margin-left:10px; padding:6px; border-radius:6px; background:#1e293b; color:var(--sky); border:1px solid var(--border); font-weight:bold; cursor:pointer; outline:none;"><option value="Total" ${window.filtroDiasAtual === 'Total' ? 'selected' : ''}>📅 Período: Total</option><option value="30" ${window.filtroDiasAtual === '30' ? 'selected' : ''}>📅 Últimos 30 Dias</option><option value="60" ${window.filtroDiasAtual === '60' ? 'selected' : ''}>📅 Últimos 60 Dias</option><option value="90" ${window.filtroDiasAtual === '90' ? 'selected' : ''}>📅 Últimos 90 Dias</option></select>`; }
 
-    var itensFiltrados = histFiltradoTempo.filter(function(item) { var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; var passaBusca = true; if (termoBusca !== '') { var nomeC = (item.cliente || '').toLowerCase(), nomeP = (item.nome || '').toLowerCase(); if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca)) { passaBusca = false; } } return passaStatus && passaBusca; });
+    var itensFiltrados = historicoFiltradoDias.filter(function(item) { var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; var passaBusca = true; if (termoBusca !== '') { var nomeC = (item.cliente || '').toLowerCase(), nomeP = (item.nome || '').toLowerCase(); if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca)) { passaBusca = false; } } return passaStatus && passaBusca; });
     var isFila = window.filtroStatusAtual === 'Na Fila'; if (isFila) { itensFiltrados.sort((a, b) => { return (a.posicaoFila || a.id) - (b.posicaoFila || b.id); }); }
     lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado no período</p>' : '';
     
@@ -930,7 +930,6 @@ window.encurtarUrl = async function(url) {
         return innerData.shorturl || url;
     } catch(e) { return url; }
 };
-
 window.wpp = async function(tipo) {
     var w = window.open('', '_blank');
     if(w) w.document.write('<h3 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#3b82f6;">A gerar link curto do WhatsApp... Aguarde ⏳</h3>');
@@ -998,10 +997,15 @@ window.gerarOrcamentoPDF = async function() {
 
 window.gerarRelatorioGeral = function() {
     if (historico.length === 0) { showToast("⚠️ Nenhum dado para exportar", true); return; }
-    const { jsPDF } = window.jspdf; const doc = new jsPDF('landscape'); doc.setFontSize(16); doc.text("Relatório Financeiro Geral - 3D 4You", 14, 15); doc.setFontSize(9); doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR') + " | Filtro: " + (window.filtroDiasAtual === 'Total' ? 'Todo o Período' : 'Últimos ' + window.filtroDiasAtual + ' dias'), 14, 21);
     
-    var histFiltrado = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
-    var despFiltradas = despesas.filter(d => isWithinDays(d.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
+    var pDias = prompt("Qual período deseja no PDF?\n\nDigite: 30, 60, 90\nOu deixe em branco para exportar TODO O PERÍODO:", window.filtroDiasAtual === 'Total' ? '' : window.filtroDiasAtual);
+    if (pDias === null) return; 
+    var diasFiltro = pDias.trim() === '' ? 'Total' : pDias.trim();
+
+    const { jsPDF } = window.jspdf; const doc = new jsPDF('landscape'); doc.setFontSize(16); doc.text("Relatório Financeiro Geral - 3D 4You", 14, 15); doc.setFontSize(9); doc.text("Emitido em: " + new Date().toLocaleDateString('pt-BR') + " | Período: " + (diasFiltro === 'Total' ? 'Total' : 'Últimos ' + diasFiltro + ' dias'), 14, 21);
+    
+    var histFiltrado = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), diasFiltro));
+    var despFiltradas = despesas.filter(d => isWithinDays(d.data || new Date().toLocaleDateString('pt-BR'), diasFiltro));
 
     let totVendas = 0, totBruto = 0, totLiquido = 0, totCusto = 0, totLucro = 0, totHoras = 0, somaLogistica = 0, totPeso = 0;
     let qtdDireta = 0, somaDiretaBruto = 0, somaDiretaLiq = 0;
@@ -1033,7 +1037,7 @@ window.gerarRelatorioGeral = function() {
     });
     
     let lucroReal = totLucro - despesasTotais; doc.setFillColor(240, 240, 240); doc.rect(14, 25, 268, 52, 'F');
-    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("RESUMO FINANCEIRO (" + (window.filtroDiasAtual === 'Total' ? 'Todo o Período' : 'Últimos ' + window.filtroDiasAtual + ' dias') + "):", 18, 32);
+    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.text("RESUMO FINANCEIRO (" + (diasFiltro === 'Total' ? 'Todo o Período' : 'Últimos ' + diasFiltro + ' dias') + "):", 18, 32);
     doc.setFontSize(9); doc.setFont(undefined, 'normal'); doc.text(`Faturamento Bruto Total: R$ ${formatarMoeda(totBruto)}`, 18, 40); doc.text(`Custo de Produção: R$ ${formatarMoeda(totCusto)}`, 85, 40); doc.text(`Despesas Gerais: R$ ${formatarMoeda(despesasTotais)}`, 160, 40);
     doc.text(`Faturamento Líquido Total: R$ ${formatarMoeda(totLiquido)}`, 18, 46); doc.text(`Custo Log/Frete: R$ ${formatarMoeda(somaLogistica)}`, 85, 46); doc.text(`Material Gasto: ${formatarMoeda(totPeso)}g (${formatarMoeda(totPeso/1000)}kg)`, 160, 46);
     doc.setFont(undefined, 'bold'); doc.text(`Lucro da Operação: R$ ${formatarMoeda(totLucro)}`, 18, 54); doc.text(`Tempo de Máquina: ${formatarMoeda(totHoras)}h`, 85, 54); doc.setTextColor(0, 150, 0); doc.text(`CAIXA REAL: R$ ${formatarMoeda(lucroReal)}`, 160, 54); doc.setTextColor(0, 0, 0);
@@ -1052,14 +1056,18 @@ window.gerarRelatorioGeral = function() {
     doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(59, 130, 246); doc.text("Histórico de Vendas", 14, currentY); doc.autoTable({ startY: currentY + 5, head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor Bruto', 'Valor Líquido', 'Tempo']], body: tableData, theme: 'grid', headStyles: { fillColor: [59, 130, 246] }, styles: { fontSize: 8 } }); currentY = doc.lastAutoTable.finalY + 15;
     if (tableDataDevolucoes.length > 0) { if (currentY > 170) { doc.addPage(); currentY = 20; } doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68); doc.text("Histórico de Devoluções", 14, currentY); doc.autoTable({ startY: currentY + 5, head: [['Data', 'Cliente', 'Projeto', 'Status', 'Canal', 'Valor Estornado', 'Lucro Nulo', 'Tempo']], body: tableDataDevolucoes, theme: 'grid', headStyles: { fillColor: [239, 68, 68] }, styles: { fontSize: 8 } }); currentY = doc.lastAutoTable.finalY + 15; }
     if (despFiltradas.length > 0) { const tableDataDespesas = despFiltradas.map(d => [ d.data, d.qtd + "x", d.nome, "R$ " + formatarMoeda(d.valor) ]); if (currentY > 170) { doc.addPage(); currentY = 20; } doc.setFontSize(12); doc.setFont(undefined, 'bold'); doc.setTextColor(239, 68, 68); doc.text("Histórico de Despesas / Compras", 14, currentY); doc.autoTable({ startY: currentY + 5, head: [['Data', 'Qtd', 'Descrição', 'Valor Total']], body: tableDataDespesas, theme: 'grid', headStyles: { fillColor: [239, 68, 68] }, styles: { fontSize: 8 } }); }
-    doc.save(`Relatorio_${window.filtroDiasAtual}_Dias_3D4You.pdf`); showToast("📄 Relatório PDF Gerado!");
+    doc.save(`Relatorio_${diasFiltro}_Dias_3D4You.pdf`); showToast("📄 Relatório PDF Gerado!");
 };
 
 window.exportarExcel = function() {
     if (historico.length === 0 && estoque.length === 0 && catalogo.length === 0 && despesas.length === 0) { showToast("⚠️ Nenhum dado para exportar", true); return; }
     
-    var histFiltrado = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
-    var despFiltradas = despesas.filter(d => isWithinDays(d.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
+    var pDias = prompt("Qual período deseja exportar no Excel?\n\nDigite: 30, 60, 90\nOu deixe em branco para exportar TODO O PERÍODO:", window.filtroDiasAtual === 'Total' ? '' : window.filtroDiasAtual);
+    if (pDias === null) return; 
+    var diasFiltro = pDias.trim() === '' ? 'Total' : pDias.trim();
+
+    var histFiltrado = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), diasFiltro));
+    var despFiltradas = despesas.filter(d => isWithinDays(d.data || new Date().toLocaleDateString('pt-BR'), diasFiltro));
 
     var wb = XLSX.utils.book_new(), vendasValidas = histFiltrado.filter(h => h.status !== 'Devolução'), devolucoes = histFiltrado.filter(h => h.status === 'Devolução');
     if (vendasValidas.length > 0) { var dadosVendas = vendasValidas.map(h => ({ "Data": h.data, "Cliente": h.cliente || 'Balcão', "Projeto": h.nome, "Status": h.status, "Canal": h.canal, "Bruto (Com Taxas R$)": h.valorBruto !== undefined ? parseLocal(h.valorBruto) : (h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : parseLocal(h.valorVenda)), "Líquido (Sem Taxas R$)": h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : parseLocal(h.valorVenda), "Custo Fab (R$)": parseLocal(h.custo), "Log/Frete (R$)": parseLocal(h.frete || 0) + parseLocal(h.logistica || 0), "Lucro Real (R$)": (h.valorLiquido !== undefined ? parseLocal(h.valorLiquido) : parseLocal(h.valorVenda)) - parseLocal(h.custo) - parseLocal(h.frete || 0) - parseLocal(h.logistica || 0), "Tempo (h)": parseLocal(h.tempo), "Peso (g)": parseLocal(h.peso) })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosVendas), "Vendas"); }
@@ -1067,7 +1075,7 @@ window.exportarExcel = function() {
     if (despFiltradas.length > 0) { var dadosDespesas = despFiltradas.map(d => ({ "Data": d.data, "Qtd": d.qtd, "Descrição": d.nome, "Valor (R$)": parseLocal(d.valor) })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosDespesas), "Despesas"); }
     if (estoque.length > 0) { var dadosEstoque = estoque.map(e => ({ "Tipo": e.tipo, "Cor": e.cor, "Marca": e.marca, "Preço Pago (R$)": parseLocal(e.preco) })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosEstoque), "Estoque"); }
     if (catalogo.length > 0) { var dadosCatalogo = catalogo.map(c => ({ "Produto": c.nome, "Tempo (h)": parseLocal(c.tempo), "Peso Principal (g)": parseLocal(c.peso1), "Preço Fixo (R$)": c.precoFixo ? parseLocal(c.precoFixo) : "N/A" })); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosCatalogo), "Catálogo"); }
-    XLSX.writeFile(wb, `Relatorio_${window.filtroDiasAtual}_Dias_3D4You.xlsx`); showToast("📊 Excel Exportado com Sucesso!");
+    XLSX.writeFile(wb, `Relatorio_${diasFiltro}_Dias_3D4You.xlsx`); showToast("📊 Excel Exportado com Sucesso!");
 };
 
 window.fazerBackupJSON = function() {
