@@ -104,43 +104,59 @@ window.fecharModal = function(idModal) {
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
 
 function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) { 
-    var feeShpTotal = 0;
-    var feeMlTotal = 0;
-    var txMl = pegaValor('taxaMeli') / 100;
+    var feeShpTotal = 0, feeMlTotal = 0, txMl = pegaValor('taxaMeli') / 100;
     var items = (cartItemsArray && cartItemsArray.length > 0) ? cartItemsArray : (carrinho && carrinho.length > 0 ? carrinho : []);
     var isCart = items.length > 0;
     
     if (isCart) {
-        var totBase = items.reduce((a,b)=>a + b.valorComLucro, 0);
+        var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+        var totBase = items.reduce((a,b)=>a + (b.valorComLucro || 0), 0);
         if (totBase === 0) totBase = 1;
         
+        var calcGS = [], calcGM = [];
         items.forEach(i => {
-            var itemRatio = i.valorComLucro / totBase;
-            var itemGrossTotal = valorBruto * itemRatio;
-            var itemGrossUnit = itemGrossTotal / (i.qtd || 1);
+            var itemRatio = (i.valorComLucro || 0) / totBase;
+            var itemBaseTotal = (i.valorComLucro || 0) + (cLog * itemRatio);
+            var itemBaseUnit = itemBaseTotal / (i.qtd || 1);
             
+            var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+            if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+            calcGS.push(Math.round(bestPShp * 100) / 100 * (i.qtd || 1));
+            
+            var pAvgML_noFix = itemBaseUnit / (1 - txMl);
+            var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
+            calcGM.push(Math.round(bestPMeli * 100) / 100 * (i.qtd || 1));
+        });
+        
+        var sumGS = calcGS.reduce((a,b)=>a+b, 0); if(sumGS === 0) sumGS = 1;
+        var sumGM = calcGM.reduce((a,b)=>a+b, 0); if(sumGM === 0) sumGM = 1;
+        
+        items.forEach((i, idx) => {
+            var ratioS = calcGS[idx] / sumGS;
+            var itemGrossTotalS = valorBruto * ratioS;
+            var itemGrossUnitS = itemGrossTotalS / (i.qtd || 1);
             var feeSUnit = 0;
-            // CORREÇÃO: Math.round() antes de somar a taxa fixa, igual as plataformas fazem com os centavos!
-            if (itemGrossUnit <= 79.991) feeSUnit = (Math.round(itemGrossUnit * 0.20 * 100) / 100) + 4;
-            else if (itemGrossUnit <= 99.991) feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 16;
-            else if (itemGrossUnit <= 199.991) feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 20;
-            else feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 26;
+            // Arredondamento exato da taxa!
+            if (itemGrossUnitS <= 79.991) feeSUnit = (Math.round(itemGrossUnitS * 0.20 * 100) / 100) + 4;
+            else if (itemGrossUnitS <= 99.991) feeSUnit = (Math.round(itemGrossUnitS * 0.14 * 100) / 100) + 16;
+            else if (itemGrossUnitS <= 199.991) feeSUnit = (Math.round(itemGrossUnitS * 0.14 * 100) / 100) + 20;
+            else feeSUnit = (Math.round(itemGrossUnitS * 0.14 * 100) / 100) + 26;
             feeShpTotal += (feeSUnit * (i.qtd || 1));
             
-            var fixMl = (itemGrossUnit >= 79.99) ? 0 : pegaValor('fixaMeli');
-            var feeMUnit = (Math.round(itemGrossUnit * txMl * 100) / 100) + fixMl;
+            var ratioM = calcGM[idx] / sumGM;
+            var itemGrossTotalM = valorBruto * ratioM;
+            var itemGrossUnitM = itemGrossTotalM / (i.qtd || 1);
+            var fixMl = (itemGrossUnitM >= 79.99) ? 0 : pegaValor('fixaMeli');
+            var feeMUnit = (Math.round(itemGrossUnitM * txMl * 100) / 100) + fixMl;
             feeMlTotal += (feeMUnit * (i.qtd || 1));
         });
     } else {
         var avgBruto = valorBruto / qtdTotal;
         var feeShpUnit = 0;
-        
-        // CORREÇÃO: Math.round() antes de somar a taxa fixa
         if (avgBruto <= 79.991) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
         else if (avgBruto <= 99.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 16;
         else if (avgBruto <= 199.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 20;
         else feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 26;
-        
         feeShpTotal = feeShpUnit * qtdTotal;
         
         var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
@@ -148,11 +164,8 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
         feeMlTotal = feeMlUnit * qtdTotal;
     }
     
-    var netShopee = valorBruto - feeShpTotal;
-    if (netShopee < 0) netShopee = 0;
-    
-    var netMeli = valorBruto - feeMlTotal;
-    if (netMeli < 0) netMeli = 0;
+    var netShopee = valorBruto - feeShpTotal; if (netShopee < 0) netShopee = 0;
+    var netMeli = valorBruto - feeMlTotal; if (netMeli < 0) netMeli = 0;
     
     return { shopee: netShopee, meli: netMeli }; 
 }
@@ -253,12 +266,12 @@ function renderCarrinho() {
         
         var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
         if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-        totS += (bestPShp * (i.qtd || 1));
+        totS += (Math.round(bestPShp * 100) / 100) * (i.qtd || 1); // Arredondamento garantido!
         
         var txMl = pegaValor('taxaMeli')/100;
         var pAvgML_noFix = itemBaseUnit / (1 - txMl);
         var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-        totM += (bestPMeli * (i.qtd || 1));
+        totM += (Math.round(bestPMeli * 100) / 100) * (i.qtd || 1); // Arredondamento garantido!
     });
     
     document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); 
@@ -523,11 +536,11 @@ function calcular() {
             var itemBaseUnit = itemBaseTotal / (i.qtd || 1);
             var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
             if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-            totS += (bestPShp * (i.qtd || 1));
+            totS += (Math.round(bestPShp * 100) / 100) * (i.qtd || 1); 
             var txMl = pegaValor('taxaMeli')/100;
             var pAvgML_noFix = itemBaseUnit / (1 - txMl);
             var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-            totM += (bestPMeli * (i.qtd || 1));
+            totM += (Math.round(bestPMeli * 100) / 100) * (i.qtd || 1); 
         });
     } else { 
         custoProducaoTotal = custoProducao; 
@@ -1015,12 +1028,12 @@ window.forcarRecalculoGeral = function() {
                 
                 var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
                 if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-                novoTotS += (bestPShp * (i.qtd || 1));
+                novoTotS += (Math.round(bestPShp * 100) / 100) * (i.qtd || 1);
                 
                 var txMl = pegaValor('taxaMeli') / 100;
                 var pAvgML_noFix = itemBaseUnit / (1 - txMl);
                 var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-                novoTotM += (bestPMeli * (i.qtd || 1));
+                novoTotM += (Math.round(bestPMeli * 100) / 100) * (i.qtd || 1);
             });
 
             if (h.canal === "Shopee") vBruto = novoTotS;
