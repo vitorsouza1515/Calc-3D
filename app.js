@@ -467,7 +467,17 @@ function renderCoresExtras() { var qtdInput = document.getElementById('qtdCoresE
 // 12. DESPESAS E SIMULADOR
 // ==========================================
 
-function mostrarValorPersonalizado() { var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); if (seletor && divPersonalizado) { divPersonalizado.style.display = seletor.value === 'Personalizado' ? 'block' : 'none'; } }
+function mostrarValorPersonalizado() { 
+    var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); 
+    if (seletor && divPersonalizado) { 
+        if (seletor.value === 'Personalizado') {
+            divPersonalizado.style.display = 'block';
+        } else {
+            divPersonalizado.style.display = 'none';
+        }
+    } 
+}
+
 function calcularSimulador() { var vVenda = pegaValor('simuladorVenda'), elS = document.getElementById('sim_shopee'), elM = document.getElementById('sim_meli'); if (vVenda <= 0) { if(elS) elS.textContent = "0,00"; if(elM) elM.textContent = "0,00"; return; } var isCart = carrinho && carrinho.length > 0, totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1); if (totalQtd < 1) totalQtd = 1; var net = descontarTaxas(vVenda, totalQtd, isCart ? carrinho : null); if(elS) elS.textContent = formatarMoeda(net.shopee); if(elM) elM.textContent = formatarMoeda(net.meli); }
 
 window.cancelarEdicaoDespesa = function() { 
@@ -769,7 +779,7 @@ function editarItemHistorico(id) {
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
     
     // ========================================================
-    // BLINDAGEM DE EDIÇÃO: VALOR BRUTO EXATO NO RESUMO
+    // LÓGICA MÁGICA: ABRIR CAIXINHA "MEU PREÇO" AO EDITAR
     // ========================================================
     var elCanal = document.getElementById('canalVendaSelecionado');
     var elDest = document.getElementById('canalPersonalizadoDestino');
@@ -794,6 +804,8 @@ function editarItemHistorico(id) {
             localStorage.removeItem('3d4y_dark_valorPersonalizado');
         }
     }
+    
+    // Isto garante que a caixinha desce visível na tela e pisca no valor!
     mostrarValorPersonalizado();
     // ========================================================
     
