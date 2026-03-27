@@ -598,6 +598,21 @@ function calcular() {
         totM = (Math.round(pAvgML * 100) / 100) * totalQtd;
     }
     
+    // ========================================================
+    // INJEÇÃO: SUBSTITUI O QUADRO GIGANTE SE FOR PERSONALIZADO
+    // ========================================================
+    var elCanalSel = document.getElementById('canalVendaSelecionado');
+    if (elCanalSel && elCanalSel.value === 'Personalizado') {
+        var vP = pegaValor('valorPersonalizado');
+        if (vP > 0) {
+            var cDest = document.getElementById('canalPersonalizadoDestino') ? document.getElementById('canalPersonalizadoDestino').value : 'Direta';
+            if (cDest === "Shopee") totS = vP;
+            else if (cDest === "Meli") totM = vP;
+            else vd = vP;
+        }
+    }
+    // ========================================================
+    
     var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd); 
     var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS); 
     var rVendaM = document.getElementById('r_vendaM'); if(rVendaM) rVendaM.textContent = formatarMoeda(totM);
@@ -754,15 +769,31 @@ function editarItemHistorico(id) {
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
     
     // ========================================================
-    // NOVA MAGIA DE EDIÇÃO: FORÇA O VALOR PERSONALIZADO E BRUTO
+    // BLINDAGEM DE EDIÇÃO: VALOR BRUTO EXATO NO RESUMO
     // ========================================================
-    document.getElementById('canalVendaSelecionado').value = "Personalizado"; 
-    var cDest = document.getElementById('canalPersonalizadoDestino');
-    if(cDest) cDest.value = item.canal || "Direta";
+    var elCanal = document.getElementById('canalVendaSelecionado');
+    var elDest = document.getElementById('canalPersonalizadoDestino');
+    var elPerso = document.getElementById('valorPersonalizado');
     
-    var valParaEditar = item.valorBruto !== undefined ? item.valorBruto : (item.valorLiquido !== undefined ? item.valorLiquido : item.valorVenda); 
-    document.getElementById('valorPersonalizado').value = formatarMoeda(valParaEditar); 
-    salvarDinamico('valorPersonalizado'); 
+    // Força o modo "Meu Preço" se tivermos o valor exato original guardado
+    if (item.valorBruto !== undefined && item.valorBruto > 0) {
+        elCanal.value = "Personalizado"; 
+        if(elDest) elDest.value = item.canal || "Direta";
+        elPerso.value = formatarMoeda(item.valorBruto); 
+        salvarDinamico('valorPersonalizado');
+    } else {
+        var canalReal = item.canal === "Direta" || item.canal === "Shopee" || item.canal === "Meli" ? item.canal : "Personalizado";
+        if (canalReal === "Personalizado") { 
+            elCanal.value = "Personalizado"; 
+            if(elDest) elDest.value = item.canal || "Direta"; 
+            elPerso.value = formatarMoeda(item.valorLiquido || item.valorVenda);
+            salvarDinamico('valorPersonalizado');
+        } else { 
+            elCanal.value = canalReal; 
+            elPerso.value = "";
+            localStorage.removeItem('3d4y_dark_valorPersonalizado');
+        }
+    }
     mostrarValorPersonalizado();
     // ========================================================
     
@@ -774,32 +805,6 @@ function editarItemHistorico(id) {
     var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "block";
     showToast("✏️ Venda carregada para edição!"); var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-window.darBaixaEstoqueVenda = function(h) {
-    if (h.materiais && h.materiais !== "Não informado") {
-        let mats = h.materiais.split(' + ');
-        mats.forEach(m => {
-            let match = m.match(/(.+?)\s+\(([\d.,]+)g\)/);
-            if (match) {
-                let nomeMat = match[1].trim(); 
-                let pesoGasto = parseLocal(match[2]);
-                
-                let itemEstoque = estoque.find(e => {
-                    let n = (e.tipo + " " + e.cor + " " + (e.marca || "")).trim();
-                    let nCurto = (e.tipo + " " + e.cor).trim();
-                    return n === nomeMat || nCurto === nomeMat;
-                });
-                
-                if (itemEstoque) {
-                    itemEstoque.pesoAtual = (itemEstoque.pesoAtual || 1000) - pesoGasto;
-                    if (itemEstoque.pesoAtual < 0) itemEstoque.pesoAtual = 0;
-                }
-            }
-        });
-        showToast("📉 Materiais descontados do estoque!");
-        renderEstoque();
-    }
-};
 
 function mudarStatus(id, novoStatus) { 
     var index = historico.findIndex(h => h.id === id); 
