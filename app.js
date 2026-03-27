@@ -103,34 +103,54 @@ window.fecharModal = function(idModal) {
 
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
 
+// MÁGICA DO ARREDONDAMENTO ITEM A ITEM
 function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) { 
     var feeShpTotal = 0, feeMlTotal = 0, txMl = pegaValor('taxaMeli') / 100;
     var items = (cartItemsArray && cartItemsArray.length > 0) ? cartItemsArray : (carrinho && carrinho.length > 0 ? carrinho : []);
     var isCart = items.length > 0;
     
     if (isCart) {
-        var totBase = items.reduce((a, b) => a + ((b.valorComLucro || 0) * (b.qtd || 1)), 0);
-        if (totBase === 0) totBase = 1;
+        var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
+        var totBaseForRatio = items.reduce((a,b)=>a + (b.valorComLucro || 0), 0) || 1;
+        var simulatedGrossList = [];
+        var totalSimulatedGross = 0;
         
         items.forEach(i => {
-            var q = i.qtd || 1;
-            var propBase = ((i.valorComLucro || 0) * q) / totBase; 
-            var itemGrossTotal = valorBruto * propBase; 
-            var itemGrossUnit = itemGrossTotal / q; 
+            if (i.precoVendaExato && i.precoVendaExato > 0) {
+                simulatedGrossList.push(i.precoVendaExato / (i.qtd || 1));
+                totalSimulatedGross += i.precoVendaExato;
+            } else {
+                var itemRatio = (i.valorComLucro || 0) / totBaseForRatio;
+                var itemBaseTotal = (i.valorComLucro || 0) + (cLog * itemRatio);
+                var itemBaseUnit = itemBaseTotal / (i.qtd || 1);
+                var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+                if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+                
+                var unitGross = Math.round(bestPShp * 100) / 100;
+                simulatedGrossList.push(unitGross);
+                totalSimulatedGross += (unitGross * (i.qtd || 1));
+            }
+        });
+
+        var scale = valorBruto / (totalSimulatedGross || 1);
+        
+        items.forEach((i, idx) => {
+            var actualUnitGross = Math.round((simulatedGrossList[idx] * scale) * 100) / 100;
             
             var feeSUnit = 0;
-            if (itemGrossUnit <= 79.991) feeSUnit = (Math.round(itemGrossUnit * 0.20 * 100) / 100) + 4;
-            else if (itemGrossUnit <= 99.991) feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 16;
-            else if (itemGrossUnit <= 199.991) feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 20;
-            else feeSUnit = (Math.round(itemGrossUnit * 0.14 * 100) / 100) + 26;
-            feeShpTotal += (feeSUnit * q);
+            if (actualUnitGross <= 79.991) feeSUnit = (Math.round(actualUnitGross * 0.20 * 100) / 100) + 4;
+            else if (actualUnitGross <= 99.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 16;
+            else if (actualUnitGross <= 199.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 20;
+            else feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 26;
             
-            var fixMl = (itemGrossUnit >= 79.99) ? 0 : pegaValor('fixaMeli');
-            var feeMUnit = (Math.round(itemGrossUnit * txMl * 100) / 100) + fixMl;
-            feeMlTotal += (feeMUnit * q);
+            feeShpTotal += (feeSUnit * (i.qtd || 1));
+            
+            var fixMl = (actualUnitGross >= 79.99) ? 0 : pegaValor('fixaMeli');
+            var feeMUnit = (Math.round(actualUnitGross * txMl * 100) / 100) + fixMl;
+            feeMlTotal += (feeMUnit * (i.qtd || 1));
         });
     } else {
-        var avgBruto = valorBruto / qtdTotal;
+        var avgBruto = Math.round((valorBruto / qtdTotal) * 100) / 100;
         var feeShpUnit = 0;
         
         if (avgBruto <= 79.991) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
@@ -210,10 +230,17 @@ function adicionarAoCarrinho() {
     var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome", qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1; var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase, tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false, tempoItem = pegaValor('tempoH') * qtdPecas, pesoItem = pegaValor('pesoPeca') * qtdPecas, depCalc = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem, eneCalc = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem, precoMatCalc = pegaValor('precoFilamento'); if(precoMatCalc === 0) precoMatCalc = 120;
     var matTotalCalc = (precoMatCalc / 1000) * pesoItem, materiaisArray = [], t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim(); if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(pesoItem > 0) materiaisArray.push(nomeMat1 + ' (' + pesoItem + 'g)'); var extras = [];
     if (multiMatEnabled) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i = 2; i <= qtdEx + 1; i++) { var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE; var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120; matTotalCalc += (precoE / 1000) * pesoE; var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)'); extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
-    var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100), mInputCalc = pegaValor('margemInput'), vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100)), novoItem = { id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000), nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, tempo: tempoItem, peso: pesoItem, materiais: (materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado'), tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value, multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value, foto: pegaTexto('fotoUrlProjeto') };
+    var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100), mInputCalc = pegaValor('margemInput'), vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100));
+    
+    // MÁGICA: Se o usuário digitou o Valor Personalizado, a gente tranca ele para ESSE item no carrinho!
+    var canalSel = document.getElementById('canalVendaSelecionado');
+    var isPerso = canalSel && canalSel.value === 'Personalizado';
+    var valPerso = pegaValor('valorPersonalizado');
+    var precoExatoItem = (isPerso && valPerso > 0) ? valPerso : 0;
+    
+    var novoItem = { id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000), nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, precoVendaExato: precoExatoItem, tempo: tempoItem, peso: pesoItem, materiais: (materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado'), tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value, multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value, foto: pegaTexto('fotoUrlProjeto') };
     if (editandoCarrinhoId) { var idx = carrinho.findIndex(i => i.id === editandoCarrinhoId); if (idx > -1) carrinho[idx] = novoItem; editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; showToast("🛒 Item atualizado no Pedido!"); } else { carrinho.push(novoItem); showToast("🛒 Item adicionado ao Pedido!"); }
     resetarInputProjeto(); 
-    var canalSel = document.getElementById('canalVendaSelecionado');
     if (canalSel) canalSel.value = "Direta";
     var elPerso = document.getElementById('valorPersonalizado');
     if (elPerso) elPerso.value = '';
@@ -227,34 +254,64 @@ function adicionarAoCarrinho() {
 
 function cancelarEdicaoCarrinho() { editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; resetarInputProjeto(); calcular(); showToast("❌ Edição cancelada"); }
 function removerDoCarrinho(id) { carrinho = carrinho.filter(i => i.id !== id); renderCarrinho(); calcular(); }
-function editarItemCarrinho(id) { var item = carrinho.find(i => i.id === id); if(!item) return; preencherFormProjeto(item); editandoCarrinhoId = id; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; } if(btnCancel) btnCancel.style.display = "block"; showToast("✏️ Item carregado para edição!"); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function editarItemCarrinho(id) { 
+    var item = carrinho.find(i => i.id === id); if(!item) return; 
+    preencherFormProjeto(item); 
+    
+    // Se o item tinha preço travado, preenche de volta para o usuário ver!
+    if (item.precoVendaExato && item.precoVendaExato > 0) {
+        var elCanal = document.getElementById('canalVendaSelecionado');
+        if (elCanal) elCanal.value = 'Personalizado';
+        var elPerso = document.getElementById('valorPersonalizado');
+        if (elPerso) {
+            elPerso.value = formatarMoeda(item.precoVendaExato);
+            salvarDinamico('valorPersonalizado');
+        }
+        if (typeof mostrarValorPersonalizado === 'function') mostrarValorPersonalizado();
+    }
+    
+    editandoCarrinhoId = id; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; } if(btnCancel) btnCancel.style.display = "block"; showToast("✏️ Item carregado para edição!"); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+}
 
 function renderCarrinho() {
     var container = document.getElementById('carrinho_container'); var lista = document.getElementById('lista_itens_carrinho'); if(!container || !lista) return; if(carrinho.length === 0) { container.style.display = 'none'; return; } container.style.display = 'block'; lista.innerHTML = ''; var totCusto = 0, totValorComLucro = 0;
-    carrinho.forEach(item => { totCusto += item.custo; totValorComLucro += item.valorComLucro; var htmlFoto = item.foto ? `<div style="width:30px; height:30px; border-radius:4px; background-image:url('${item.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : ''; lista.innerHTML += `<div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border); display:flex; align-items:center;">${htmlFoto}<div style="flex:1;"><button onclick="editarItemCarrinho(${item.id})" style="position: absolute; right: 35px; top: 5px; background: none; border: none; color: var(--sky); font-size: 1rem; cursor: pointer;">✎</button><button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-size: 1rem; font-weight: bold; cursor: pointer;">×</button><div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 50px;">${item.nome}</div><div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | Venda Base: R$ ${formatarMoeda(item.valorComLucro)}</div></div></div>`; });
+    carrinho.forEach(item => { 
+        totCusto += item.custo; 
+        totValorComLucro += item.valorComLucro; 
+        var htmlFoto = item.foto ? `<div style="width:30px; height:30px; border-radius:4px; background-image:url('${item.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : ''; 
+        var txtVendaBase = item.precoVendaExato ? `Venda Fixada: R$ ${formatarMoeda(item.precoVendaExato)}` : `Venda Base: R$ ${formatarMoeda(item.valorComLucro)}`;
+        lista.innerHTML += `<div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border); display:flex; align-items:center;">${htmlFoto}<div style="flex:1;"><button onclick="editarItemCarrinho(${item.id})" style="position: absolute; right: 35px; top: 5px; background: none; border: none; color: var(--sky); font-size: 1rem; cursor: pointer;">✎</button><button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-size: 1rem; font-weight: bold; cursor: pointer;">×</button><div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 50px;">${item.nome}</div><div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(item.custo)} | ${txtVendaBase}</div></div></div>`; 
+    });
     
     var totalQtd = carrinho.reduce((a,b) => a + b.qtd, 0); if(totalQtd < 1) totalQtd = 1; 
-    var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual'); 
-    var totD = totValorComLucro + cLog + frete;
+    var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); 
+    var frete = pegaValor('valorFreteManual'); 
     
-    var totS = 0, totM = 0;
+    var totS = 0, totM = 0, totD = 0;
     var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
     
     carrinho.forEach(i => {
-        var q = i.qtd || 1;
-        var itemRatio = ((i.valorComLucro || 0) * q) / totBaseForRatio;
-        var itemBaseTotal = ((i.valorComLucro || 0) * q) + (cLog * itemRatio);
-        var itemBaseUnit = itemBaseTotal / q;
-        
-        var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-        if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-        totS += (Math.round(bestPShp * 100) / 100) * q; 
-        
-        var txMl = pegaValor('taxaMeli')/100;
-        var pAvgML_noFix = itemBaseUnit / (1 - txMl);
-        var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-        totM += (Math.round(bestPMeli * 100) / 100) * q; 
+        if (i.precoVendaExato && i.precoVendaExato > 0) {
+            totS += i.precoVendaExato;
+            totM += i.precoVendaExato;
+            totD += i.precoVendaExato;
+        } else {
+            var itemRatio = i.valorComLucro / totBaseForRatio;
+            var itemBaseTotal = i.valorComLucro + (cLog * itemRatio);
+            var itemBaseUnit = itemBaseTotal / (i.qtd || 1);
+            
+            var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+            if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+            totS += (Math.round(bestPShp * 100) / 100) * (i.qtd || 1);
+            
+            var txMl = pegaValor('taxaMeli')/100;
+            var pAvgML_noFix = itemBaseUnit / (1 - txMl);
+            var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
+            totM += (Math.round(bestPMeli * 100) / 100) * (i.qtd || 1);
+            totD += itemBaseTotal;
+        }
     });
+    totD += frete;
     
     document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); 
     document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD); 
@@ -315,8 +372,8 @@ function salvarNoCatalogo() {
                         h.peso = novoPesoUnit * qtdItem;
                         h.custo = ((h.tempo * custoHoraBase) + ((h.peso * precoFilamentoUnit) / 1000)) / taxaSucesso;
                         var freteLog = parseLocal(h.frete || 0) + parseLocal(h.logistica || 0), taxas = descontarTaxas(h.valorBruto, qtdItem, h.cartItems);
-                        if(h.canal === "Shopee") h.valorLiquido = taxas.shopee;
-                        else if(h.canal === "Meli") h.valorLiquido = taxas.meli;
+                        if(h.canal === "Shopee") h.valorLiquido = taxas.shopee - freteLog;
+                        else if(h.canal === "Meli") h.valorLiquido = taxas.meli - freteLog;
                         else h.valorLiquido = h.valorBruto;
                         if(h.valorLiquido < 0) h.valorLiquido = 0;
                     });
@@ -507,24 +564,30 @@ function calcular() {
     var vd = 0, custoProducaoTotal = 0, totS = 0, totM = 0;
     if (isCart) { 
         var totCartCusto = carrinho.reduce((a,b)=>a+b.custo, 0);
-        var totValorComLucro = carrinho.reduce((a,b)=>a+(b.valorComLucro || 0), 0); 
+        var totValorComLucro = carrinho.reduce((a,b)=>a+b.valorComLucro, 0); 
         custoProducaoTotal = totCartCusto; 
-        vd = totValorComLucro + cLog + frete; 
         
         var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
         carrinho.forEach(i => {
-            var q = i.qtd || 1;
-            var itemRatio = (i.valorComLucro || 0) / totBaseForRatio;
-            var itemBaseTotal = (i.valorComLucro || 0) + (cLog * itemRatio);
-            var itemBaseUnit = itemBaseTotal / q;
-            var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-            if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-            totS += (Math.round(bestPShp * 100) / 100) * q; 
-            var txMl = pegaValor('taxaMeli')/100;
-            var pAvgML_noFix = itemBaseUnit / (1 - txMl);
-            var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-            totM += (Math.round(bestPMeli * 100) / 100) * q; 
+            if (i.precoVendaExato && i.precoVendaExato > 0) {
+                totS += i.precoVendaExato;
+                totM += i.precoVendaExato;
+                vd += i.precoVendaExato;
+            } else {
+                var itemRatio = (i.valorComLucro || 0) / totBaseForRatio;
+                var itemBaseTotal = (i.valorComLucro || 0) + (cLog * itemRatio);
+                var itemBaseUnit = itemBaseTotal / (i.qtd || 1);
+                var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+                if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+                totS += (Math.round(bestPShp * 100) / 100) * (i.qtd || 1); 
+                var txMl = pegaValor('taxaMeli')/100;
+                var pAvgML_noFix = itemBaseUnit / (1 - txMl);
+                var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
+                totM += (Math.round(bestPMeli * 100) / 100) * (i.qtd || 1); 
+                vd += itemBaseTotal;
+            }
         });
+        vd += frete;
     } else { 
         custoProducaoTotal = custoProducao; 
         vd = valorComLucro + cLog + frete; 
@@ -992,38 +1055,11 @@ window.forcarRecalculoGeral = function() {
     var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'), cLogGlobal = emb + des, corrigidos = 0, baixadosEstoque = 0;
     
     historico.forEach(h => {
-        if (h.status === 'Orçamento' || h.status === 'Devolução') return;
-        h.logistica = cLogGlobal;
+        if (h.status === 'Orçamento' || h.status === 'Devolução' || h.vendaIsolada) return;
         
-        var isCart = h.cartItems && h.cartItems.length > 0;
+        h.logistica = cLogGlobal;
         var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda));
         var vFrete = parseLocal(h.frete || 0), qtd = h.totalQtd || 1;
-
-        if (isCart && !h.vendaIsolada && h.canal !== "Personalizado" && h.canal !== "Direta") {
-            var totValorComLucro = h.cartItems.reduce((a,b) => a + ((b.valorComLucro || 0) * (b.qtd || 1)), 0);
-            var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
-            var novoTotS = 0, novoTotM = 0;
-            
-            h.cartItems.forEach(i => {
-                var q = i.qtd || 1;
-                var itemRatio = ((i.valorComLucro || 0) * q) / totBaseForRatio;
-                var itemBaseTotal = ((i.valorComLucro || 0) * q) + (cLogGlobal * itemRatio);
-                var itemBaseUnit = itemBaseTotal / q;
-                
-                var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-                if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-                novoTotS += (Math.round(bestPShp * 100) / 100) * q;
-                
-                var txMl = pegaValor('taxaMeli') / 100;
-                var pAvgML_noFix = itemBaseUnit / (1 - txMl);
-                var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-                novoTotM += (Math.round(bestPMeli * 100) / 100) * q;
-            });
-
-            if (h.canal === "Shopee") vBruto = novoTotS;
-            if (h.canal === "Meli") vBruto = novoTotM;
-            h.valorBruto = vBruto; 
-        }
 
         if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).shopee - vFrete - h.logistica; }
         else if (h.canal === "Meli") { h.valorLiquido = descontarTaxas(vBruto, qtd, h.cartItems).meli - vFrete - h.logistica; }
