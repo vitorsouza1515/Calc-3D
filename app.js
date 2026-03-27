@@ -1073,3 +1073,52 @@ window.forcarRecalculoGeral = function() {
     syncNuvem(); renderHistorico(); renderEstoque(); 
     showToast("✅ " + corrigidos + " vendas recalculadas com sucesso!"); fecharModal('configModal');
 };
+window.restaurarApenasVendasAntigas = function(input) {
+    var file = input.files[0]; 
+    if (!file) return; 
+    
+    var reader = new FileReader();
+    reader.onload = function(e) { 
+        try { 
+            var dadosBackup = JSON.parse(e.target.result); 
+            var historicoBackup = dadosBackup.historico || []; 
+            
+            if (historicoBackup.length === 0) {
+                showToast("⚠️ O backup não contém histórico de vendas.", true);
+                return;
+            }
+
+            var corrigidos = 0;
+
+            // Para cada venda no Backup...
+            historicoBackup.forEach(vendaAntiga => {
+                // ...procura a mesma venda (pelo ID) no Histórico Atual
+                var idxAtual = historico.findIndex(h => h.id === vendaAntiga.id);
+                
+                if (idxAtual > -1) {
+                    // Se encontrou a venda no sistema atual, substitui ela 100% pela versão do backup!
+                    historico[idxAtual] = vendaAntiga;
+                    corrigidos++;
+                } else {
+                    // Se a venda do backup não existe no sistema atual (foi apagada sem querer), a gente traz ela de volta!
+                    historico.push(vendaAntiga);
+                    corrigidos++;
+                }
+            });
+            
+            // Ordena o histórico de volta por Data (os mais novos primeiro)
+            historico.sort((a, b) => b.id - a.id);
+
+            syncNuvem(); 
+            renderHistorico(); 
+            calcular();
+            
+            showToast("✅ " + corrigidos + " Vendas restauradas com sucesso!"); 
+        } catch (error) { 
+            showToast("❌ Erro ao ler o ficheiro de backup", true); 
+            console.error(error); 
+        } 
+    };
+    reader.readAsText(file); 
+    input.value = ""; 
+};
