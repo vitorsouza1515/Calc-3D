@@ -1085,12 +1085,11 @@ window.forcarRecalculoGeral = function() {
 // ==========================================
 
 window.sincronizarTudoComCatalogo = function() {
-    if(!confirm("⚠️ ATENÇÃO: Isso vai varrer todo o seu histórico e atualizar o PESO, TEMPO, MATERIAIS e CUSTOS de TODAS as vendas baseando-se nos valores exatos atuais do Catálogo.\n\nPedidos manuais com 🔒 não serão afetados.\n\nDeseja continuar?")) return;
+    if(!confirm("⚠️ ATENÇÃO: Isso vai varrer todo o seu histórico e atualizar o PESO, TEMPO, MATERIAIS e CUSTO DE FABRICAÇÃO de TODAS as vendas com base no Catálogo atual.\n\nFique tranquilo: O VALOR DA VENDA (Bruto/Líquido) que você já recebeu ficará 100% INTACTO. Só o seu lucro vai reajustar para refletir o custo real.\n\nDeseja continuar?")) return;
     
     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh');
     var custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh);
     var taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100;
-    var cLogGlobal = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento');
     var atualizadas = 0;
 
     historico.forEach(h => {
@@ -1121,8 +1120,7 @@ window.sincronizarTudoComCatalogo = function() {
                     }
                     var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso;
                     ci.tempo = tempoUnit * qtd; ci.peso = pesoUnit * qtd; ci.custo = cUnit * qtd; ci.materiais = matArr.join(' + ');
-                    var margem = parseLocal(ci.margemLucro || pegaValor('margemInput') || 80);
-                    ci.valorComLucro = ci.custo + (ci.custo * (margem / 100));
+                    // AQUI ESTAVA O ERRO: O sistema antes reescrevia o valorComLucro (Preço de venda). Removido!
                 }
                 novoCustoTotalCart += parseLocal(ci.custo); novoPesoTotalCart += parseLocal(ci.peso); novoTempoTotalCart += parseLocal(ci.tempo);
                 if(ci.materiais && ci.materiais !== "Não informado") novosMateriaisCart.push(ci.materiais);
@@ -1154,36 +1152,8 @@ window.sincronizarTudoComCatalogo = function() {
         }
         
         if (alterou) {
-            h.logistica = cLogGlobal;
-            var vBruto = parseLocal(h.valorBruto !== undefined ? h.valorBruto : (h.valorLiquido !== undefined ? h.valorLiquido : h.valorVenda));
-            var vFrete = parseLocal(h.frete || 0), qtdH = parseLocal(h.totalQtd || 1);
-
-            if (h.cartItems && h.cartItems.length > 0 && h.canal !== "Personalizado" && h.canal !== "Direta") {
-                var totValorComLucro = h.cartItems.reduce((a,b) => a + parseLocal(b.valorComLucro || 0), 0);
-                var totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
-                var novoTotS = 0, novoTotM = 0;
-                h.cartItems.forEach(i => {
-                    var iQtd = parseLocal(i.qtd || 1), iPrecoExato = parseLocal(i.precoVendaExato || 0);
-                    if (iPrecoExato > 0) { novoTotS += iPrecoExato; novoTotM += iPrecoExato; } 
-                    else {
-                        var itemRatio = parseLocal(i.valorComLucro || 0) / totBaseForRatio, itemBaseTotal = parseLocal(i.valorComLucro || 0) + (cLogGlobal * itemRatio), itemBaseUnit = itemBaseTotal / iQtd;
-                        var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-                        if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-                        novoTotS += (Math.round(bestPShp * 100) / 100) * iQtd;
-                        var txMl = pegaValor('taxaMeli') / 100, pAvgML_noFix = itemBaseUnit / (1 - txMl);
-                        var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
-                        novoTotM += (Math.round(bestPMeli * 100) / 100) * iQtd;
-                    }
-                });
-                if (h.canal === "Shopee") vBruto = novoTotS;
-                if (h.canal === "Meli") vBruto = novoTotM;
-                h.valorBruto = vBruto; 
-            }
-
-            if (h.canal === "Shopee") { h.valorLiquido = descontarTaxas(vBruto, qtdH, h.cartItems).shopee - vFrete - h.logistica; }
-            else if (h.canal === "Meli") { h.valorLiquido = descontarTaxas(vBruto, qtdH, h.cartItems).meli - vFrete - h.logistica; }
-            else { h.valorLiquido = vBruto; }
-            if (h.valorLiquido < 0) h.valorLiquido = 0;
+            // AQUI TAMBÉM TINHA ERRO: O sistema rodava a função "descontarTaxas" e alterava o h.valorLiquido e Bruto.
+            // Agora ele SÓ conta a atualização, deixando o valor da sua venda original intacto!
             atualizadas++;
         }
     });
