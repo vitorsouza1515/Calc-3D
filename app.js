@@ -64,6 +64,50 @@ window.handleUploadCat = function(input) {
 window.removerFotoCat = function() { var f = document.getElementById('fotoUrlCat'); if(f) f.value = ""; var p = document.getElementById('previewFotoCat'); if(p) { p.style.display = "none"; p.style.backgroundImage = "none"; } var b = document.getElementById('btnRemoverFotoCat'); if(b) b.style.display = "none"; };
 
 // ==========================================
+// 4. INTEGRAÇÃO IMGBB (UPLOAD DE FOTOS)
+// ==========================================
+
+// Função que anexa foto direto no projeto (Tela Principal)
+window.handleUploadMain = function(input) {
+    var file = input.files[0]; if (!file) return; var formData = new FormData(); formData.append("image", file);
+    document.getElementById('loading-screen').style.display = 'flex'; var h2 = document.getElementById('loading-screen').querySelector('h2'), oldText = h2.textContent; h2.textContent = "A anexar foto...";
+    fetch("https://api.imgbb.com/1/upload?key=50b2518403427e60b75a8074dc495b15", { method: "POST", body: formData }).then(r => r.json()).then(data => {
+        document.getElementById('loading-screen').style.display = 'none'; h2.textContent = oldText;
+        if (data.success) { 
+            var url = data.data.display_url; 
+            document.getElementById('fotoUrlProjeto').value = url; 
+            salvarDinamico('fotoUrlProjeto');
+            var prev = document.getElementById('previewFotoMain'); 
+            prev.style.backgroundImage = `url('${url}')`; 
+            prev.style.display = "block"; 
+            showToast("📸 Foto anexada com sucesso!"); 
+        } else { showToast("❌ Erro no upload", true); } input.value = "";
+    }).catch(() => { document.getElementById('loading-screen').style.display = 'none'; h2.textContent = oldText; showToast("❌ Erro de rede", true); input.value = ""; });
+};
+
+// Clica na foto para remover
+window.removerFotoMain = function() {
+    if(confirm("Deseja remover esta foto do projeto?")) {
+        document.getElementById('fotoUrlProjeto').value = "";
+        localStorage.removeItem('3d4y_dark_fotoUrlProjeto');
+        document.getElementById('previewFotoMain').style.display = "none";
+        document.getElementById('previewFotoMain').style.backgroundImage = "none";
+    }
+};
+
+window.uploadingCatalogId = null;
+window.handleUploadCat = function(input) {
+    var file = input.files[0]; if (!file) return; var formData = new FormData(); formData.append("image", file);
+    document.getElementById('loading-screen').style.display = 'flex'; var h2 = document.getElementById('loading-screen').querySelector('h2'), oldText = h2.textContent; h2.textContent = "A anexar foto...";
+    fetch("https://api.imgbb.com/1/upload?key=50b2518403427e60b75a8074dc495b15", { method: "POST", body: formData }).then(r => r.json()).then(data => {
+        document.getElementById('loading-screen').style.display = 'none'; h2.textContent = oldText;
+        if (data.success) { var url = data.data.display_url; document.getElementById('fotoUrlCat').value = url; var prev = document.getElementById('previewFotoCat'); prev.style.backgroundImage = `url('${url}')`; prev.style.display = "block"; document.getElementById('btnRemoverFotoCat').style.display = "block"; showToast("📸 Foto pronta para salvar!"); } else { showToast("❌ Erro no upload", true); } input.value = "";
+    }).catch(() => { document.getElementById('loading-screen').style.display = 'none'; h2.textContent = oldText; showToast("❌ Erro de rede", true); input.value = ""; });
+};
+
+window.removerFotoCat = function() { var f = document.getElementById('fotoUrlCat'); if(f) f.value = ""; var p = document.getElementById('previewFotoCat'); if(p) { p.style.display = "none"; p.style.backgroundImage = "none"; } var b = document.getElementById('btnRemoverFotoCat'); if(b) b.style.display = "none"; };
+
+// ==========================================
 // 5. FUNÇÕES UTILITÁRIAS E SINCRONIZAÇÃO
 // ==========================================
 
