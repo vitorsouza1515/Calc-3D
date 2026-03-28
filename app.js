@@ -863,20 +863,26 @@ function editarItemHistorico(id) {
 }
 
 function mudarStatus(id, novoStatus) { 
-    var index = historico.findIndex(h => h.id === id); 
-    if (index > -1) { 
-        var h = historico[index];
-        h.status = novoStatus; 
-        
-        if ((novoStatus === 'Finalizado' || novoStatus === 'Enviado / Entregue') && !h.estoqueBaixado) {
-            if (confirm("Deseja dar baixa dos materiais gastos nesta peça (" + formatarMoeda(h.peso) + "g) no Estoque?")) {
-                window.darBaixaEstoqueVenda(h);
-                h.estoqueBaixado = true;
+    // ⏱️ A MAGIA: Espera 200ms para o telemóvel fechar a gaveta de opções antes de dar o "Confirm"
+    setTimeout(function() {
+        var index = historico.findIndex(h => h.id === id); 
+        if (index > -1) { 
+            var h = historico[index];
+            h.status = novoStatus; 
+            
+            if ((novoStatus === 'Finalizado' || novoStatus === 'Enviado / Entregue') && !h.estoqueBaixado) {
+                // Como esperamos 200ms, o navegador já não vai bugar ou congelar a tela aqui!
+                if (confirm("Deseja dar baixa dos materiais gastos nesta peça (" + formatarMoeda(h.peso) + "g) no Estoque?")) {
+                    window.darBaixaEstoqueVenda(h);
+                    h.estoqueBaixado = true;
+                }
             }
-        }
-        
-        syncNuvem(); renderHistorico(); 
-    } 
+            
+            syncNuvem(); 
+            renderHistorico(); 
+            calcular();
+        } 
+    }, 200); 
 }
 
 window.registrarFalha = function(id) {
