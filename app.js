@@ -866,9 +866,6 @@ function mudarStatus(id, novoStatus) {
     var index = historico.findIndex(h => h.id === id); 
     if (index > -1) { 
         var h = historico[index];
-        
-        // Se estava como Devolução e agora vai para Enviado, não precisa de re-descontar o estoque, pois já tinha sido descontado antes da devolução.
-        // Apenas atualizamos o status.
         h.status = novoStatus; 
         
         if ((novoStatus === 'Finalizado' || novoStatus === 'Enviado / Entregue') && !h.estoqueBaixado) {
@@ -880,9 +877,9 @@ function mudarStatus(id, novoStatus) {
         
         syncNuvem(); 
         
-        // Força a UI a atualizar completamente para remover bordas vermelhas e classes CSS antigas!
+        // ⏱️ ATRASO MÁGICO: Deixa o clique terminar em paz antes de puxar o tapete (redesenhar o HTML)
         setTimeout(() => {
-            renderHistorico();
+            renderHistorico(); 
             calcular();
         }, 50);
     } 
