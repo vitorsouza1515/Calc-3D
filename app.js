@@ -877,7 +877,7 @@ function mudarStatus(id, novoStatus) {
         
         syncNuvem(); 
         
-        // ⏱️ ATRASO MÁGICO: Deixa o clique terminar em paz antes de puxar o tapete (redesenhar o HTML)
+        // ⏱️ ATRASO MÁGICO RESTAURADO: Deixa a caixa de confirmação fechar e o HTML respirar antes de puxar o tapete!
         setTimeout(() => {
             renderHistorico(); 
             calcular();
@@ -929,19 +929,6 @@ function renderHistorico() {
     
     var historicoFiltradoDias = historico.filter(h => isWithinDays(h.data || new Date().toLocaleDateString('pt-BR'), window.filtroDiasAtual));
     
-    var itensFiltrados = historicoFiltradoDias.filter(function(item) { 
-        var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; 
-        var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; 
-        var passaBusca = true; 
-        if (termoBusca !== '') { 
-            var nomeC = (item.cliente || '').toLowerCase(), nomeP = (item.nome || '').toLowerCase(), idP = (item.idPedido || '').toLowerCase(), sysId = (item.id || '').toString().toLowerCase(); 
-            if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca) && !idP.includes(termoBusca) && !sysId.includes(termoBusca)) { passaBusca = false; } 
-        } 
-        return passaStatus && passaBusca; 
-    });
-    
-    counts['Todos'] = itensFiltrados.length;
-    
     historicoFiltradoDias.forEach(function(item) {
         var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; 
         
@@ -951,7 +938,10 @@ function renderHistorico() {
             if (!nC.includes(termoBusca) && !nP.includes(termoBusca) && !iPd.includes(termoBusca) && !sId.includes(termoBusca)) matchBusca = false; 
         }
         
-        if(matchBusca) counts[st] = (counts[st] || 0) + 1;
+        if(matchBusca) {
+            counts[st] = (counts[st] || 0) + 1;
+            counts['Todos']++; // Conta tudo corretamente
+        }
         
         if (st !== 'Orçamento' && st !== 'Devolução' && matchBusca) {
             var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem;
@@ -972,6 +962,17 @@ function renderHistorico() {
     }
 
     if (filtroDiv) { filtroDiv.innerHTML = `<button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Devolução' ? 'active' : ''}" onclick="mudarFiltro('Devolução')">❌ Devol. (${counts['Devolução']})</button> <select onchange="window.mudarFiltroDias(this.value)" style="margin-left:10px; padding:6px; border-radius:6px; background:#1e293b; color:var(--sky); border:1px solid var(--border); font-weight:bold; cursor:pointer; outline:none;"><option value="Total" ${window.filtroDiasAtual === 'Total' ? 'selected' : ''}>📅 Período: Total</option><option value="30" ${window.filtroDiasAtual === '30' ? 'selected' : ''}>📅 Últimos 30 Dias</option><option value="60" ${window.filtroDiasAtual === '60' ? 'selected' : ''}>📅 Últimos 60 Dias</option><option value="90" ${window.filtroDiasAtual === '90' ? 'selected' : ''}>📅 Últimos 90 Dias</option></select>`; }
+
+    var itensFiltrados = historicoFiltradoDias.filter(function(item) { 
+        var st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue'; 
+        var passaStatus = window.filtroStatusAtual === 'Todos' || st === window.filtroStatusAtual; 
+        var passaBusca = true; 
+        if (termoBusca !== '') { 
+            var nomeC = (item.cliente || '').toLowerCase(), nomeP = (item.nome || '').toLowerCase(), idP = (item.idPedido || '').toLowerCase(), sysId = (item.id || '').toString().toLowerCase(); 
+            if (!nomeC.includes(termoBusca) && !nomeP.includes(termoBusca) && !idP.includes(termoBusca) && !sysId.includes(termoBusca)) { passaBusca = false; } 
+        } 
+        return passaStatus && passaBusca; 
+    });
 
     var isFila = window.filtroStatusAtual === 'Na Fila'; if (isFila) { itensFiltrados.sort((a, b) => { return (a.posicaoFila || a.id) - (b.posicaoFila || b.id); }); }
     lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado no período</p>' : '';
