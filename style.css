@@ -542,7 +542,6 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
     box-shadow: 0 0 10px rgba(14, 165, 233, .2)
 }
 
-/* AJUSTE: Números do histórico em 0.90rem */
 .history-list {
     display: flex;
     flex-direction: column;
@@ -567,11 +566,12 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
 
 .history-item h4 { font-size: .8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2 }
 
+/* AJUSTE: Valores numéricos retornando para um tamanho mais equilibrado */
 .history-item .hist-vals { 
     display: grid; 
     grid-template-columns: 1fr 1fr; 
     gap: 4px; 
-    font-size: 0.90rem; 
+    font-size: 0.80rem; 
     color: var(--text-muted) 
 }
 
