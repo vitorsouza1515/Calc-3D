@@ -542,7 +542,7 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
     box-shadow: 0 0 10px rgba(14, 165, 233, .2)
 }
 
-/* O AJUSTE FINAL AQUI: */
+/* AJUSTE: Números do histórico maiores para facilitar leitura */
 .history-list {
     display: flex;
     flex-direction: column;
@@ -551,7 +551,7 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
     max-width: 100%;
     padding-right: 5px;
     min-height: 250px;
-    max-height: 85vh; /* Aumentei de 55 para 65 */
+    max-height: 85vh; 
 }
 
 .history-item {
@@ -566,7 +566,16 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
 }
 
 .history-item h4 { font-size: .8rem; color: var(--purple); margin-bottom: 4px; line-height: 1.2 }
-.history-item .hist-vals { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: .65rem; color: var(--text-muted) }
+
+/* Aumento do tamanho base para os números */
+.history-item .hist-vals { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 4px; 
+    font-size: .85rem; 
+    color: var(--text-muted) 
+}
+
 .history-item .hist-vals b { color: var(--text-main) }
 
 .status-select {
