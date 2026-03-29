@@ -1011,19 +1011,24 @@ function renderHistorico() {
             htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
         
+// ===============================================
+        // MÁGICA DO ESPAÇAMENTO MOBILE (BOTÕES ALINHADOS)
         // ===============================================
-        // MÁGICA DO ESPAÇAMENTO MOBILE (BOTÕES)
-        // ===============================================
+        
+        // Botões normais (Refugo, Editar, Apagar)
         var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
         var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
         var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
-        var botoesAcao = `<div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${btnFalha}${btnEditar}${btnExcluir}</div>`;
         
-        // Setas movidas para baixo do título!
-        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1.1rem; padding:4px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
-        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1.1rem; padding:4px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
-        var areaFilaBtns = isFila ? `<div style="display:flex; gap:6px;">${btnSubir}${btnDescer}</div>` : '';
+        // Se estiver "Na Fila", criamos os botões de subir e descer MENORES e LADO A LADO na mesma caixa!
+        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="color:var(--sky); background:none; border:none; font-size:1rem; cursor:pointer; padding:0;" title="Subir na Fila">▲</button>`;
+        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="color:var(--orange); background:none; border:none; font-size:1rem; cursor:pointer; padding:0;" title="Descer na Fila">▼</button>`;
+        
+        var filaBtnsHtml = isFila ? `<div style="display:flex; flex-direction:column; gap:2px; border-right:1px dashed rgba(255,255,255,0.1); padding-right:8px; margin-right:8px;">${btnSubir}${btnDescer}</div>` : '';
 
+        // Caixa que agrupa TUDO na direita
+        var botoesAcao = `<div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${filaBtnsHtml}${btnFalha}${btnEditar}${btnExcluir}</div>`;
+        
         var areaStatusFila = `<div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <select class="status-select ${colorClass}" style="flex: 1; min-width: 0;" onchange="mudarStatus(${item.id}, this.value)">
                 <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
@@ -1033,7 +1038,6 @@ function renderHistorico() {
                 <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
                 <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
             </select>
-            ${areaFilaBtns}
         </div>`;
 
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente}">
