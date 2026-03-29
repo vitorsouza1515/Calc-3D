@@ -252,7 +252,7 @@ function resetarInputProjeto() {
 function preencherFormProjeto(prod) {
     var match = prod.nome.match(/^(\d+)x\s(.*)/), qtd = match ? parseInt(match[1]) : (prod.qtd || 1), baseNome = match ? match[2] : prod.nome; document.getElementById('nomeProjeto').value = baseNome; document.getElementById('qtdPecasProjeto').value = qtd; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome.toLowerCase().trim()), selCat = document.getElementById('sel_catalogo'); if(matchCat) { if(selCat) selCat.value = matchCat.id.toString(); } else { if(selCat) selCat.value = ""; }
     var p_tipo1 = prod.tipo1 || (matchCat ? matchCat.tipo1 : ""), p_cor1 = prod.cor1 || (matchCat ? matchCat.cor1 : ""), p_marca1 = prod.marca1 || (matchCat ? matchCat.marca1 : ""), p_preco1 = prod.preco1 || (matchCat ? matchCat.preco1 : "120,00"), p_multi = prod.multi !== undefined ? prod.multi : (matchCat ? matchCat.multi : false), p_qtdCores = prod.qtdCores || (matchCat ? matchCat.qtdCores : "1"), p_extras = prod.extras || (matchCat ? matchCat.extras : []);
-    document.getElementById('tempoH').value = prod.tempo1 || (prod.tempo ? formatarMoeda((prod.tempo) / qtd) : (matchCat ? matchCat.tempo : "")); document.getElementById('pesoPeca').value = prod.peso1 || (prod.tempo ? formatarMoeda((prod.peso) / qtd) : (matchCat ? matchCat.peso1 : "")); if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso; if (prod.margemLucro) { document.getElementById('margemInput').value = prod.margemLucro; document.getElementById('margemSlider').value = prod.margemLucro; updateSliderProgress(document.getElementById('margemSlider')); }
+    document.getElementById('tempoH').value = prod.tempo1 || (prod.tempo ? formatarMoeda((prod.tempo) / qtd) : (matchCat ? matchCat.tempo : "")); document.getElementById('pesoPeca').value = prod.peso1 || (prod.peso ? formatarMoeda((prod.peso) / qtd) : (matchCat ? matchCat.peso1 : "")); if (prod.taxaSucesso) document.getElementById('taxaSucesso').value = prod.taxaSucesso; if (prod.margemLucro) { document.getElementById('margemInput').value = prod.margemLucro; document.getElementById('margemSlider').value = prod.margemLucro; updateSliderProgress(document.getElementById('margemSlider')); }
     document.getElementById('tipoFilamento1').value = p_tipo1; document.getElementById('corFilamento1').value = p_cor1; document.getElementById('marcaFilamento1').value = p_marca1; document.getElementById('precoFilamento').value = p_preco1; var match1 = null; if(p_tipo1) { match1 = estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1 && e.marca === p_marca1) || estoque.find(e => e.tipo === p_tipo1 && e.cor === p_cor1); } var sel1 = document.getElementById('sel_est_1'); if(match1) { if(sel1) sel1.value = match1.id.toString(); document.getElementById('marcaFilamento1').value = match1.marca; document.getElementById('precoFilamento').value = match1.preco; } else { if(sel1) sel1.value = ""; } document.getElementById('detalhes_1').style.display = (p_tipo1) ? 'block' : 'none';
     var fotoUrl = prod.foto || (matchCat ? matchCat.foto : ""); document.getElementById('fotoUrlProjeto').value = fotoUrl; salvarDinamico('fotoUrlProjeto'); var preview = document.getElementById('previewFotoMain'); if (fotoUrl) { preview.style.backgroundImage = `url('${fotoUrl}')`; preview.style.display = "block"; } else { preview.style.display = "none"; }
     
@@ -532,7 +532,7 @@ function salvarDespesa() {
     if (editDespesaId) { 
         var idx = despesas.findIndex(d => d.id === editDespesaId); 
         if(idx > -1) { despesas[idx].qtd = qtd; despesas[idx].nome = nome; despesas[idx].valor = parseLocal(val); despesas[idx].data = dataInput; } 
-        editDespesaId = null; document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_despesa').style.display = "none"; showToast("💸 Despesa Atualizada!"); 
+        editDespesaId = null; document.getElementById('btn_salvar_despesa').textContent = "➕ Adicionar"; document.getElementById('btn_cancelar_estoque').style.display = "none"; showToast("💸 Despesa Atualizada!"); 
     } else { 
         despesas.unshift({ id: Date.now(), data: dataInput, qtd: qtd, nome: nome, valor: parseLocal(val) }); showToast("💸 Despesa Registrada!"); 
     } 
@@ -648,9 +648,6 @@ function calcular() {
         totM = (Math.round(pAvgML * 100) / 100) * totalQtd;
     }
     
-    // ========================================================
-    // INJEÇÃO: SUBSTITUI O QUADRO GIGANTE SE FOR PERSONALIZADO
-    // ========================================================
     var elCanalSel = document.getElementById('canalVendaSelecionado');
     if (elCanalSel && elCanalSel.value === 'Personalizado') {
         var vP = pegaValor('valorPersonalizado');
@@ -661,7 +658,6 @@ function calcular() {
             else vd = vP;
         }
     }
-    // ========================================================
     
     var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd); 
     var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS); 
@@ -1049,7 +1045,7 @@ function renderHistorico() {
             </div>
         </div>`;
 
-        // AJUSTE: Valores em 0.90rem e Lucro em 1.0rem
+        // AJUSTE FINAL: Valores em 0.80rem e Lucro em 0.85rem
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente} padding: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 2px;">
                 ${htmlFoto}
@@ -1059,12 +1055,12 @@ function renderHistorico() {
                 </div>
             </div>
             ${barraAcoes}
-            <div class="hist-vals" style="margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 0.90rem;">
+            <div class="hist-vals" style="margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 0.80rem;">
                 <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                 <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
                 <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
-                <span style="grid-column: span 2; color:#10b981; font-size:1.0rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
-                <span style="grid-column: span 2; font-size: 0.7rem; opacity: 0.5; margin-top: 2px;">Data: ${item.data}</span>
+                <span style="grid-column: span 2; color:#10b981; font-size:0.85rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5; margin-top: 2px;">Data: ${item.data}</span>
             </div>
         </div>`;
     });
