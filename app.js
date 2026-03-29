@@ -988,13 +988,72 @@ function renderHistorico() {
         var checkEstoque = item.estoqueBaixado ? `<span style="font-size:0.55rem; color:#10b981; margin-left:5px;" title="Estoque Descontado">📉 OK</span>` : '';
         var lockIcon = item.vendaIsolada ? `<span style="font-size:0.65rem; margin-left:5px;" title="Venda Protegida: Alterações no catálogo não afetam este pedido">🔒</span>` : '';
         
-        var fotoParaMostrar = item.foto;
-        if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
-        var htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
+        // ===============================================
+        // MÁGICA DAS FOTOS DUPLAS (COMBOS DO CARRINHO)
+        // ===============================================
+        var htmlFoto = '';
+        if (item.cartItems && item.cartItems.length > 1) {
+            var fotosValidas = item.cartItems.map(i => i.foto).filter(f => f && f.trim() !== '');
+            if (fotosValidas.length > 0) {
+                var gridCols = fotosValidas.length > 1 ? '1fr 1fr' : '1fr';
+                var gridRows = fotosValidas.length > 2 ? '1fr 1fr' : '1fr';
+                htmlFoto = `<div style="width:45px; height:45px; border-radius:6px; margin-right:10px; flex-shrink:0; display:grid; grid-template-columns:${gridCols}; grid-template-rows:${gridRows}; gap:2px; overflow:hidden; border:1px solid var(--border);">`;
+                fotosValidas.slice(0, 4).forEach(f => {
+                    htmlFoto += `<div style="background-image:url('${f}'); background-size:cover; background-position:center; width:100%; height:100%;"></div>`;
+                });
+                htmlFoto += `</div>`;
+            }
+        }
         
-        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;margin-left:5px;" title="Registrar Refugo / Perda">🗑️</button>`;
-        var botoesHTML = `${isFila ? `<button onclick="moverFila(${item.id}, -1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Subir na Fila">⬆️</button><button onclick="moverFila(${item.id}, 1)" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Descer na Fila">⬇️</button>` : ''}${btnFalha}<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;margin-left:5px;" title="Editar">✎</button><button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;margin-left:5px;" title="Excluir">×</button>`;
-        lista.innerHTML += `<div class="history-item" style="${bordaUrgente}"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">${htmlFoto}<div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4><div style="margin-top: 6px;"><select class="status-select ${colorClass}" onchange="mudarStatus(${item.id}, this.value)"><option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option><option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option><option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option><option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option><option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option><option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option></select></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${botoesHTML}</div></div>${crmHtml}<div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;"><span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span><span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span><span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span><span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span><span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span></div></div>`;
+        if (!htmlFoto) {
+            var fotoParaMostrar = item.foto;
+            if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
+            htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
+        }
+        
+        // ===============================================
+        // MÁGICA DO ESPAÇAMENTO MOBILE (BOTÕES)
+        // ===============================================
+        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
+        var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
+        var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
+        var botoesAcao = `<div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${btnFalha}${btnEditar}${btnExcluir}</div>`;
+        
+        // Setas movidas para baixo do título!
+        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1.1rem; padding:4px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
+        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1.1rem; padding:4px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
+        var areaFilaBtns = isFila ? `<div style="display:flex; gap:6px;">${btnSubir}${btnDescer}</div>` : '';
+
+        var areaStatusFila = `<div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <select class="status-select ${colorClass}" style="flex: 1; min-width: 0;" onchange="mudarStatus(${item.id}, this.value)">
+                <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
+                <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
+                <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
+                <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
+                <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
+                <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
+            </select>
+            ${areaFilaBtns}
+        </div>`;
+
+        lista.innerHTML += `<div class="history-item" style="${bordaUrgente}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+                ${htmlFoto}
+                <div style="flex: 1; min-width: 0;">
+                    <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>
+                    ${areaStatusFila}
+                </div>
+                ${botoesAcao}
+            </div>
+            ${crmHtml}
+            <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
+                <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
+                <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
+                <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
+                <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
+            </div>
+        </div>`;
     });
     
     document.getElementById('tot_qtd').textContent = qtdValida; document.getElementById('tot_custo').textContent = formatarMoeda(somaCusto); document.getElementById('tot_logistica').textContent = formatarMoeda(somaLogistica); document.getElementById('tot_faturamento_bruto').textContent = formatarMoeda(somaBruto); document.getElementById('tot_faturamento').textContent = formatarMoeda(somaLiquido); document.getElementById('tot_lucro').textContent = formatarMoeda(somaLucro); 
