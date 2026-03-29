@@ -269,7 +269,6 @@ function preencherFormProjeto(prod) {
     } 
     ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
 }
-
 // ==========================================
 // 9. CARRINHO DE COMPRAS
 // ==========================================
@@ -506,11 +505,9 @@ function atualizarDropdownsEstoque() { var estoqueOrdenado = [...estoque].sort((
 function puxarDoEstoque(indexStr) { var sel = document.getElementById('sel_est_' + indexStr), det = document.getElementById('detalhes_' + indexStr); if (!sel || !sel.value) { if(det) det.style.display = 'none'; return; } var item = estoque.find(e => e.id.toString() === sel.value); if (!item) return; var idx = parseInt(indexStr), sTipo = idx === 1 ? 'tipoFilamento1' : 'tipoFilamento'+idx, sCor = idx === 1 ? 'corFilamento1' : 'corFilamento'+idx, sMarca = idx === 1 ? 'marcaFilamento1' : 'marcaFilamento'+idx, sPreco = idx === 1 ? 'precoFilamento' : 'precoFilamento'+idx; var elT = document.getElementById(sTipo); if(elT) { elT.value = item.tipo; salvarDinamico(sTipo); } var elC = document.getElementById(sCor); if(elC) { elC.value = item.cor; salvarDinamico(sCor); } var elM = document.getElementById(sMarca); if(elM) { elM.value = item.marca; salvarDinamico(sMarca); } var elP = document.getElementById(sPreco); if(elP) { elP.value = item.preco; aplicarMascara(elP); salvarDinamico(sPreco); } if(det) det.style.display = 'block'; var campoPeso = idx === 1 ? document.getElementById('pesoPeca') : document.getElementById('pesoPeca' + idx); if(campoPeso) { campoPeso.focus(); if(campoPeso.value === "0" || campoPeso.value === "0,00" || campoPeso.value === "") { campoPeso.select(); } } calcular(); showToast("📦 " + item.tipo + " Carregado!"); }
 
 function renderCoresExtras() { var qtdInput = document.getElementById('qtdCoresExtras'); if (!qtdInput) return; var qtd = parseInt(pegaValor('qtdCoresExtras')) || 1, container = document.getElementById('container_cores_extras'); if (!container) return; container.innerHTML = ''; for(var i = 2; i <= qtd + 1; i++) { var sTipo = localStorage.getItem('3d4y_dark_tipoFilamento' + i) || '', sCor = localStorage.getItem('3d4y_dark_corFilamento' + i) || '', sMarca = localStorage.getItem('3d4y_dark_marcaFilamento' + i) || '', sPreco = localStorage.getItem('3d4y_dark_precoFilamento' + i) || '', sPeso = localStorage.getItem('3d4y_dark_pesoPeca' + i) || ''; if (sPreco.indexOf('.') !== -1 && sPreco.indexOf(',') === -1) sPreco = sPreco.replace(/\./g, ','); if (sPeso.indexOf('.') !== -1 && sPeso.indexOf(',') === -1) sPeso = sPeso.replace(/\./g, ','); container.innerHTML += `<div class="filament-box" style="margin-top:10px;"><span class="filament-box-title">Filamento ${i}</span><div class="input-group" style="margin-bottom: 8px;"><select id="sel_est_${i}" style="border-color: var(--success); color: var(--success); background: rgba(16, 185, 129, 0.05);" onchange="puxarDoEstoque('${i}')"><option value="">-- Puxar material do Estoque --</option></select></div><div id="detalhes_${i}" class="detalhes-material" style="${sTipo ? 'display:block' : ''}"><div class="grid-3" style="margin-bottom: 8px;"><div class="input-group"><label>Tipo</label><input type="text" id="tipoFilamento${i}" value="${sTipo}" placeholder="Ex: PETG" readonly></div><div class="input-group"><label>Cor</label><input type="text" id="corFilamento${i}" value="${sCor}" placeholder="Ex: Branco" readonly></div><div class="input-group"><label>Marca</label><input type="text" id="marcaFilamento${i}" value="${sMarca}" placeholder="Ex: 3DLab" readonly></div></div><div class="input-group"><label>Preço Pago (R$/kg)</label><input type="text" inputmode="decimal" id="precoFilamento${i}" value="${sPreco}" readonly></div></div><div class="input-group" style="margin-top: 10px;"><label style="color: var(--sky); font-weight: 800;">Peso da Peça (g)</label><input type="text" inputmode="decimal" id="pesoPeca${i}" value="${sPeso}" class="peso-destaque" placeholder="0" oninput="aplicarMascara(this); salvarDinamico('pesoPeca${i}'); calcular()"></div></div>`; aplicarMascara(document.getElementById('pesoPeca'+i)); } atualizarDropdownsEstoque(); calcular(); }
-
 // ==========================================
 // 12. DESPESAS E SIMULADOR
 // ==========================================
-
 function mostrarValorPersonalizado() { 
     var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); 
     if (seletor && divPersonalizado) { 
@@ -521,7 +518,6 @@ function mostrarValorPersonalizado() {
         }
     } 
 }
-
 function calcularSimulador() { var vVenda = pegaValor('simuladorVenda'), elS = document.getElementById('sim_shopee'), elM = document.getElementById('sim_meli'); if (vVenda <= 0) { if(elS) elS.textContent = "0,00"; if(elM) elM.textContent = "0,00"; return; } var isCart = carrinho && carrinho.length > 0, totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1); if (totalQtd < 1) totalQtd = 1; var net = descontarTaxas(vVenda, totalQtd, isCart ? carrinho : null); if(elS) elS.textContent = formatarMoeda(net.shopee); if(elM) elM.textContent = formatarMoeda(net.meli); }
 
 window.cancelarEdicaoDespesa = function() { 
@@ -681,7 +677,6 @@ function calcular() {
     var tagS = document.getElementById('tag_lucroS'); if(tagS) tagS.textContent = "Lucro: R$ " + formatarMoeda(lucroS); 
     var tagM = document.getElementById('tag_lucroM'); if(tagM) tagM.textContent = "Lucro: R$ " + formatarMoeda(lucroM);
 }
-
 function salvarHistorico() {
     var cliNome = pegaTexto('nomeCliente') || "", cliTel = pegaTexto('telefoneCliente') || "", elCanal = document.getElementById('canalVendaSelecionado'), originalCanal = elCanal ? elCanal.value : "Direta", canal = originalCanal, isUrgente = document.getElementById('toggle_urgente').checked;
     
@@ -921,6 +916,31 @@ window.registrarFalha = function(id) {
     }
 };
 
+window.darBaixaEstoqueVenda = function(h) {
+    if (h.materiais && h.materiais !== "Não informado") {
+        let mats = h.materiais.split(' + ');
+        mats.forEach(m => {
+            let match = m.match(/(.+?)\s+\(([\d.,]+)g\)/);
+            if (match) {
+                let nomeMat = match[1].trim(); 
+                let pesoGasto = parseLocal(match[2]);
+                
+                let itemEstoque = estoque.find(e => {
+                    let n = (e.tipo + " " + e.cor + " " + (e.marca || "")).trim();
+                    let nCurto = (e.tipo + " " + e.cor).trim();
+                    return n === nomeMat || nCurto === nomeMat;
+                });
+                
+                if (itemEstoque) {
+                    itemEstoque.pesoAtual = (itemEstoque.pesoAtual || 1000) - pesoGasto;
+                    if (itemEstoque.pesoAtual < 0) itemEstoque.pesoAtual = 0;
+                }
+            }
+        });
+        showToast("📉 Materiais descontados do estoque!");
+        renderEstoque();
+    }
+};
 function renderHistorico() {
     var lista = document.getElementById('listaHistorico'); if(!lista) return; var filtroDiv = document.getElementById('filtroHistorico');
     var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0, totDevolvido = 0;
@@ -979,8 +999,8 @@ function renderHistorico() {
     itensFiltrados.forEach(function(item, index) {
         var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem, tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981", st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
         var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
-        var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 3px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
-        if (item.idPedido) crmHtml += '<div style="font-size: 0.65rem; color: var(--orange); margin-bottom: 6px; font-weight: 600;">#️⃣ ID Pedido: ' + item.idPedido + '</div>';
+        var crmHtml = item.cliente ? `<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 3px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
+        if (item.idPedido) crmHtml += `<div style="font-size: 0.65rem; color: var(--orange); margin-bottom: 6px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
         
         var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
         var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '', bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);'; if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
@@ -1011,33 +1031,31 @@ function renderHistorico() {
             htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
         
-// ===============================================
-        // MÁGICA DO ESPAÇAMENTO MOBILE (BOTÕES ALINHADOS)
-        // ===============================================
+        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:4px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
+        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:4px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
         
-        // Botões normais (Refugo, Editar, Apagar)
-        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
-        var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
-        var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
-        
-        // Se estiver "Na Fila", criamos os botões de subir e descer MENORES e LADO A LADO na mesma caixa!
-        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="color:var(--sky); background:none; border:none; font-size:1rem; cursor:pointer; padding:0;" title="Subir na Fila">▲</button>`;
-        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="color:var(--orange); background:none; border:none; font-size:1rem; cursor:pointer; padding:0;" title="Descer na Fila">▼</button>`;
-        
-        var filaBtnsHtml = isFila ? `<div style="display:flex; flex-direction:column; gap:2px; border-right:1px dashed rgba(255,255,255,0.1); padding-right:8px; margin-right:8px;">${btnSubir}${btnDescer}</div>` : '';
+        var filaBtnsHtml = isFila ? `<div style="display:flex; gap:6px;">${btnSubir}${btnDescer}</div>` : '';
 
-        // Caixa que agrupa TUDO na direita
-        var botoesAcao = `<div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${filaBtnsHtml}${btnFalha}${btnEditar}${btnExcluir}</div>`;
+        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
+        var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
+        var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
+
+        var botoesAcao = `<div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">${btnFalha}${btnEditar}${btnExcluir}</div>`;
         
-        var areaStatusFila = `<div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <select class="status-select ${colorClass}" style="flex: 1; min-width: 0;" onchange="mudarStatus(${item.id}, this.value)">
-                <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
-                <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
-                <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
-                <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
-                <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
-                <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
-            </select>
+        var barraAcoes = `
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
+            <div style="display: flex; align-items: center; flex: 1; min-width: 140px; gap: 8px;">
+                <select class="status-select ${colorClass}" style="flex: 1; margin: 0;" onchange="mudarStatus(${item.id}, this.value)">
+                    <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
+                    <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
+                    <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
+                    <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
+                    <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
+                    <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
+                </select>
+                ${filaBtnsHtml}
+            </div>
+            ${botoesAcao}
         </div>`;
 
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente}">
@@ -1045,11 +1063,10 @@ function renderHistorico() {
                 ${htmlFoto}
                 <div style="flex: 1; min-width: 0;">
                     <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>
-                    ${areaStatusFila}
+                    ${crmHtml}
                 </div>
-                ${botoesAcao}
             </div>
-            ${crmHtml}
+            ${barraAcoes}
             <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
                 <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                 <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
@@ -1066,7 +1083,7 @@ function renderHistorico() {
     atualizarLucroReal();
 }
 
-function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); } }
+function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?")) { historico = historico.filter(h => h.id !== id); syncNuvem(); renderHistorico(); } }
 
 function resetarDados() {
     carrinho = []; renderCarrinho(); document.getElementById('fotoUrlProjeto').value = ""; var p = document.getElementById('previewFotoMain'); if(p) p.style.display = "none";
