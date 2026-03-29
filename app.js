@@ -52,6 +52,17 @@ function isWithinDays(dateStr, dias) {
     return diffDays <= parseInt(dias);
 }
 
+window.uploadingCatalogId = null;
+window.handleUploadCat = function(input) {
+    var file = input.files[0]; if (!file) return; var formData = new FormData(); formData.append("image", file);
+    document.getElementById('loading-screen').style.display = 'flex'; var h2 = document.getElementById('loading-screen').querySelector('h2'), oldText = h2.textContent; h2.textContent = "A anexar foto...";
+    fetch("https://api.imgbb.com/1/upload?key=50b2518403427e60b75a8074dc495b15", { method: "POST", body: formData }).then(r => r.json()).then(data => {
+        document.getElementById('loading-screen').style.display = 'none'; h2.textContent = oldText;
+        if (data.success) { var url = data.data.display_url; document.getElementById('fotoUrlCat').value = url; var prev = document.getElementById('previewFotoCat'); prev.style.backgroundImage = `url('${url}')`; prev.style.display = "block"; document.getElementById('btnRemoverFotoCat').style.display = "block"; showToast("📸 Foto pronta para salvar!"); } else { showToast("❌ Erro no upload", true); } input.value = "";
+    }).catch(() => { document.getElementById('loading-screen').style.display = 'none'; h2.textContent = oldText; showToast("❌ Erro de rede", true); input.value = ""; });
+};
+window.removerFotoCat = function() { var f = document.getElementById('fotoUrlCat'); if(f) f.value = ""; var p = document.getElementById('previewFotoCat'); if(p) { p.style.display = "none"; p.style.backgroundImage = "none"; } var b = document.getElementById('btnRemoverFotoCat'); if(b) b.style.display = "none"; };
+
 // ==========================================
 // 4. INTEGRAÇÃO IMGBB (UPLOAD DE FOTOS)
 // ==========================================
@@ -128,7 +139,6 @@ function salvarDinamicoValor(idCampo, valor) { var el = document.getElementById(
 // ADICIONADO idPedidoMarketplace
 var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto', 'idPedidoMarketplace'];
 function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
-
 // ==========================================
 // 7. MODAIS E CONFIGURAÇÕES
 // ==========================================
@@ -142,6 +152,7 @@ window.fecharModal = function(idModal) {
     syncNuvem(); renderHistorico(); calcular();
 }
 window.resetarQA = function() { if(confirm("Confirma que você acabou de realizar a manutenção/lubrificação da máquina?")) { window.qaOffset = window.horasTotaisImpressasGlobal; syncNuvem(); renderHistorico(); document.getElementById('configModal').style.display='none'; showToast("🔧 Manutenção Registrada e Zerada!"); } }
+
 // MÁGICA DO ARREDONDAMENTO ITEM A ITEM
 function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) { 
     var feeShpTotal = 0, feeMlTotal = 0, txMl = pegaValor('taxaMeli') / 100;
@@ -258,6 +269,85 @@ function preencherFormProjeto(prod) {
     } 
     ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
 }
+
+// ==========================================
+// 9. CARRINHO DE COMPRAS
+// ==========================================
+
+function adicionarAoCarrinho() {
+    var nomeBase = pegaTexto('nomeProjeto') || "Sem Nome", qtdPecas = parseInt(pegaValor('qtdPecasProjeto')) || 1; if(qtdPecas < 1) qtdPecas = 1; var nomeItem = qtdPecas > 1 ? qtdPecas + "x " + nomeBase : nomeBase, tMulti = document.getElementById('toggle_multi_mat'), multiMatEnabled = tMulti ? tMulti.checked : false, tempoItem = pegaValor('tempoH') * qtdPecas, pesoItem = pegaValor('pesoPeca') * qtdPecas, depCalc = (pegaValor('maquina') / (pegaValor('vidaUtil') || 1)) * tempoItem, eneCalc = (pegaValor('consumoW') / 1000) * pegaValor('precoKwh') * tempoItem, precoMatCalc = pegaValor('precoFilamento'); if(precoMatCalc === 0) precoMatCalc = 120;
+    var matTotalCalc = (precoMatCalc / 1000) * pesoItem, materiaisArray = [], t1 = pegaTexto('tipoFilamento1'), c1 = pegaTexto('corFilamento1'), m1 = pegaTexto('marcaFilamento1'), nomeMat1 = (t1 + ' ' + c1 + ' ' + m1).trim(); if (nomeMat1 === '') nomeMat1 = 'Filamento 1'; if(pesoItem > 0) materiaisArray.push(nomeMat1 + ' (' + pesoItem + 'g)'); var extras = [];
+    if (multiMatEnabled) { var qtdEx = parseInt(pegaValor('qtdCoresExtras')) || 1; for(var i = 2; i <= qtdEx + 1; i++) { var pesoE = pegaValor('pesoPeca'+i) * qtdPecas; pesoItem += pesoE; var precoE = pegaValor('precoFilamento' + i); if(precoE === 0) precoE = 120; matTotalCalc += (precoE / 1000) * pesoE; var ti = pegaTexto('tipoFilamento'+i), ci = pegaTexto('corFilamento'+i), mi = pegaTexto('marcaFilamento'+i), nomeMatI = (ti + ' ' + ci + ' ' + mi).trim(); if (nomeMatI === '') nomeMatI = 'Filamento ' + i; if(pesoE > 0) materiaisArray.push(nomeMatI + ' (' + pesoE + 'g)'); extras.push({ tipo: ti, cor: ci, marca: mi, preco: pegaTexto('precoFilamento'+i), peso: pegaTexto('pesoPeca'+i) }); } }
+    var sucCalc = pegaValor('taxaSucesso'); if (sucCalc <= 0) sucCalc = 100; var custoItemCalc = (depCalc + eneCalc + matTotalCalc) / (sucCalc / 100), mInputCalc = pegaValor('margemInput'), vDCalc = custoItemCalc + (custoItemCalc * (mInputCalc / 100));
+    
+    var canalSel = document.getElementById('canalVendaSelecionado');
+    var isPerso = canalSel && canalSel.value === 'Personalizado';
+    var valPerso = pegaValor('valorPersonalizado');
+    var precoExatoItem = (isPerso && valPerso > 0) ? parseLocal(valPerso) : 0;
+    
+    var novoItem = { id: editandoCarrinhoId ? editandoCarrinhoId : Date.now() + Math.floor(Math.random() * 1000), nome: nomeItem, qtd: qtdPecas, custo: custoItemCalc, valorComLucro: vDCalc, precoVendaExato: precoExatoItem, tempo: tempoItem, peso: pesoItem, materiais: (materiaisArray.length > 0 ? materiaisArray.join(' + ') : 'Não informado'), tipo1: t1, cor1: c1, marca1: m1, preco1: document.getElementById('precoFilamento').value, peso1: document.getElementById('pesoPeca').value, tempo1: document.getElementById('tempoH').value, multi: multiMatEnabled, qtdCores: document.getElementById('qtdCoresExtras') ? document.getElementById('qtdCoresExtras').value : "1", extras: extras, taxaSucesso: document.getElementById('taxaSucesso').value, margemLucro: document.getElementById('margemInput').value, foto: pegaTexto('fotoUrlProjeto') };
+    if (editandoCarrinhoId) { var idx = carrinho.findIndex(i => i.id === editandoCarrinhoId); if (idx > -1) carrinho[idx] = novoItem; editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; showToast("🛒 Item atualizado no Pedido!"); } else { carrinho.push(novoItem); showToast("🛒 Item adicionado ao Pedido!"); }
+    resetarInputProjeto(); 
+    if (canalSel) canalSel.value = "Direta";
+    var elPerso = document.getElementById('valorPersonalizado');
+    if (elPerso) elPerso.value = '';
+    localStorage.removeItem('3d4y_dark_valorPersonalizado');
+    var cbLiq = document.getElementById('isLiquidoExato'); 
+    if(cbLiq) cbLiq.checked = false;
+    if(typeof mostrarValorPersonalizado === 'function') mostrarValorPersonalizado();
+    renderCarrinho(); calcular();
+}
+
+function cancelarEdicaoCarrinho() { editandoCarrinhoId = null; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "➕ Adicionar Item"; btnAdd.style.background = "var(--orange)"; } if(btnCancel) btnCancel.style.display = "none"; resetarInputProjeto(); calcular(); showToast("❌ Edição cancelada"); }
+function removerDoCarrinho(id) { carrinho = carrinho.filter(i => i.id !== id); renderCarrinho(); calcular(); }
+function editarItemCarrinho(id) { 
+    var item = carrinho.find(i => i.id === id); if(!item) return; 
+    preencherFormProjeto(item); 
+    
+    if (item.precoVendaExato && parseLocal(item.precoVendaExato) > 0) {
+        var elCanal = document.getElementById('canalVendaSelecionado');
+        if (elCanal) elCanal.value = 'Personalizado';
+        var elPerso = document.getElementById('valorPersonalizado');
+        if (elPerso) { elPerso.value = formatarMoeda(parseLocal(item.precoVendaExato)); salvarDinamico('valorPersonalizado'); }
+        if (typeof mostrarValorPersonalizado === 'function') mostrarValorPersonalizado();
+    }
+    
+    editandoCarrinhoId = id; var btnAdd = document.getElementById('btn_add_carrinho'); var btnCancel = document.getElementById('btn_cancelar_edicao'); if(btnAdd) { btnAdd.textContent = "💾 Atualizar Item"; btnAdd.style.background = "var(--purple)"; } if(btnCancel) btnCancel.style.display = "block"; showToast("✏️ Item carregado para edição!"); window.scrollTo({ top: 0, behavior: 'smooth' }); 
+}
+
+function renderCarrinho() {
+    var container = document.getElementById('carrinho_container'); var lista = document.getElementById('lista_itens_carrinho'); if(!container || !lista) return; if(carrinho.length === 0) { container.style.display = 'none'; return; } container.style.display = 'block'; lista.innerHTML = ''; var totCusto = 0, totValorComLucro = 0;
+    carrinho.forEach(item => { 
+        totCusto += parseLocal(item.custo); totValorComLucro += parseLocal(item.valorComLucro); 
+        var htmlFoto = item.foto ? `<div style="width:30px; height:30px; border-radius:4px; background-image:url('${item.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : ''; 
+        var txtVendaBase = item.precoVendaExato && parseLocal(item.precoVendaExato) > 0 ? `Venda Fixada: R$ ${formatarMoeda(parseLocal(item.precoVendaExato))}` : `Venda Base: R$ ${formatarMoeda(parseLocal(item.valorComLucro))}`;
+        lista.innerHTML += `<div style="background: #0f172a; padding: 8px; border-radius: 8px; position: relative; border: 1px solid var(--border); display:flex; align-items:center;">${htmlFoto}<div style="flex:1;"><button onclick="editarItemCarrinho(${item.id})" style="position: absolute; right: 35px; top: 5px; background: none; border: none; color: var(--sky); font-size: 1rem; cursor: pointer;">✎</button><button onclick="removerDoCarrinho(${item.id})" style="position: absolute; right: 5px; top: 5px; background: none; border: none; color: #ef4444; font-size: 1rem; font-weight: bold; cursor: pointer;">×</button><div style="font-size: 0.75rem; font-weight: bold; color: var(--text-main); padding-right: 50px;">${item.nome}</div><div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 3px;">Custo Peça: R$ ${formatarMoeda(parseLocal(item.custo))} | ${txtVendaBase}</div></div></div>`; 
+    });
+    
+    var totalQtd = carrinho.reduce((a,b) => a + parseLocal(b.qtd), 0); if(totalQtd < 1) totalQtd = 1; 
+    var cLog = pegaValor('custoEmbalagem') + pegaValor('custoDeslocamento'); var frete = pegaValor('valorFreteManual'); 
+    
+    var totS = 0, totM = 0, totD = 0, totBaseForRatio = totValorComLucro === 0 ? 1 : totValorComLucro;
+    
+    carrinho.forEach(i => {
+        var iQtd = parseLocal(i.qtd || 1), iPrecoExato = parseLocal(i.precoVendaExato || 0), iValLucro = parseLocal(i.valorComLucro || 0);
+        if (iPrecoExato > 0) {
+            totS += iPrecoExato; totM += iPrecoExato; totD += iPrecoExato;
+        } else {
+            var itemRatio = iValLucro / totBaseForRatio, itemBaseTotal = iValLucro + (cLog * itemRatio), itemBaseUnit = itemBaseTotal / iQtd;
+            var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
+            if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+            totS += (Math.round(bestPShp * 100) / 100) * iQtd;
+            var txMl = pegaValor('taxaMeli')/100, pAvgML_noFix = itemBaseUnit / (1 - txMl);
+            var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
+            totM += (Math.round(bestPMeli * 100) / 100) * iQtd; totD += itemBaseTotal;
+        }
+    });
+    totD += frete;
+    
+    document.getElementById('cart_tot_custo').textContent = formatarMoeda(totCusto); document.getElementById('cart_tot_vd').textContent = formatarMoeda(totD); document.getElementById('cart_tot_vs').textContent = formatarMoeda(totS); document.getElementById('cart_tot_vm').textContent = formatarMoeda(totM);
+}
+
 // ==========================================
 // 10. CATÁLOGO E ATUALIZAÇÃO SEGURA
 // ==========================================
@@ -374,7 +464,6 @@ function aplicarDadosNoForm(id, isEditing = false) {
 }
 
 function removerDoCatalogo(id) { if(confirm("Deseja apagar este produto do catálogo?")) { catalogo = catalogo.filter(e => e.id !== id); syncNuvem(); renderCatalogo(); } }
-
 // ==========================================
 // 11. GESTÃO DE ESTOQUE
 // ==========================================
@@ -421,6 +510,7 @@ function renderCoresExtras() { var qtdInput = document.getElementById('qtdCoresE
 // ==========================================
 // 12. DESPESAS E SIMULADOR
 // ==========================================
+
 function mostrarValorPersonalizado() { 
     var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); 
     if (seletor && divPersonalizado) { 
@@ -431,6 +521,7 @@ function mostrarValorPersonalizado() {
         }
     } 
 }
+
 function calcularSimulador() { var vVenda = pegaValor('simuladorVenda'), elS = document.getElementById('sim_shopee'), elM = document.getElementById('sim_meli'); if (vVenda <= 0) { if(elS) elS.textContent = "0,00"; if(elM) elM.textContent = "0,00"; return; } var isCart = carrinho && carrinho.length > 0, totalQtd = isCart ? carrinho.reduce((a,b)=>a+b.qtd, 0) : (parseInt(pegaValor('qtdPecasProjeto')) || 1); if (totalQtd < 1) totalQtd = 1; var net = descontarTaxas(vVenda, totalQtd, isCart ? carrinho : null); if(elS) elS.textContent = formatarMoeda(net.shopee); if(elM) elM.textContent = formatarMoeda(net.meli); }
 
 window.cancelarEdicaoDespesa = function() { 
@@ -486,7 +577,6 @@ function atualizarLucroReal() { var valLucro = parseLocal(document.getElementByI
 window.cancelarEdicaoVenda = function() { editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)"; var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none"; resetarDados(); showToast("❌ Edição de venda cancelada"); }
 window.moverFila = function(id, direcao) { var filaItems = historico.filter(h => h.status === 'Na Fila').sort((a, b) => (a.posicaoFila || a.id) - (b.posicaoFila || b.id)), index = filaItems.findIndex(h => h.id === id); if (index < 0) return; var swapIndex = index + direcao; if (swapIndex < 0 || swapIndex >= filaItems.length) return; var itemAtual = filaItems[index], itemTroca = filaItems[swapIndex], posAtual = itemAtual.posicaoFila || itemAtual.id, posTroca = itemTroca.posicaoFila || itemTroca.id; if (posAtual === posTroca) { if(direcao === -1) posTroca -= 1; else posTroca += 1; } itemAtual.posicaoFila = posTroca; itemTroca.posicaoFila = posAtual; syncNuvem(); renderHistorico(); };
 window.isDraggingFiltro = false; window.mudarFiltro = function(status) { if (window.isDraggingFiltro) return; window.filtroStatusAtual = status; renderHistorico(); };
-
 window.onload = function() {
     document.getElementById('maquina').value = window.configGlobais.maquina || "3.275"; document.getElementById('vidaUtil').value = window.configGlobais.vidaUtil || "3.000"; document.getElementById('consumoW').value = window.configGlobais.consumoW || "350"; document.getElementById('precoKwh').value = window.configGlobais.precoKwh || "1,20"; document.getElementById('qa_aviso').value = window.configGlobais.qa_aviso || "100"; document.getElementById('custoEmbalagem').value = window.configGlobais.custoEmbalagem || "0,00"; document.getElementById('custoDeslocamento').value = window.configGlobais.custoDeslocamento || "0,00"; document.getElementById('taxaMeli').value = window.configGlobais.taxaMeli || "17"; document.getElementById('fixaMeli').value = window.configGlobais.fixaMeli || "6,75";
     
@@ -562,6 +652,9 @@ function calcular() {
         totM = (Math.round(pAvgML * 100) / 100) * totalQtd;
     }
     
+    // ========================================================
+    // INJEÇÃO: SUBSTITUI O QUADRO GIGANTE SE FOR PERSONALIZADO
+    // ========================================================
     var elCanalSel = document.getElementById('canalVendaSelecionado');
     if (elCanalSel && elCanalSel.value === 'Personalizado') {
         var vP = pegaValor('valorPersonalizado');
@@ -572,6 +665,7 @@ function calcular() {
             else vd = vP;
         }
     }
+    // ========================================================
     
     var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd); 
     var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS); 
@@ -605,7 +699,7 @@ function salvarHistorico() {
         
         var cShopee = parseLocal(document.getElementById('cart_tot_vs').textContent), cMeli = parseLocal(document.getElementById('cart_tot_vm').textContent), cDireta = parseLocal(document.getElementById('cart_tot_vd').textContent);
         
-        if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; valorCalculadoBruto = (canal === "Shopee") ? cShopee : (canal === "Meli" ? cDireta); } 
+        if (canal === "Personalizado") { valorBruto = pegaValor('valorPersonalizado'); canal = document.getElementById('canalPersonalizadoDestino').value; valorCalculadoBruto = (canal === "Shopee") ? cShopee : (canal === "Meli" ? cMeli : cDireta); } 
         else if(canal === "Direta") { valorBruto = cDireta; valorCalculadoBruto = cDireta; } 
         else if(canal === "Shopee") { valorBruto = cShopee; valorCalculadoBruto = cShopee; } 
         else { valorBruto = cMeli; valorCalculadoBruto = cMeli; }
@@ -735,6 +829,7 @@ function editarItemHistorico(id) {
     var elDest = document.getElementById('canalPersonalizadoDestino');
     var elPerso = document.getElementById('valorPersonalizado');
     
+    // Força o modo "Meu Preço" se tivermos o valor exato original guardado
     if (item.valorBruto !== undefined && item.valorBruto > 0) {
         elCanal.value = "Personalizado"; 
         if(elDest) elDest.value = item.canal || "Direta";
@@ -754,7 +849,9 @@ function editarItemHistorico(id) {
         }
     }
     
+    // Isto garante que a caixinha desce visível na tela e pisca no valor!
     mostrarValorPersonalizado();
+    // ========================================================
     
     var cbLiq = document.getElementById('isLiquidoExato'); if(cbLiq) cbLiq.checked = false; 
 
@@ -774,6 +871,7 @@ function mudarStatus(id, novoStatus) {
             h.status = novoStatus; 
             
             if ((novoStatus === 'Finalizado' || novoStatus === 'Enviado / Entregue') && !h.estoqueBaixado) {
+                // Como esperamos 200ms, o navegador já não vai bugar ou congelar a tela aqui!
                 if (confirm("Deseja dar baixa dos materiais gastos nesta peça (" + formatarMoeda(h.peso) + "g) no Estoque?")) {
                     window.darBaixaEstoqueVenda(h);
                     h.estoqueBaixado = true;
@@ -820,32 +918,6 @@ window.registrarFalha = function(id) {
             renderEstoque();
             showToast("🗑️ Refugo registrado nas despesas e estoque!");
         }
-    }
-};
-
-window.darBaixaEstoqueVenda = function(h) {
-    if (h.materiais && h.materiais !== "Não informado") {
-        let mats = h.materiais.split(' + ');
-        mats.forEach(m => {
-            let match = m.match(/(.+?)\s+\(([\d.,]+)g\)/);
-            if (match) {
-                let nomeMat = match[1].trim(); 
-                let pesoGasto = parseLocal(match[2]);
-                
-                let itemEstoque = estoque.find(e => {
-                    let n = (e.tipo + " " + e.cor + " " + (e.marca || "")).trim();
-                    let nCurto = (e.tipo + " " + e.cor).trim();
-                    return n === nomeMat || nCurto === nomeMat;
-                });
-                
-                if (itemEstoque) {
-                    itemEstoque.pesoAtual = (itemEstoque.pesoAtual || 1000) - pesoGasto;
-                    if (itemEstoque.pesoAtual < 0) itemEstoque.pesoAtual = 0;
-                }
-            }
-        });
-        showToast("📉 Materiais descontados do estoque!");
-        renderEstoque();
     }
 };
 
@@ -907,6 +979,8 @@ function renderHistorico() {
     itensFiltrados.forEach(function(item, index) {
         var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem, tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981", st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
         var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
+        var crmHtml = item.cliente ? '<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 3px; font-weight: 600;">👤 Cliente: ' + item.cliente + '</div>' : '';
+        if (item.idPedido) crmHtml += '<div style="font-size: 0.65rem; color: var(--orange); margin-bottom: 6px; font-weight: 600;">#️⃣ ID Pedido: ' + item.idPedido + '</div>';
         
         var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
         var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '', bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);'; if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
@@ -936,24 +1010,27 @@ function renderHistorico() {
             if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
             htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
-
-        var crmHtml = item.cliente ? `<div style="font-size: 0.65rem; color: var(--sky); margin-top: 6px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
-        if (item.idPedido) crmHtml += `<div style="font-size: 0.65rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
-
-        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
-        var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
-        var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
         
-        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:4px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
-        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:4px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
+// ===============================================
+        // MÁGICA DO ESPAÇAMENTO MOBILE (BOTÕES ALINHADOS)
+        // ===============================================
         
-        var filaBtnsHtml = isFila ? `<div style="display:flex; gap:6px; margin-right:8px; padding-right:8px; border-right:1px solid rgba(255,255,255,0.1);">${btnSubir}${btnDescer}</div>` : '';
+        // Botões normais (Refugo, Editar, Apagar)
+        var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
+        var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
+        var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
+        
+        // Se estiver "Na Fila", criamos os botões de subir e descer MENORES e LADO A LADO na mesma caixa!
+        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="color:var(--sky); background:none; border:none; font-size:1rem; cursor:pointer; padding:0;" title="Subir na Fila">▲</button>`;
+        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="color:var(--orange); background:none; border:none; font-size:1rem; cursor:pointer; padding:0;" title="Descer na Fila">▼</button>`;
+        
+        var filaBtnsHtml = isFila ? `<div style="display:flex; flex-direction:column; gap:2px; border-right:1px dashed rgba(255,255,255,0.1); padding-right:8px; margin-right:8px;">${btnSubir}${btnDescer}</div>` : '';
 
-        var botoesAcao = `<div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">${filaBtnsHtml}${btnFalha}${btnEditar}${btnExcluir}</div>`;
+        // Caixa que agrupa TUDO na direita
+        var botoesAcao = `<div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">${filaBtnsHtml}${btnFalha}${btnEditar}${btnExcluir}</div>`;
         
-        var barraAcoes = `
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
-            <select class="status-select ${colorClass}" style="flex: 1; min-width: 140px; margin: 0;" onchange="mudarStatus(${item.id}, this.value)">
+        var areaStatusFila = `<div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <select class="status-select ${colorClass}" style="flex: 1; min-width: 0;" onchange="mudarStatus(${item.id}, this.value)">
                 <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
                 <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
                 <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
@@ -961,19 +1038,19 @@ function renderHistorico() {
                 <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
                 <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
             </select>
-            ${botoesAcao}
         </div>`;
 
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente}">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
                 ${htmlFoto}
                 <div style="flex: 1; min-width: 0;">
                     <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>
-                    ${crmHtml}
+                    ${areaStatusFila}
                 </div>
+                ${botoesAcao}
             </div>
-            ${barraAcoes}
-            <div class="hist-vals" style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
+            ${crmHtml}
+            <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
                 <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                 <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
                 <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
