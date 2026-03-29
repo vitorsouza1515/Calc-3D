@@ -997,7 +997,7 @@ function renderHistorico() {
     lista.innerHTML = itensFiltrados.length === 0 ? '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado no período</p>' : '';
     
     itensFiltrados.forEach(function(item, index) {
-        var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem, tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981", st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
+        var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem, tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHOPEE" : "M. LIVRE", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981", corTextoTag = canalStr === "Meli" ? "#000" : "#fff", st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
         var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
         var crmHtml = item.cliente ? `<div style="font-size: 0.65rem; color: var(--sky); margin-bottom: 3px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
         if (item.idPedido) crmHtml += `<div style="font-size: 0.65rem; color: var(--orange); margin-bottom: 6px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
@@ -1008,9 +1008,6 @@ function renderHistorico() {
         var checkEstoque = item.estoqueBaixado ? `<span style="font-size:0.55rem; color:#10b981; margin-left:5px;" title="Estoque Descontado">📉 OK</span>` : '';
         var lockIcon = item.vendaIsolada ? `<span style="font-size:0.65rem; margin-left:5px;" title="Venda Protegida: Alterações no catálogo não afetam este pedido">🔒</span>` : '';
         
-        // ===============================================
-        // MÁGICA DAS FOTOS DUPLAS (COMBOS DO CARRINHO)
-        // ===============================================
         var htmlFoto = '';
         if (item.cartItems && item.cartItems.length > 1) {
             var fotosValidas = item.cartItems.map(i => i.foto).filter(f => f && f.trim() !== '');
@@ -1024,55 +1021,63 @@ function renderHistorico() {
                 htmlFoto += `</div>`;
             }
         }
-        
         if (!htmlFoto) {
             var fotoParaMostrar = item.foto;
             if (!fotoParaMostrar) { var nomeParaBusca = (item.nome || "").toLowerCase().trim(); var matchQtd = nomeParaBusca.match(/^\d+x\s(.*)/); if(matchQtd) nomeParaBusca = matchQtd[1]; var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === nomeParaBusca); if (matchCat && matchCat.foto) fotoParaMostrar = matchCat.foto; }
             htmlFoto = fotoParaMostrar ? `<div style="width:45px; height:45px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
         
-        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:4px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
-        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:4px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
+        // ===============================================
+        // O FIM DO ESMAGAMENTO DE BOTÕES (AGORA COM DOIS ANDARES)
+        // ===============================================
         
+        var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:5px 12px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
+        var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:6px; font-size:1rem; padding:5px 12px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
         var filaBtnsHtml = isFila ? `<div style="display:flex; gap:6px;">${btnSubir}${btnDescer}</div>` : '';
 
         var btnFalha = `<button onclick="registrarFalha(${item.id})" style="background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;" title="Registrar Refugo / Perda">🗑️</button>`;
         var btnEditar = `<button onclick="editarItemHistorico(${item.id})" style="color:var(--sky);background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0;" title="Editar">✎</button>`;
         var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
 
-        var botoesAcao = `<div style="display: flex; align-items: center; gap: 12px; justify-content: flex-end;">${btnFalha}${btnEditar}${btnExcluir}</div>`;
+        var botoesDireita = `<div style="display: flex; align-items: center; gap: 15px; margin-left: auto;">${btnFalha}${btnEditar}${btnExcluir}</div>`;
         
+        // A NOVA BARRA MÁGICA: Status em cima e os Botões numa linha independente em baixo
         var barraAcoes = `
-        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
-            <div style="display: flex; align-items: center; flex: 1; min-width: 140px; gap: 8px;">
-                <select class="status-select ${colorClass}" style="flex: 1; margin: 0;" onchange="mudarStatus(${item.id}, this.value)">
-                    <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
-                    <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
-                    <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
-                    <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
-                    <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
-                    <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
-                </select>
+        <div style="display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
+            <select class="status-select ${colorClass}" style="width: 100%; margin: 0; font-size: 0.9rem;" onchange="mudarStatus(${item.id}, this.value)">
+                <option value="Orçamento" ${st==='Orçamento'?'selected':''}>🟡 Orçamento</option>
+                <option value="Na Fila" ${st==='Na Fila'?'selected':''}>🔵 Na Fila</option>
+                <option value="Imprimindo" ${st==='Imprimindo'?'selected':''}>🟣 Imprimindo</option>
+                <option value="Finalizado" ${st==='Finalizado'?'selected':''}>🟢 Finalizado</option>
+                <option value="Enviado / Entregue" ${st==='Enviado / Entregue'?'selected':''}>🚚 Enviado / Entregue</option>
+                <option value="Devolução" ${st==='Devolução'?'selected':''}>❌ Devolução</option>
+            </select>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 ${filaBtnsHtml}
+                ${botoesDireita}
             </div>
-            ${botoesAcao}
         </div>`;
+
+        var tagCanalHtml = `<div style="background:${corTag}; color:${corTextoTag}; font-size:0.6rem; font-weight:bold; padding:3px 6px; border-radius:4px; display:inline-block; margin-bottom:4px; text-transform:uppercase;">🛒 CANAL: ${tagCanal}</div>`;
 
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente}">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
                 ${htmlFoto}
                 <div style="flex: 1; min-width: 0;">
-                    <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>
+                    <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>
                     ${crmHtml}
                 </div>
             </div>
             ${barraAcoes}
-            <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px;">
-                <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
-                <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
-                <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
-                <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
-                <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
+            <div class="hist-vals" style="margin-top: 5px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 8px; display: flex; flex-direction: column;">
+                <div>${tagCanalHtml}</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                    <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
+                    <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
+                    <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
+                    <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                    <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5;">Data: ${item.data}</span>
+                </div>
             </div>
         </div>`;
     });
