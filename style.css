@@ -170,7 +170,6 @@ header h1 {
     overflow-x: hidden
 }
 
-/* Ajuste específico para o card de histórico não explodir */
 .col-history .card {
     display: flex;
     flex-direction: column;
@@ -543,7 +542,7 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
     box-shadow: 0 0 10px rgba(14, 165, 233, .2)
 }
 
-/* O AJUSTE PRINCIPAL ESTÁ AQUI: */
+/* O AJUSTE FINAL AQUI: */
 .history-list {
     display: flex;
     flex-direction: column;
@@ -552,7 +551,7 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
     max-width: 100%;
     padding-right: 5px;
     min-height: 250px;
-    max-height: 55vh; /* Ocupa metade da tela, nem mais, nem menos */
+    max-height: 65vh; /* Aumentei de 55 para 65 */
 }
 
 .history-item {
