@@ -551,7 +551,7 @@ input:checked+.slider-switch:before { transform: translateX(14px) }
     max-width: 100%;
     padding-right: 5px;
     min-height: 250px;
-    max-height: 65vh; /* Aumentei de 55 para 65 */
+    max-height: 85vh; /* Aumentei de 55 para 65 */
 }
 
 .history-item {
