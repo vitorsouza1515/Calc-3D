@@ -258,7 +258,6 @@ function preencherFormProjeto(prod) {
     } 
     ['nomeProjeto','qtdPecasProjeto','tempoH','pesoPeca'].forEach(id => salvarDinamico(id)); calcular();
 }
-
 // ==========================================
 // 10. CATÁLOGO E ATUALIZAÇÃO SEGURA
 // ==========================================
@@ -422,7 +421,6 @@ function renderCoresExtras() { var qtdInput = document.getElementById('qtdCoresE
 // ==========================================
 // 12. DESPESAS E SIMULADOR
 // ==========================================
-
 function mostrarValorPersonalizado() { 
     var seletor = document.getElementById('canalVendaSelecionado'), divPersonalizado = document.getElementById('divValorPersonalizado'); 
     if (seletor && divPersonalizado) { 
@@ -625,8 +623,7 @@ function salvarHistorico() {
         else if(canal === "Shopee") { valorBruto = rS; valorCalculadoBruto = rS; } 
         else { valorBruto = rM; valorCalculadoBruto = rM; }
     }
-
-var posFila = Date.now(), oldItem = null;
+    var posFila = Date.now(), oldItem = null;
     if (editHistoricoId) { oldItem = historico.find(h => h.id === editHistoricoId); if(oldItem && oldItem.posicaoFila !== undefined) posFila = oldItem.posicaoFila; }
     
     var freteFinal = (canal === "Shopee" || canal === "Meli") ? 0 : freteCalculado, net = descontarTaxas(valorBruto, totalQtd, isCart ? carrinho : (oldItem ? oldItem.cartItems : null)), valorVendaFinal = 0;
@@ -970,7 +967,6 @@ function renderHistorico() {
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente}">
             <div style="display: flex; align-items: flex-start; gap: 10px;">
                 ${htmlFoto}
-
                 <div style="flex: 1; min-width: 0;">
                     <h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.6rem; color:#000; background:${corTag}; padding:2px 5px; border-radius:4px; margin-right:6px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>
                     ${crmHtml}
