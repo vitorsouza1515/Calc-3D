@@ -648,6 +648,9 @@ function calcular() {
         totM = (Math.round(pAvgML * 100) / 100) * totalQtd;
     }
     
+    // ========================================================
+    // INJEÇÃO: SUBSTITUI O QUADRO GIGANTE SE FOR PERSONALIZADO
+    // ========================================================
     var elCanalSel = document.getElementById('canalVendaSelecionado');
     if (elCanalSel && elCanalSel.value === 'Personalizado') {
         var vP = pegaValor('valorPersonalizado');
@@ -658,6 +661,7 @@ function calcular() {
             else vd = vP;
         }
     }
+    // ========================================================
     
     var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd); 
     var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS); 
@@ -1073,12 +1077,12 @@ function renderHistorico() {
                 </div>
             </div>
             ${barraAcoes}
-            <div class="hist-vals" style="margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 0.7rem;">
+            <div class="hist-vals" style="margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 0.80rem;">
                 <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                 <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
                 <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
-                <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
-                <span style="grid-column: span 2; font-size: 0.55rem; opacity: 0.5; margin-top: 2px;">Data: ${item.data}</span>
+                <span style="grid-column: span 2; color:#10b981; font-size:0.85rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5; margin-top: 2px;">Data: ${item.data}</span>
             </div>
         </div>`;
     });
