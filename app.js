@@ -136,8 +136,8 @@ function pegaTexto(id) { var el = document.getElementById(id); if (el) { return 
 function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 function salvarDinamico(idCampo) { var el = document.getElementById(idCampo); if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); } }
 function salvarDinamicoValor(idCampo, valor) { var el = document.getElementById(idCampo); if (el) el.value = valor; localStorage.setItem('3d4y_dark_' + idCampo, valor); }
-// ADICIONADO idPedidoMarketplace
-var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto', 'idPedidoMarketplace'];
+// ADICIONADO idPedidoMarketplace e obsVenda
+var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto', 'idPedidoMarketplace', 'obsVenda'];
 function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
 // ==========================================
 // 7. MODAIS E CONFIGURAÇÕES
@@ -588,7 +588,7 @@ window.onload = function() {
 
     var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (el.type === 'checkbox') { el.checked = (saved === 'true'); } else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } } } if (el) { if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); } el.addEventListener('input', function() { if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); } if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } } if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular(); }); } });
-    dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto' && id !== 'dataProjeto' && id !== 'idPedidoMarketplace') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
+    dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto' && id !== 'dataProjeto' && id !== 'idPedidoMarketplace' && id !== 'obsVenda') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
     
     var savedFoto = localStorage.getItem('3d4y_dark_fotoUrlProjeto'); if(savedFoto) { var p = document.getElementById('previewFotoMain'); if(p) { p.style.backgroundImage = `url('${savedFoto}')`; p.style.display = "block"; } }
 
@@ -681,6 +681,7 @@ function salvarHistorico() {
     
     var dataInputForm = pegaTexto('dataProjeto') || new Date().toLocaleDateString('pt-BR');
     var idPedForm = pegaTexto('idPedidoMarketplace') || "";
+    var obsVendaForm = pegaTexto('obsVenda') || "";
 
     var isCart = carrinho && carrinho.length > 0, nomeFinal = "", valorBruto = 0, custoProducaoFinal = 0, pesoFinal = 0, tempoFinal = 0, materiaisArray = [], cLog = 0, freteCalculado = 0, totalQtd = 1, valorCalculadoBruto = 0;
     
@@ -758,6 +759,7 @@ function salvarHistorico() {
         status: oldItem ? (oldItem.status || "Orçamento") : "Orçamento", 
         data: dataInputForm, 
         foto: urlFotoSalvar || "", 
+        obsVenda: obsVendaForm,
         estoqueBaixado: oldItem ? !!oldItem.estoqueBaixado : false,
         vendaIsolada: editHistoricoId ? true : (oldItem ? !!oldItem.vendaIsolada : false)
     };
@@ -810,13 +812,18 @@ function editarItemHistorico(id) {
     document.getElementById('nomeCliente').value = item.cliente || ""; document.getElementById('telefoneCliente').value = item.telefone || "";
     var elDataP = document.getElementById('dataProjeto'); if (elDataP) { elDataP.value = item.data || new Date().toLocaleDateString('pt-BR'); salvarDinamico('dataProjeto'); }
     var elIdPed = document.getElementById('idPedidoMarketplace'); if(elIdPed) { elIdPed.value = item.idPedido || ""; salvarDinamico('idPedidoMarketplace'); }
+    var elObs = document.getElementById('obsVenda'); if(elObs) { elObs.value = item.obsVenda || ""; salvarDinamico('obsVenda'); }
     
     var tUrgente = document.getElementById('toggle_urgente'); if (tUrgente) { tUrgente.checked = !!item.urgente; tUrgente.dispatchEvent(new Event('change')); }
     
+    // ========================================================
+    // LÓGICA MÁGICA: ABRIR CAIXINHA "MEU PREÇO" AO EDITAR
+    // ========================================================
     var elCanal = document.getElementById('canalVendaSelecionado');
     var elDest = document.getElementById('canalPersonalizadoDestino');
     var elPerso = document.getElementById('valorPersonalizado');
     
+    // Força o modo "Meu Preço" se tivermos o valor exato original guardado
     if (item.valorBruto !== undefined && item.valorBruto > 0) {
         elCanal.value = "Personalizado"; 
         if(elDest) elDest.value = item.canal || "Direta";
@@ -836,8 +843,10 @@ function editarItemHistorico(id) {
         }
     }
     
+    // Isto garante que a caixinha desce visível na tela e pisca no valor!
     mostrarValorPersonalizado();
-
+    // ========================================================
+    
     var cbLiq = document.getElementById('isLiquidoExato'); if(cbLiq) cbLiq.checked = false; 
 
     if (item.logistica > 0 || item.frete > 0) { var qtd = item.totalQtd || 1; document.getElementById('custoEmbalagem').value = formatarMoeda((item.logistica || 0) / qtd); document.getElementById('custoDeslocamento').value = "0,00"; var vFrete = document.getElementById('valorFreteManual'); if(vFrete) vFrete.value = formatarMoeda(item.frete || 0); }
@@ -848,6 +857,7 @@ function editarItemHistorico(id) {
 }
 
 function mudarStatus(id, novoStatus) { 
+    // ⏱️ A MAGIA: Espera 200ms para o telemóvel fechar a gaveta de opções antes de dar o "Confirm"
     setTimeout(function() {
         var index = historico.findIndex(h => h.id === id); 
         if (index > -1) { 
@@ -855,6 +865,7 @@ function mudarStatus(id, novoStatus) {
             h.status = novoStatus; 
             
             if ((novoStatus === 'Finalizado' || novoStatus === 'Enviado / Entregue') && !h.estoqueBaixado) {
+                // Como esperamos 200ms, o navegador já não vai bugar ou congelar a tela aqui!
                 if (confirm("Deseja dar baixa dos materiais gastos nesta peça (" + formatarMoeda(h.peso) + "g) no Estoque?")) {
                     window.darBaixaEstoqueVenda(h);
                     h.estoqueBaixado = true;
@@ -929,7 +940,6 @@ window.darBaixaEstoqueVenda = function(h) {
         renderEstoque();
     }
 };
-
 function renderHistorico() {
     var lista = document.getElementById('listaHistorico'); if(!lista) return; var filtroDiv = document.getElementById('filtroHistorico');
     var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0, totDevolvido = 0;
@@ -962,7 +972,7 @@ function renderHistorico() {
         
         if(matchBusca) {
             counts[st] = (counts[st] || 0) + 1;
-            counts['Todos']++; 
+            counts['Todos']++; // Correção do Bug: Agora conta todas as vendas do filtro de dias/busca independentemente da aba!
         }
         
         if (st !== 'Orçamento' && st !== 'Devolução' && matchBusca) {
@@ -992,9 +1002,13 @@ function renderHistorico() {
         var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta", valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix)), valBruto = item.valorBruto !== undefined ? parseLocal(item.valorBruto) : valLiq, lucroItem = valLiq - custoItem - freteLogItem, tagCanal = canalStr === "Direta" ? "PIX" : canalStr === "Shopee" ? "SHP" : "ML", corTag = canalStr === "Shopee" ? "#f94d30" : canalStr === "Meli" ? "#facc15" : "#10b981", corTextoTag = canalStr === "Meli" ? "#000" : "#fff", st = item.status || "Finalizado"; if (st === 'Enviado') st = 'Enviado / Entregue';
         var colorClass = st === 'Orçamento' ? 'status-orcamento' : st === 'Na Fila' ? 'status-fila' : st === 'Imprimindo' ? 'status-imprimindo' : st === 'Enviado / Entregue' ? 'status-enviado' : st === 'Devolução' ? 'status-devolucao' : 'status-finalizado';
         
-        var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.65rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
+        var txtVenda = (valBruto !== valLiq) ? `Líq: R$ ${formatarMoeda(valLiq)} <span style="font-size:0.55rem; color:var(--text-muted); font-weight:normal;">(Bruto: R$ ${formatarMoeda(valBruto)})</span>` : `R$ ${formatarMoeda(valLiq)}`;
         var prefixoFila = isFila ? `<span style="color: var(--sky); font-weight: 900; margin-right: 5px;">[${index + 1}º]</span> ` : '', bordaUrgente = item.urgente ? 'border: 2px solid var(--danger);' : 'border: 1px solid var(--border);'; if(st === 'Devolução') bordaUrgente = 'border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05); opacity: 0.8;';
+        var tagUrgente = item.urgente ? `<span style="font-size:0.55rem; color:#fff; background:var(--danger); padding:2px 5px; border-radius:4px; margin-left:5px; font-weight:bold;">🔥 URGENTE</span>` : '';
+        var checkEstoque = item.estoqueBaixado ? `<span style="font-size:0.55rem; color:#10b981; margin-left:5px;" title="Estoque Descontado">📉 OK</span>` : '';
+        var lockIcon = item.vendaIsolada ? `<span style="font-size:0.65rem; margin-left:5px;" title="Venda Protegida: Alterações no catálogo não afetam este pedido">🔒</span>` : '';
         
+        // FOTO MAIS COMPACTA (de 45px para 40px)
         var htmlFoto = '';
         if (item.cartItems && item.cartItems.length > 1) {
             var fotosValidas = item.cartItems.map(i => i.foto).filter(f => f && f.trim() !== '');
@@ -1014,12 +1028,15 @@ function renderHistorico() {
             htmlFoto = fotoParaMostrar ? `<div style="width:40px; height:40px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:8px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
         
-        var titleHtml = `<h4 style="margin:0; line-height: 1.2; font-size: 0.9rem; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.55rem; color:${corTextoTag}; background:${corTag}; padding:2px 4px; border-radius:4px; margin-right:4px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}</h4>`;
+        // TÍTULO COMPACTO COM TAG DE VOLTA E COM A OBSERVAÇÃO
+        var obsHtml = item.obsVenda ? ` <span style="font-size: 0.75rem; color: #00d2ff; font-weight: 600;">(Obs: ${item.obsVenda})</span>` : '';
+        var titleHtml = `<h4 style="margin:0; line-height: 1.2; font-size: 0.9rem; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.55rem; color:${corTextoTag}; background:${corTag}; padding:2px 4px; border-radius:4px; margin-right:4px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${obsHtml}${tagUrgente}${checkEstoque}${lockIcon}</h4>`;
         
-        // AJUSTE: Cliente e ID com 0.70rem e azul vivo
-        var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
-        if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
+        // CRM COM ESPAÇAMENTOS DIMINUIDOS
+        var crmHtml = item.cliente ? `<div style="font-size: 0.6rem; color: var(--sky); margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
+        if (item.idPedido) crmHtml += `<div style="font-size: 0.6rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
 
+        // BOTÕES NA MEDIDA CERTA
         var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
         var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
         var filaBtnsHtml = isFila ? `<div style="display:flex; gap:4px;">${btnSubir}${btnDescer}</div>` : '';
@@ -1029,6 +1046,7 @@ function renderHistorico() {
         var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.3rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
         var botoesDireita = `<div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">${btnFalha}${btnEditar}${btnExcluir}</div>`;
         
+        // BARRA INFERIOR DE STATUS E AÇÕES COMPACTA
         var barraAcoes = `
         <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-top: 6px;">
             <select class="status-select ${colorClass}" style="width: 100%; margin: 0; font-size: 0.8rem; padding: 4px;" onchange="mudarStatus(${item.id}, this.value)">
@@ -1045,7 +1063,7 @@ function renderHistorico() {
             </div>
         </div>`;
 
-        // AJUSTE FINAL: Valores em 0.80rem e Lucro em 0.85rem
+        // MONTAGEM FINAL COM GRID DE VALORES APERTADO
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente} padding: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 2px;">
                 ${htmlFoto}
@@ -1055,12 +1073,12 @@ function renderHistorico() {
                 </div>
             </div>
             ${barraAcoes}
-            <div class="hist-vals" style="margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 0.80rem;">
+            <div class="hist-vals" style="margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.05); padding-top: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; font-size: 0.7rem;">
                 <span style="grid-column: span 2;">Venda: <b style="color:#fff">${txtVenda}</b></span>
                 <span>Custo Fab: R$ ${formatarMoeda(custoItem)}</span>
                 <span>Frete/Log: R$ ${formatarMoeda(freteLogItem)}</span>
-                <span style="grid-column: span 2; color:#10b981; font-size:0.85rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
-                <span style="grid-column: span 2; font-size: 0.6rem; opacity: 0.5; margin-top: 2px;">Data: ${item.data}</span>
+                <span style="grid-column: span 2; color:#10b981; font-size:0.75rem;">Lucro: <b>R$ ${formatarMoeda(lucroItem)}</b></span>
+                <span style="grid-column: span 2; font-size: 0.55rem; opacity: 0.5; margin-top: 2px;">Data: ${item.data}</span>
             </div>
         </div>`;
     });
@@ -1075,7 +1093,7 @@ function removerItem(id) { if(confirm("Deseja apagar este projeto do histórico?
 
 function resetarDados() {
     carrinho = []; renderCarrinho(); document.getElementById('fotoUrlProjeto').value = ""; var p = document.getElementById('previewFotoMain'); if(p) p.style.display = "none";
-    ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain', 'idPedidoMarketplace'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
+    ['nomeCliente', 'telefoneCliente', 'valorPersonalizado', 'precoFixoCatMain', 'idPedidoMarketplace', 'obsVenda'].forEach(id => { var el = document.getElementById(id); if(el) { el.value = ""; localStorage.removeItem('3d4y_dark_' + id); } });
     var cE = document.getElementById('custoEmbalagem'); if(cE) cE.value = window.configGlobais.custoEmbalagem || "0,00"; var cD = document.getElementById('custoDeslocamento'); if(cD) cD.value = window.configGlobais.custoDeslocamento || "0,00"; var vF = document.getElementById('valorFreteManual'); if(vF) vF.value = "0,00";
     var selCat = document.getElementById('sel_catalogo'); if(selCat) selCat.value = ""; var boxPreco = document.getElementById('boxPrecoFixo'); if(boxPreco) boxPreco.style.display = 'none';
     
@@ -1092,6 +1110,7 @@ function resetarDados() {
     resetarInputProjeto(); calcular(); setTimeout(() => { showToast("✅ Projeto Limpo!"); }, 100); var dash = document.querySelector('.dashboard'); if(dash) dash.scrollTo({ top: 0, behavior: 'smooth' }); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// === NOVA FUNÇÃO DE ENCURTAR LINK ===
 window.encurtarUrl = async function(url) {
     if (!url || url.length < 35) return url;
     try {
@@ -1101,7 +1120,6 @@ window.encurtarUrl = async function(url) {
         return innerData.shorturl || url;
     } catch(e) { return url; }
 };
-
 window.wpp = async function(tipo) {
     var w = window.open('', '_blank');
     if(w) w.document.write('<h3 style="font-family:sans-serif; text-align:center; margin-top:20vh; color:#3b82f6;">A gerar link curto do WhatsApp... Aguarde ⏳</h3>');
@@ -1261,6 +1279,9 @@ window.importarBackupJSON = function(input) {
     reader.readAsText(file); input.value = ""; 
 };
 
+// ==========================================
+// FUNÇÃO BLINDADA: ATUALIZA APENAS A EMBALAGEM
+// ==========================================
 window.forcarRecalculoGeral = function() {
     if(!confirm("⚠️ ATENÇÃO: Isto vai atualizar APENAS OS CUSTOS DE EMBALAGEM E DESLOCAMENTO de todas as vendas para refletir os valores das configurações.\n\nO Valor da Venda (Grana recebida) ficará INTACTO! Deseja continuar?")) return;
     
@@ -1278,6 +1299,9 @@ window.forcarRecalculoGeral = function() {
     showToast("✅ " + corrigidos + " custos logísticos atualizados!"); fecharModal('configModal');
 };
 
+// ==========================================
+// 14. SINCRONIZADOR GLOBAL DO CATÁLOGO BLINDADO
+// ==========================================
 window.sincronizarTudoComCatalogo = function() {
     if(!confirm("⚠️ ATENÇÃO: Isso vai atualizar APENAS:\n- Tempo de Impressão\n- Peso de Filamento\n- Custo de Fabricação\n- Materiais\n\nOs valores de Venda (Grana) ficarão 100% INTACTOS. Deseja continuar?")) return;
     
