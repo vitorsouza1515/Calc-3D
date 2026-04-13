@@ -136,9 +136,9 @@ function pegaTexto(id) { var el = document.getElementById(id); if (el) { return 
 function parseLocal(val) { if (val === undefined || val === null || val === '') return 0; if (typeof val === 'number') return val; var str = val.toString(); if (str.includes(',') && str.includes('.')) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; } if (str.includes(',')) { return parseFloat(str.replace(',', '.')) || 0; } return parseFloat(str) || 0; }
 function salvarDinamico(idCampo) { var el = document.getElementById(idCampo); if (el) { localStorage.setItem('3d4y_dark_' + idCampo, el.value); } }
 function salvarDinamicoValor(idCampo, valor) { var el = document.getElementById(idCampo); if (el) el.value = valor; localStorage.setItem('3d4y_dark_' + idCampo, valor); }
-// ADICIONADO idPedidoMarketplace e obsVenda
 var dynIds = ['nomeProjeto', 'nomeCliente', 'telefoneCliente', 'pesoPeca', 'tempoH', 'valorPersonalizado', 'tipoFilamento1', 'corFilamento1', 'marcaFilamento1', 'qtdPecasProjeto', 'precoFixoCatMain', 'fotoUrlProjeto', 'dataProjeto', 'idPedidoMarketplace', 'obsVenda'];
 function updateSliderProgress(slider) { if (!slider) return; var value = (slider.value - slider.min) / (slider.max - slider.min) * 100; slider.style.background = 'linear-gradient(to right, #3b82f6 ' + value + '%, #334155 ' + value + '%)'; }
+
 // ==========================================
 // 7. MODAIS E CONFIGURAÇÕES
 // ==========================================
@@ -648,9 +648,6 @@ function calcular() {
         totM = (Math.round(pAvgML * 100) / 100) * totalQtd;
     }
     
-    // ========================================================
-    // INJEÇÃO: SUBSTITUI O QUADRO GIGANTE SE FOR PERSONALIZADO
-    // ========================================================
     var elCanalSel = document.getElementById('canalVendaSelecionado');
     if (elCanalSel && elCanalSel.value === 'Personalizado') {
         var vP = pegaValor('valorPersonalizado');
@@ -661,7 +658,6 @@ function calcular() {
             else vd = vP;
         }
     }
-    // ========================================================
     
     var rVendaD = document.getElementById('r_vendaD'); if(rVendaD) rVendaD.textContent = formatarMoeda(vd); 
     var rVendaS = document.getElementById('r_vendaS'); if(rVendaS) rVendaS.textContent = formatarMoeda(totS); 
@@ -944,6 +940,7 @@ window.darBaixaEstoqueVenda = function(h) {
         renderEstoque();
     }
 };
+
 function renderHistorico() {
     var lista = document.getElementById('listaHistorico'); if(!lista) return; var filtroDiv = document.getElementById('filtroHistorico');
     var somaCusto = 0, somaBruto = 0, somaLiquido = 0, somaLucro = 0, somaLogistica = 0, somaDireta = 0, somaShopee = 0, somaMeli = 0, qtdDireta = 0, qtdShopee = 0, qtdMeli = 0, qtdValida = 0, totDevolvido = 0;
@@ -1032,13 +1029,13 @@ function renderHistorico() {
             htmlFoto = fotoParaMostrar ? `<div style="width:40px; height:40px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:8px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
         
-        // TÍTULO COMPACTO COM TAG DE VOLTA E COM A OBSERVAÇÃO
-        var obsHtml = item.obsVenda ? ` <span style="font-size: 0.75rem; color: #00d2ff; font-weight: 600;">(Obs: ${item.obsVenda})</span>` : '';
-        var titleHtml = `<h4 style="margin:0; line-height: 1.2; font-size: 0.9rem; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.55rem; color:${corTextoTag}; background:${corTag}; padding:2px 4px; border-radius:4px; margin-right:4px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${obsHtml}${tagUrgente}${checkEstoque}${lockIcon}</h4>`;
+        // TÍTULO COMPACTO COM TAG DE VOLTA (sem obsVenda aqui)
+        var titleHtml = `<h4 style="margin:0; line-height: 1.2; font-size: 0.9rem; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.55rem; color:${corTextoTag}; background:${corTag}; padding:2px 4px; border-radius:4px; margin-right:4px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>`;
         
-        // CRM COM ESPAÇAMENTOS DIMINUIDOS
-        var crmHtml = item.cliente ? `<div style="font-size: 0.6rem; color: var(--sky); margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
-        if (item.idPedido) crmHtml += `<div style="font-size: 0.6rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
+        // CRM COM ESPAÇAMENTOS DIMINUIDOS E OBSERVAÇÃO EM DESTAQUE
+        var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
+        if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
+        if (item.obsVenda) crmHtml += `<div style="font-size: 0.70rem; color: #ef4444; margin-top: 4px; font-weight: 800; background: rgba(239, 68, 68, 0.1); padding: 4px 6px; border-radius: 6px; border: 1px dashed rgba(239, 68, 68, 0.3);">📌 Obs: ${item.obsVenda}</div>`;
 
         // BOTÕES NA MEDIDA CERTA
         var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
