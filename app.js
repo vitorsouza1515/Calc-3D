@@ -174,7 +174,7 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
                 var itemBaseTotal = iValLucro + (cLog * itemRatio);
                 var itemBaseUnit = itemBaseTotal / iQtd;
                 var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-                if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
+                if (p1 <= 79.99) bestPShp = p1; else if (p2 <= 99.99) bestPShp = p2; else if (p3 <= 199.99) bestPShp = p3; else bestPShp = p4;
                 var unitGross = Math.round(bestPShp * 100) / 100;
                 simulatedGrossList.push(unitGross);
                 totalSimulatedGross += (unitGross * iQtd);
@@ -187,11 +187,13 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
             var iQtd = parseLocal(i.qtd || 1);
             var actualUnitGross = Math.round((simulatedGrossList[idx] * scale) * 100) / 100;
             var feeSUnit = 0;
-            if (actualUnitGross <= 79.991) feeSUnit = (Math.round(actualUnitGross * 0.20 * 100) / 100) + 4;
-            else if (actualUnitGross <= 99.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 16;
-            else if (actualUnitGross <= 199.991) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 20;
+            // REGRA DA SHOPEE POR UNIDADE AQUI:
+            if (actualUnitGross <= 79.99) feeSUnit = (Math.round(actualUnitGross * 0.20 * 100) / 100) + 4;
+            else if (actualUnitGross <= 99.99) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 16;
+            else if (actualUnitGross <= 199.99) feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 20;
             else feeSUnit = (Math.round(actualUnitGross * 0.14 * 100) / 100) + 26;
-            feeShpTotal += (feeSUnit * iQtd);
+            
+            feeShpTotal += (feeSUnit * iQtd); // MULTIPLICA A TAXA PELA QTD DE ITENS
             
             var fixMl = (actualUnitGross >= 79.99) ? 0 : pegaValor('fixaMeli');
             var feeMUnit = (Math.round(actualUnitGross * txMl * 100) / 100) + fixMl;
@@ -201,12 +203,15 @@ function descontarTaxas(valorBruto, qtdTotal, cartItemsArray) {
         var qTotalLocal = parseLocal(qtdTotal);
         if (qTotalLocal < 1) qTotalLocal = 1;
         var avgBruto = Math.round((parseLocal(valorBruto) / qTotalLocal) * 100) / 100;
+        
         var feeShpUnit = 0;
-        if (avgBruto <= 79.991) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
-        else if (avgBruto <= 99.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 16;
-        else if (avgBruto <= 199.991) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 20;
+        // REGRA DA SHOPEE POR UNIDADE AQUI:
+        if (avgBruto <= 79.99) feeShpUnit = (Math.round(avgBruto * 0.20 * 100) / 100) + 4;
+        else if (avgBruto <= 99.99) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 16;
+        else if (avgBruto <= 199.99) feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 20;
         else feeShpUnit = (Math.round(avgBruto * 0.14 * 100) / 100) + 26;
-        feeShpTotal = feeShpUnit * qTotalLocal;
+        
+        feeShpTotal = feeShpUnit * qTotalLocal; // MULTIPLICA A TAXA PELA QTD DE ITENS
         
         var fixMl = (avgBruto >= 79.99) ? 0 : pegaValor('fixaMeli');
         var feeMlUnit = (Math.round(avgBruto * txMl * 100) / 100) + fixMl;
@@ -335,8 +340,8 @@ function renderCarrinho() {
         } else {
             var itemRatio = iValLucro / totBaseForRatio, itemBaseTotal = iValLucro + (cLog * itemRatio), itemBaseUnit = itemBaseTotal / iQtd;
             var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-            if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-            totS += (Math.round(bestPShp * 100) / 100) * iQtd;
+            if (p1 <= 79.99) bestPShp = p1; else if (p2 <= 99.99) bestPShp = p2; else if (p3 <= 199.99) bestPShp = p3; else bestPShp = p4;
+            totS += (Math.round(bestPShp * 100) / 100) * iQtd; // MULTIPLICA A QTD
             var txMl = pegaValor('taxaMeli')/100, pAvgML_noFix = itemBaseUnit / (1 - txMl);
             var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
             totM += (Math.round(bestPMeli * 100) / 100) * iQtd; totD += itemBaseTotal;
@@ -629,8 +634,8 @@ function calcular() {
             } else {
                 var itemRatio = iValLucro / totBaseForRatio, itemBaseTotal = iValLucro + (cLog * itemRatio), itemBaseUnit = itemBaseTotal / iQtd;
                 var p1 = (itemBaseUnit + 4) / 0.80, p2 = (itemBaseUnit + 16) / 0.86, p3 = (itemBaseUnit + 20) / 0.86, p4 = (itemBaseUnit + 26) / 0.86, bestPShp;
-                if (p1 <= 79.991) bestPShp = p1; else if (p2 <= 99.991) bestPShp = p2; else if (p3 <= 199.991) bestPShp = p3; else bestPShp = p4;
-                totS += (Math.round(bestPShp * 100) / 100) * iQtd; 
+                if (p1 <= 79.99) bestPShp = p1; else if (p2 <= 99.99) bestPShp = p2; else if (p3 <= 199.99) bestPShp = p3; else bestPShp = p4;
+                totS += (Math.round(bestPShp * 100) / 100) * iQtd; // MULTIPLICA A QTD
                 var txMl = pegaValor('taxaMeli')/100, pAvgML_noFix = itemBaseUnit / (1 - txMl);
                 var bestPMeli = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (itemBaseUnit + pegaValor('fixaMeli')) / (1 - txMl);
                 totM += (Math.round(bestPMeli * 100) / 100) * iQtd; vd += itemBaseTotal;
@@ -641,8 +646,8 @@ function calcular() {
         custoProducaoTotal = custoProducao; vd = valorComLucro + cLog + frete; 
         var vShopeeBase = valorComLucro + cLog; var avgBase = vShopeeBase / totalQtd;
         var p1 = (avgBase + 4) / 0.80, p2 = (avgBase + 16) / 0.86, p3 = (avgBase + 20) / 0.86, p4 = (avgBase + 26) / 0.86, bestPAvg; 
-        if (p1 <= 79.991) bestPAvg = p1; else if (p2 <= 99.991) bestPAvg = p2; else if (p3 <= 199.991) bestPAvg = p3; else bestPAvg = p4;
-        totS = (Math.round(bestPAvg * 100) / 100) * totalQtd; 
+        if (p1 <= 79.99) bestPAvg = p1; else if (p2 <= 99.99) bestPAvg = p2; else if (p3 <= 199.99) bestPAvg = p3; else bestPAvg = p4;
+        totS = (Math.round(bestPAvg * 100) / 100) * totalQtd; // MULTIPLICA A QTD
         var txMl = pegaValor('taxaMeli')/100, pAvgML_noFix = avgBase / (1 - txMl); 
         var pAvgML = (pAvgML_noFix >= 79.99) ? pAvgML_noFix : (avgBase + pegaValor('fixaMeli')) / (1 - txMl);
         totM = (Math.round(pAvgML * 100) / 100) * totalQtd;
