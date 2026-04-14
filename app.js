@@ -973,7 +973,7 @@ function renderHistorico() {
         
         if(matchBusca) {
             counts[st] = (counts[st] || 0) + 1;
-            counts['Todos']++; // Correção do Bug: Agora conta todas as vendas do filtro de dias/busca independentemente da aba!
+            counts['Todos']++; 
         }
         
         if (st !== 'Orçamento' && st !== 'Devolução' && matchBusca) {
@@ -1009,7 +1009,6 @@ function renderHistorico() {
         var checkEstoque = item.estoqueBaixado ? `<span style="font-size:0.55rem; color:#10b981; margin-left:5px;" title="Estoque Descontado">📉 OK</span>` : '';
         var lockIcon = item.vendaIsolada ? `<span style="font-size:0.65rem; margin-left:5px;" title="Venda Protegida: Alterações no catálogo não afetam este pedido">🔒</span>` : '';
         
-        // FOTO MAIS COMPACTA (de 45px para 40px)
         var htmlFoto = '';
         if (item.cartItems && item.cartItems.length > 1) {
             var fotosValidas = item.cartItems.map(i => i.foto).filter(f => f && f.trim() !== '');
@@ -1029,15 +1028,12 @@ function renderHistorico() {
             htmlFoto = fotoParaMostrar ? `<div style="width:40px; height:40px; border-radius:6px; background-image:url('${fotoParaMostrar}'); background-size:cover; background-position:center; margin-right:8px; border:1px solid var(--border); flex-shrink:0;"></div>` : '';
         }
         
-        // TÍTULO COMPACTO COM TAG DE VOLTA (sem obsVenda aqui)
         var titleHtml = `<h4 style="margin:0; line-height: 1.2; font-size: 0.9rem; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.55rem; color:${corTextoTag}; background:${corTag}; padding:2px 4px; border-radius:4px; margin-right:4px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>`;
         
-        // CRM COM ESPAÇAMENTOS DIMINUIDOS E OBSERVAÇÃO EM DESTAQUE
         var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
         if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
         if (item.obsVenda) crmHtml += `<div style="font-size: 0.70rem; color: #ef4444; margin-top: 4px; font-weight: 800; background: rgba(239, 68, 68, 0.1); padding: 4px 6px; border-radius: 6px; border: 1px dashed rgba(239, 68, 68, 0.3);">📌 Obs: ${item.obsVenda}</div>`;
 
-        // BOTÕES NA MEDIDA CERTA
         var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
         var btnDescer = `<button onclick="moverFila(${item.id}, 1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Descer na Fila">⬇️</button>`;
         var filaBtnsHtml = isFila ? `<div style="display:flex; gap:4px;">${btnSubir}${btnDescer}</div>` : '';
@@ -1047,7 +1043,6 @@ function renderHistorico() {
         var btnExcluir = `<button onclick="removerItem(${item.id})" style="color:#ef4444;background:none;border:none;font-size:1.3rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button>`;
         var botoesDireita = `<div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">${btnFalha}${btnEditar}${btnExcluir}</div>`;
         
-        // BARRA INFERIOR DE STATUS E AÇÕES COMPACTA
         var barraAcoes = `
         <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(0,0,0,0.2); padding: 6px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-top: 6px;">
             <select class="status-select ${colorClass}" style="width: 100%; margin: 0; font-size: 0.8rem; padding: 4px;" onchange="mudarStatus(${item.id}, this.value)">
@@ -1064,7 +1059,6 @@ function renderHistorico() {
             </div>
         </div>`;
 
-        // MONTAGEM FINAL COM GRID DE VALORES APERTADO
         lista.innerHTML += `<div class="history-item" style="${bordaUrgente} padding: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 2px;">
                 ${htmlFoto}
