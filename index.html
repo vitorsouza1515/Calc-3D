@@ -79,14 +79,18 @@
                     <input type="text" id="nomeProjeto" placeholder="Ex: Vaso Artístico v2" oninput="salvarDinamico('nomeProjeto')">
                 </div>
                 
-                <div class="grid-2">
+                <div class="grid-3">
                     <div class="input-group">
-                        <label style="color: var(--sky);">Qtd. de Peças</label>
+                        <label style="color: var(--sky);">Qtd. Peças</label>
                         <input type="text" inputmode="numeric" id="qtdPecasProjeto" value="1" placeholder="Ex: 5" style="border-color: var(--sky);" oninput="aplicarMascara(this); salvarDinamico('qtdPecasProjeto'); calcular()">
                     </div>
                     <div class="input-group">
-                        <label>Data da Venda</label>
+                        <label>Data Venda</label>
                         <input type="text" id="dataProjeto" placeholder="DD/MM/AAAA" maxlength="10">
+                    </div>
+                    <div class="input-group">
+                        <label style="color: #ef4444; font-weight: bold;">Prazo (Dias)</label>
+                        <input type="text" inputmode="numeric" id="prazoDias" placeholder="Ex: 3" style="border-color: #ef4444;" oninput="aplicarMascara(this); salvarDinamico('prazoDias')">
                     </div>
                 </div>
                 
