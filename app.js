@@ -218,29 +218,39 @@ function editarDespesa(id) { var d=despesas.find(e=>e.id===id); if(d) { document
 
 function atualizarLucroReal() { 
     var valLucro = parseLocal(document.getElementById('tot_lucro').textContent), valDesp = parseLocal(document.getElementById('tot_despesas').textContent), real = valLucro - valDesp, elReal = document.getElementById('tot_lucro_real'); if(elReal) elReal.textContent = formatarMoeda(real); 
+    
     var wrapTotals = document.querySelector('#wrap_hist_totals .total-summary');
     if (wrapTotals && !document.getElementById('tot_abs_caixa')) {
         var divAbs = document.createElement('div');
         divAbs.style = "margin-top: 15px; padding-top: 15px; border-top: 2px dashed rgba(56, 189, 248, 0.4);";
-        divAbs.innerHTML = '<span style="font-size: 0.75rem; font-weight: 900; color: var(--sky); text-transform: uppercase;">🏆 Totais Absolutos (Todo o Histórico)</span><div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fff;">CAIXA REAL GERAL:</span><b style="color: var(--sky); font-size: 1.1rem;">R$ <span id="tot_abs_caixa">0,00</span></b></div><div class="total-row" style="margin-top: 4px;"><span>Total PIX / Direta:</span><b style="color: var(--success);">R$ <span id="tot_abs_direta">0,00</span></b></div><div class="total-row"><span>Total Shopee:</span><b style="color: var(--shopee);">R$ <span id="tot_abs_shopee">0,00</span></b></div><div class="total-row"><span>Total M. Livre:</span><b style="color: var(--meli);">R$ <span id="tot_abs_meli">0,00</span></b></div>';
+        divAbs.innerHTML = '<span style="font-size: 0.75rem; font-weight: 900; color: var(--sky); text-transform: uppercase;">🏆 Totais Absolutos (Todo o Histórico)</span><div class="total-row" style="margin-top: 8px;"><span style="font-weight: bold; color: #fff;">TOTAL DE VENDAS GERAL:</span><b style="color: #fff; font-size: 1.1rem;" id="tot_abs_qtd">0</b></div><div class="total-row" style="margin-top: 4px;"><span style="font-weight: bold; color: #fff;">CAIXA REAL GERAL:</span><b style="color: var(--sky); font-size: 1.1rem;">R$ <span id="tot_abs_caixa">0,00</span></b></div><div class="total-row" style="margin-top: 8px;"><span>Total PIX / Direta (<span id="qtd_abs_direta">0</span>):</span><b style="color: var(--success);">R$ <span id="tot_abs_direta">0,00</span></b></div><div class="total-row"><span>Total Shopee (<span id="qtd_abs_shopee">0</span>):</span><b style="color: var(--shopee);">R$ <span id="tot_abs_shopee">0,00</span></b></div><div class="total-row"><span>Total M. Livre (<span id="qtd_abs_meli">0</span>):</span><b style="color: var(--meli);">R$ <span id="tot_abs_meli">0,00</span></b></div>';
         wrapTotals.appendChild(divAbs);
     }
-    var absShopee = 0, absMeli = 0, absDireta = 0, absLucro = 0, absDespesas = 0;
+    
+    var absShopee = 0, absMeli = 0, absDireta = 0, absLucro = 0, absDespesas = 0, absQtd = 0, absQtdShopee = 0, absQtdMeli = 0, absQtdDireta = 0;
     historico.forEach(function(item) {
         var st = item.status || "Finalizado";
         if (st !== 'Orçamento' && st !== 'Devolução') {
             var custoItem = parseLocal(item.custo), freteLogItem = parseLocal(item.frete || 0) + parseLocal(item.logistica || 0), canalStr = item.canal || "Direta";
             var valLiq = item.valorLiquido !== undefined ? parseLocal(item.valorLiquido) : (item.valorVenda !== undefined ? parseLocal(item.valorVenda) : parseLocal(item.pix));
             absLucro += (valLiq - custoItem - freteLogItem);
-            if(canalStr === "Shopee") { absShopee += valLiq; } else if(canalStr === "Meli") { absMeli += valLiq; } else { absDireta += valLiq; }
+            absQtd++;
+            if(canalStr === "Shopee") { absShopee += valLiq; absQtdShopee++; } else if(canalStr === "Meli") { absMeli += valLiq; absQtdMeli++; } else { absDireta += valLiq; absQtdDireta++; }
         }
     });
     despesas.forEach(function(d) { absDespesas += parseLocal(d.valor); });
+    
     var absCaixa = absLucro - absDespesas;
+    
     var elAbsCaixa = document.getElementById('tot_abs_caixa'); if(elAbsCaixa) elAbsCaixa.textContent = formatarMoeda(absCaixa);
+    var elAbsQtd = document.getElementById('tot_abs_qtd'); if(elAbsQtd) elAbsQtd.textContent = absQtd;
     var elAbsDireta = document.getElementById('tot_abs_direta'); if(elAbsDireta) elAbsDireta.textContent = formatarMoeda(absDireta);
     var elAbsShopee = document.getElementById('tot_abs_shopee'); if(elAbsShopee) elAbsShopee.textContent = formatarMoeda(absShopee);
     var elAbsMeli = document.getElementById('tot_abs_meli'); if(elAbsMeli) elAbsMeli.textContent = formatarMoeda(absMeli);
+    
+    var elQtdDir = document.getElementById('qtd_abs_direta'); if(elQtdDir) elQtdDir.textContent = absQtdDireta;
+    var elQtdShp = document.getElementById('qtd_abs_shopee'); if(elQtdShp) elQtdShp.textContent = absQtdShopee;
+    var elQtdMel = document.getElementById('qtd_abs_meli'); if(elQtdMel) elQtdMel.textContent = absQtdMeli;
 }
 
 window.cancelarEdicaoVenda = function() { editHistoricoId = null; document.getElementById('btn_salvar_venda_main').textContent = "💾 Salvar Venda"; document.getElementById('btn_salvar_venda_main').style.background = "var(--purple)"; var btnCancelVenda = document.getElementById('btn_cancelar_edicao_venda'); if(btnCancelVenda) btnCancelVenda.style.display = "none"; resetarDados(); showToast("❌ Edição de venda cancelada"); }
