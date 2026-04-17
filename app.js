@@ -984,7 +984,9 @@ function renderHistorico() {
                 var gridCols = fotosValidas.length > 1 ? '1fr 1fr' : '1fr';
                 var gridRows = fotosValidas.length > 2 ? '1fr 1fr' : '1fr';
                 htmlFoto = `<div style="width:40px; height:40px; border-radius:6px; margin-right:8px; flex-shrink:0; display:grid; grid-template-columns:${gridCols}; grid-template-rows:${gridRows}; gap:2px; overflow:hidden; border:1px solid var(--border);">`;
-                fotosValidas.slice(0, 4).forEach(f => { htmlFoto += `<div style="background-image:url('${f}'); background-size:cover; background-position:center; width:100%; height:100%;"></div>`; });
+                fotosValidas.slice(0, 4).forEach(f => {
+                    htmlFoto += `<div style="background-image:url('${f}'); background-size:cover; background-position:center; width:100%; height:100%;"></div>`;
+                });
                 htmlFoto += `</div>`;
             }
         }
@@ -999,14 +1001,26 @@ function renderHistorico() {
         var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
         if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
         
+        // === NOVA LÓGICA DE PRAZO (Pula para o próximo dia útil + adiciona os dias corridos) ===
         var countdownHtml = "";
         if (item.prazoDias && parseLocal(item.prazoDias) > 0 && (st === 'Orçamento' || st === 'Na Fila' || st === 'Imprimindo')) {
             var parts = (item.data || "").split('/');
             if (parts.length === 3) {
                 var baseTime = new Date(item.timestampCriacao || item.id);
                 if (isNaN(baseTime.getTime())) baseTime = new Date();
+                
+                // 1. Inicia na data da venda 
                 var targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds());
-                var targetMs = targetDate.getTime() + (parseLocal(item.prazoDias) * 24 * 60 * 60 * 1000);
+                
+                // 2. Avança para o PRÓXIMO DIA ÚTIL
+                do {
+                    targetDate.setDate(targetDate.getDate() + 1);
+                } while (targetDate.getDay() === 0 || targetDate.getDay() === 6); // Pula Domingo (0) e Sábado (6)
+                
+                // 3. Adiciona os dias corridos do prazo
+                targetDate.setDate(targetDate.getDate() + parseLocal(item.prazoDias));
+                
+                var targetMs = targetDate.getTime();
                 var diff = targetMs - Date.now();
                 
                 if (diff > 0) {
