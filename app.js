@@ -1001,7 +1001,7 @@ function renderHistorico() {
         var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
         if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
         
-        // === NOVA LÓGICA DE PRAZO (Pula para o próximo dia útil + adiciona os dias corridos) ===
+        // === LÓGICA DO CONTAGEM REGRESSIVA (SÁBADO CONTA, SÓ PULA DOMINGO) ===
         var countdownHtml = "";
         if (item.prazoDias && parseLocal(item.prazoDias) > 0 && (st === 'Orçamento' || st === 'Na Fila' || st === 'Imprimindo')) {
             var parts = (item.data || "").split('/');
@@ -1009,16 +1009,17 @@ function renderHistorico() {
                 var baseTime = new Date(item.timestampCriacao || item.id);
                 if (isNaN(baseTime.getTime())) baseTime = new Date();
                 
-                // 1. Inicia na data da venda 
                 var targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds());
+                var diasRestantes = parseLocal(item.prazoDias);
+                var diasAdicionados = 0;
                 
-                // 2. Avança para o PRÓXIMO DIA ÚTIL
-                do {
+                // Pula apenas o DOMINGO (dia 0). Adiciona um dia e verifica se deve contar.
+                while (diasAdicionados < diasRestantes) {
                     targetDate.setDate(targetDate.getDate() + 1);
-                } while (targetDate.getDay() === 0 || targetDate.getDay() === 6); // Pula Domingo (0) e Sábado (6)
-                
-                // 3. Adiciona os dias corridos do prazo
-                targetDate.setDate(targetDate.getDate() + parseLocal(item.prazoDias));
+                    if (targetDate.getDay() !== 0) { 
+                        diasAdicionados++;
+                    }
+                }
                 
                 var targetMs = targetDate.getTime();
                 var diff = targetMs - Date.now();
