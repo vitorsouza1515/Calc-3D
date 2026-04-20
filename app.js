@@ -449,6 +449,10 @@ window.resetarQA = function() {
         window.qaOffset = window.horasTotaisImpressasGlobal; 
         syncNuvem(); 
         var m = document.getElementById('configModal'); if(m) m.style.display='none'; 
+        
+        // 🔥 AQUI ESTÁ A MÁGICA: Força a tela a atualizar a barrinha na mesma hora!
+        renderHistorico(); 
+        
         showToast("🔧 Manutenção Zerada!"); 
     } 
 };
@@ -1573,20 +1577,30 @@ window.fazerBackupJSON = function() {
     var dadosCompletos = { historico: historico, estoque: estoque, catalogo: catalogo, despesas: despesas, configGlobais: window.configGlobais, qaOffset: window.qaOffset, migrado: true };
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosCompletos)), downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "Backup_3D4You_Seguro.json"); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); showToast("📦 Backup descarregado com sucesso!");
 };
-
 window.importarBackupJSON = function(input) {
     var file = input.files[0]; if (!file) return; var reader = new FileReader();
     reader.onload = async function(e) { 
         try { 
             var dados = JSON.parse(e.target.result); 
             showToast("⏳ A restaurar base de dados... Aguarde!", false);
-            if (dados.historico) for (let h of dados.historico) { await nuvemRef.collection('historico').doc(h.id.toString()).set(h); }
-            if (dados.estoque) for (let es of dados.estoque) { await nuvemRef.collection('estoque').doc(es.id.toString()).set(es); }
-            if (dados.catalogo) for (let c of dados.catalogo) { await nuvemRef.collection('catalogo').doc(c.id.toString()).set(c); }
-            if (dados.despesas) for (let d of dados.despesas) { await nuvemRef.collection('despesas').doc(d.id.toString()).set(d); }
-            if (dados.configGlobais) await nuvemRef.update({ configGlobais: dados.configGlobais, qaOffset: dados.qaOffset || 0, migrado: true });
+            
+            // 🔥 Adicionamos "if(h && h.id)" para ignorar linhas vazias que poderiam travar a leitura
+            if (dados.historico) for (let h of dados.historico) { if(h && h.id) await nuvemRef.collection('historico').doc(h.id.toString()).set(h); }
+            if (dados.estoque) for (let es of dados.estoque) { if(es && es.id) await nuvemRef.collection('estoque').doc(es.id.toString()).set(es); }
+            if (dados.catalogo) for (let c of dados.catalogo) { if(c && c.id) await nuvemRef.collection('catalogo').doc(c.id.toString()).set(c); }
+            if (dados.despesas) for (let d of dados.despesas) { if(d && d.id) await nuvemRef.collection('despesas').doc(d.id.toString()).set(d); }
+            
+            // 🔥 MUDANÇA CRUCIAL: Usar .set() com merge:true evita que o Firebase trave se a conta for totalmente nova
+            var offsetSalvar = dados.qaOffset !== undefined ? dados.qaOffset : 0;
+            if (dados.configGlobais) {
+                await nuvemRef.set({ configGlobais: dados.configGlobais, qaOffset: offsetSalvar, migrado: true }, {merge: true});
+            }
+            
             showToast("📥 Base de dados restaurada!"); setTimeout(() => location.reload(), 1500); 
-        } catch (error) { showToast("❌ Erro ao ler o ficheiro .json", true); console.error(error); } 
+        } catch (error) { 
+            showToast("❌ Erro ao ler o ficheiro .json", true); 
+            console.error(error); 
+        } 
     };
     reader.readAsText(file); input.value = ""; 
 };
