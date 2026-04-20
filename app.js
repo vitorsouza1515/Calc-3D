@@ -775,12 +775,16 @@ function salvarNoCatalogo() {
 
 function renderCatalogo() { 
     var sel=document.getElementById('sel_catalogo'); var lista=document.getElementById('lista_catalogo'); if(!sel||!lista) return; 
+    
+    // 🔥 AQUI ESTÁ A MÁGICA: Criamos uma cópia do catálogo e ordenamos de A a Z
+    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+    
     var htmlSel='<option value="">-- Escolher produto cadastrado --</option>'; 
     var htmlLista='<div style="margin-bottom:15px; text-align:center;"><button onclick="sincronizarTudoComCatalogo()" style="background:var(--purple); width:100%; padding:10px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;"><span style="font-size:1.2rem">🔄</span> Sincronizar CUSTOS com o Catálogo Atual</button></div>'; 
-    if(catalogo.length===0) { 
+    if(catalogoOrdenado.length===0) { 
         htmlLista+='<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>'; 
     } else { 
-        catalogo.forEach(function(p) { 
+        catalogoOrdenado.forEach(function(p) { 
             htmlSel+=`<option value="${p.id}">${p.nome}</option>`; 
             var pesoTotal=parseLocal(p.peso1); 
             if(p.multi&&p.extras&&p.extras.length>0) { p.extras.forEach(function(ex) { pesoTotal+=parseLocal(ex.peso); }); } 
