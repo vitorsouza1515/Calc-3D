@@ -390,58 +390,48 @@ window.abrirConfigModal = function() {
     var m = document.getElementById('configModal'); if(m) m.style.display='block'; 
 };
 
-window.fecharModal = function(idModal) { 
+window.fecharModal = async function(idModal) { 
     var modal = document.getElementById(idModal);
     if(modal) modal.style.display = 'none'; 
-    
-    if (idModal === 'catalogoModal') { 
-        var boxCat = document.getElementById('boxEditCat');
-        if(boxCat) boxCat.style.display = 'none'; 
-        window.removerFotoCat(); 
-    } 
-    
+    if (idModal === 'catalogoModal') { var boxCat = document.getElementById('boxEditCat'); if(boxCat) boxCat.style.display = 'none'; window.removerFotoCat(); } 
     if (idModal === 'configModal') { 
         var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'); 
         if (nMaq > 0 && nVid > 0 && (nMaq !== window.oldBaseVals.maq || nVid !== window.oldBaseVals.vid || nCon !== window.oldBaseVals.con || nKwh !== window.oldBaseVals.kwh)) { 
             if(confirm("⚠️ Você alterou dados de Custo Operacional.\n\n[ OK ] Atualiza TODAS as vendas do histórico.\n[ CANCELAR ] Valerá apenas para vendas novas.")) { 
+                showToast("⏳ A atualizar custos no histórico... Aguarde!", false);
                 var oldDep = window.oldBaseVals.maq / (window.oldBaseVals.vid || 1), oldEne = (window.oldBaseVals.con / 1000) * window.oldBaseVals.kwh, newDep = nMaq / (nVid || 1), newEne = (nCon / 1000) * nKwh, deltaPorHora = (newDep + newEne) - (oldDep + oldEne); 
                 if (!isNaN(deltaPorHora) && isFinite(deltaPorHora)) { 
-                    historico.forEach(h => { 
+                    for (let i = 0; i < historico.length; i++) {
+                        let h = historico[i];
                         var hTempo = parseLocal(h.tempo) || 0; 
                         h.custo = (parseLocal(h.custo) || 0) + (deltaPorHora * hTempo); 
                         if(h.custo < 0) h.custo = 0; 
-                        if(h.cartItems) { 
-                            h.cartItems.forEach(ci => { 
-                                var ciTempo = parseLocal(ci.tempo) || 0; 
-                                ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo); 
-                                if(ci.custo < 0) ci.custo = 0; 
-                            }); 
-                        } 
-                        salvarNoFirebase('historico', h); 
-                    }); 
+                        if(h.cartItems) { h.cartItems.forEach(ci => { var ciTempo = parseLocal(ci.tempo) || 0; ci.custo = (parseLocal(ci.custo) || 0) + (deltaPorHora * ciTempo); if(ci.custo < 0) ci.custo = 0; }); } 
+                        if(nuvemRef && h.id) await nuvemRef.collection('historico').doc(h.id.toString()).set(JSON.parse(JSON.stringify(h)), {merge: true}); 
+                    }
                     showToast("✅ Passado Atualizado com Sucesso!"); 
                 } 
             } 
         } 
     } 
-    
     if (idModal === 'logisticaModal') { 
         var nEmb = pegaValor('custoEmbalagem'), nDes = pegaValor('custoDeslocamento'), oldEmb = parseLocal(window.configGlobais.custoEmbalagem || "0"), oldDes = parseLocal(window.configGlobais.custoDeslocamento || "0"); 
         if (nEmb !== oldEmb || nDes !== oldDes) { 
             if(confirm("⚠️ Atualiza TODAS as vendas já feitas no histórico?\n\n[ OK ] Sim.\n[ CANCELAR ] Apenas novas.")) { 
-                historico.forEach(h => { 
+                showToast("⏳ A atualizar logística no histórico... Aguarde!", false);
+                for (let i = 0; i < historico.length; i++) {
+                    let h = historico[i];
                     var novoLog = nEmb + nDes, deltaLogistica = novoLog - parseLocal(h.logistica || 0); 
                     h.logistica = novoLog; 
                     h.valorLiquido = (parseLocal(h.valorLiquido) || 0) - deltaLogistica; 
                     if (h.valorLiquido < 0) h.valorLiquido = 0; 
-                    salvarNoFirebase('historico', h); 
-                }); 
+                    if(nuvemRef && h.id) await nuvemRef.collection('historico').doc(h.id.toString()).set(JSON.parse(JSON.stringify(h)), {merge: true}); 
+                }
                 showToast("✅ Logística Atualizada no Histórico!"); 
             } 
         } 
     } 
-    syncNuvem(); 
-    calcular(); 
+    syncNuvem(); calcular(); 
 };
 
 window.resetarQA = function() { 
@@ -1605,21 +1595,33 @@ window.importarBackupJSON = function(input) {
     reader.readAsText(file); input.value = ""; 
 };
 
-window.forcarRecalculoGeral = function() {
+window.forcarRecalculoGeral = async function() {
     if(!confirm("⚠️ ATENÇÃO: Isto vai atualizar APENAS OS CUSTOS DE EMBALAGEM E DESLOCAMENTO de todas as vendas para refletir os valores das configurações.\n\nO Valor da Venda (Grana recebida) ficará INTACTO! Deseja continuar?")) return;
+    showToast("⏳ A atualizar custos logísticos... Aguarde!", false);
     var emb = pegaValor('custoEmbalagem'), des = pegaValor('custoDeslocamento'); var cLogGlobal = emb + des; var corrigidos = 0;
-    historico.forEach(h => {
-        if (h.status === 'Orçamento' || h.status === 'Devolução') return;
-        h.logistica = cLogGlobal; salvarNoFirebase('historico', h); corrigidos++;
-    });
-    showToast("✅ " + corrigidos + " custos logísticos atualizados!"); window.fecharModal('configModal');
+    for (let i = 0; i < historico.length; i++) {
+        let h = historico[i];
+        if (h.status === 'Orçamento' || h.status === 'Devolução') continue;
+        var deltaLogistica = cLogGlobal - parseLocal(h.logistica || 0);
+        if (deltaLogistica !== 0) {
+            h.logistica = cLogGlobal; 
+            h.valorLiquido = (parseLocal(h.valorLiquido) || 0) - deltaLogistica;
+            if (h.valorLiquido < 0) h.valorLiquido = 0;
+            if(nuvemRef && h.id) await nuvemRef.collection('historico').doc(h.id.toString()).set(JSON.parse(JSON.stringify(h)), {merge: true}); 
+            corrigidos++;
+        }
+    }
+    showToast("✅ " + corrigidos + " custos logísticos atualizados!"); 
+    window.fecharModal('configModal');
 };
 
-window.sincronizarTudoComCatalogo = function() {
+window.sincronizarTudoComCatalogo = async function() {
     if(!confirm("⚠️ ATENÇÃO: Isso vai atualizar APENAS:\n- Tempo de Impressão\n- Peso de Filamento\n- Custo de Fabricação\n- Materiais\n\nOs valores de Venda (Grana) ficarão 100% INTACTOS. Deseja continuar?")) return;
+    showToast("⏳ A sincronizar catálogo com histórico... Aguarde!", false);
     var nMaq = pegaValor('maquina'), nVid = pegaValor('vidaUtil'), nCon = pegaValor('consumoW'), nKwh = pegaValor('precoKwh'); var custoHoraBase = (nMaq / (nVid || 1)) + ((nCon / 1000) * nKwh); var taxaSucesso = (pegaValor('taxaSucesso') || 100) / 100; var atualizadas = 0;
-    historico.forEach(h => {
-        if (h.status === 'Orçamento' || h.status === 'Devolução' || h.vendaIsolada) return;
+    for (let i = 0; i < historico.length; i++) {
+        let h = historico[i];
+        if (h.status === 'Orçamento' || h.status === 'Devolução' || h.vendaIsolada) continue;
         var alterou = false;
         if (h.cartItems && h.cartItems.length > 0) {
             var novoCustoTotalCart = 0, novoPesoTotalCart = 0, novoTempoTotalCart = 0, novosMateriaisCart = [];
@@ -1632,15 +1634,17 @@ window.sincronizarTudoComCatalogo = function() {
                 }
                 novoCustoTotalCart += parseLocal(ci.custo); novoPesoTotalCart += parseLocal(ci.peso); novoTempoTotalCart += parseLocal(ci.tempo); if(ci.materiais && ci.materiais !== "Não informado") novosMateriaisCart.push(ci.materiais);
             });
-            if (alterou) { h.custo = novoCustoTotalCart; h.peso = novoPesoTotalCart; h.tempo = novoTempoTotalCart; h.materiais = novosMateriaisCart.join(' + ') || "Não informado"; salvarNoFirebase('historico', h); atualizadas++; }
+            if (alterou) { h.custo = novoCustoTotalCart; h.peso = novoPesoTotalCart; h.tempo = novoTempoTotalCart; h.materiais = novosMateriaisCart.join(' + ') || "Não informado"; if(nuvemRef && h.id) await nuvemRef.collection('historico').doc(h.id.toString()).set(JSON.parse(JSON.stringify(h)), {merge: true}); atualizadas++; }
         } else {
             var matchNome = h.nome.match(/^(\d+)x\s(.*)/); var baseNome = matchNome ? matchNome[2].trim().toLowerCase() : h.nome.trim().toLowerCase(); var matchCat = catalogo.find(c => c.nome.toLowerCase().trim() === baseNome);
             if (matchCat) {
                 alterou = true; var qtd = parseLocal(h.totalQtd || 1), tempoUnit = parseLocal(matchCat.tempo), pesoUnit = parseLocal(matchCat.peso1), pFil = parseLocal(matchCat.preco1) || 120; var matCost = (pFil / 1000) * pesoUnit, matArr = []; var n1 = (matchCat.tipo1 + ' ' + matchCat.cor1 + ' ' + (matchCat.marca1||'')).trim() || 'Filamento 1'; if(pesoUnit > 0) matArr.push(n1 + ' (' + formatarMoeda(pesoUnit * qtd) + 'g)');
                 if(matchCat.multi && matchCat.extras && matchCat.extras.length > 0) { matchCat.extras.forEach(ex => { var pE = parseLocal(ex.preco) || 120, pesE = parseLocal(ex.peso) || 0; matCost += (pE / 1000) * pesE; pesoUnit += pesE; var nx = (ex.tipo + ' ' + ex.cor + ' ' + (ex.marca||'')).trim() || 'Filamento Extra'; if(pesE > 0) matArr.push(nx + ' (' + formatarMoeda(pesE * qtd) + 'g)'); }); }
-                var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso; h.tempo = tempoUnit * qtd; h.peso = pesoUnit * qtd; h.custo = cUnit * qtd; h.materiais = matArr.join(' + '); salvarNoFirebase('historico', h); atualizadas++;
+                var cUnit = ((tempoUnit * custoHoraBase) + matCost) / taxaSucesso; h.tempo = tempoUnit * qtd; h.peso = pesoUnit * qtd; h.custo = cUnit * qtd; h.materiais = matArr.join(' + '); 
+                if(nuvemRef && h.id) await nuvemRef.collection('historico').doc(h.id.toString()).set(JSON.parse(JSON.stringify(h)), {merge: true}); 
+                atualizadas++;
             }
         }
-    });
+    }
     if (atualizadas > 0) { showToast("✅ " + atualizadas + " Vendas Atualizadas com o Catálogo!"); } else { showToast("✅ Nenhuma diferença encontrada para atualizar.", false); }
 };
