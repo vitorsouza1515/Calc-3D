@@ -195,20 +195,28 @@ function isWithinDays(dateStr, dias) {
 
 window.getDeadlineMs = function(item) { 
     var ms = item.timestampCriacao || item.id; 
-    if (item.prazoDias && parseLocal(item.prazoDias) > 0) { 
-        var parts = (item.data || "").split('/'); 
-        if (parts.length === 3) { 
-            var baseTime = new Date(item.timestampCriacao || item.id); 
-            if (isNaN(baseTime.getTime())) baseTime = new Date(); 
-            var targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds()); 
-            var diasRestantes = parseLocal(item.prazoDias); 
-            var diasAdicionados = 0; 
-            while (diasAdicionados < diasRestantes) { 
-                targetDate.setDate(targetDate.getDate() + 1); 
-                if (targetDate.getDay() !== 0) diasAdicionados++; 
+    if (item.prazoDias) { 
+        if (item.prazoDias.includes('/')) {
+            var pDias = item.prazoDias.split('/');
+            if (pDias.length === 3) {
+                var targetD = new Date(pDias[2], pDias[1] - 1, pDias[0], 23, 59, 59);
+                ms = targetD.getTime();
+            }
+        } else if (parseInt(item.prazoDias) > 0) {
+            var parts = (item.data || "").split('/'); 
+            if (parts.length === 3) { 
+                var baseTime = new Date(item.timestampCriacao || item.id); 
+                if (isNaN(baseTime.getTime())) baseTime = new Date(); 
+                var targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds()); 
+                var diasRestantes = parseInt(item.prazoDias); 
+                var diasAdicionados = 0; 
+                while (diasAdicionados < diasRestantes) { 
+                    targetDate.setDate(targetDate.getDate() + 1); 
+                    if (targetDate.getDay() !== 0) diasAdicionados++; 
+                } 
+                ms = targetDate.getTime(); 
             } 
-            ms = targetDate.getTime(); 
-        } 
+        }
     } else if (item.posicaoFila) { 
         ms = item.posicaoFila; 
     } 
@@ -1080,6 +1088,7 @@ window.onload = function() {
     if (divPerso && !document.getElementById('boxLiquidoExato')) { var elCB = document.createElement('div'); elCB.id = 'boxLiquidoExato'; elCB.style = 'margin-top: 12px; display: flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.1); padding: 10px; border-radius: 6px; border: 1px dashed rgba(56, 189, 248, 0.4);'; elCB.innerHTML = '<input type="checkbox" id="isLiquidoExato" style="width:18px;height:18px;accent-color:var(--sky);cursor:pointer;"><label for="isLiquidoExato" style="font-size:0.75rem;color:var(--sky);cursor:pointer;font-weight:600;line-height:1.2;">A Taxa deu diferença?<br><span style="font-size:0.6rem;font-weight:normal;opacity:0.8;">Marque aqui e digite acima apenas o LÍQUIDO EXATO que vai receber.</span></label>'; divPerso.appendChild(elCB); }
     var elDataP = document.getElementById('dataProjeto'); if (elDataP) { if (!elDataP.value) elDataP.value = new Date().toLocaleDateString('pt-BR'); elDataP.addEventListener('input', function() { mascaraData(this); salvarDinamico('dataProjeto'); }); }
     var elDataD = document.getElementById('dataDespesa'); if (elDataD) { if (!elDataD.value) elDataD.value = new Date().toLocaleDateString('pt-BR'); elDataD.addEventListener('input', function() { mascaraData(this); }); }
+    var elPrazo = document.getElementById('prazoDias'); if (elPrazo) { elPrazo.addEventListener('input', function() { mascaraData(this); salvarDinamico('prazoDias'); }); }
     var idsSave = ['margemSlider', 'margemInput', 'taxaMeli', 'fixaMeli', 'qtdPecasProjeto', 'desp_qtd', 'desp_valor', 'toggle_urgente'];
     idsSave.forEach(function(id) { var el = document.getElementById(id); if (el && el.dataset && el.dataset.save) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (el.type === 'checkbox') { el.checked = (saved === 'true'); } else { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } el.value = saved; } } } if (el) { if (el.tagName === 'INPUT' && el.type === 'text') { aplicarMascara(el); } el.addEventListener('input', function() { if (id === 'margemSlider') { var mInp = document.getElementById('margemInput'); if(mInp) { mInp.value = el.value; aplicarMascara(mInp); } updateSliderProgress(el); } if (id === 'margemInput') { var mSli = document.getElementById('margemSlider'); if(mSli) { mSli.value = pegaValor('margemInput'); updateSliderProgress(mSli); } } if (id === 'pesoPeca' || id === 'tempoH' || id === 'qtdPecasProjeto') calcular(); }); } });
     dynIds.forEach(function(id) { var el = document.getElementById(id); if(el) { var saved = localStorage.getItem('3d4y_dark_' + id); if (saved !== null) { if (id !== 'nomeProjeto' && id !== 'nomeCliente' && id !== 'telefoneCliente' && id !== 'tipoFilamento1' && id !== 'corFilamento1' && id !== 'marcaFilamento1' && id !== 'qtdPecasProjeto' && id !== 'precoFixoCatMain' && id !== 'fotoUrlProjeto' && id !== 'dataProjeto' && id !== 'idPedidoMarketplace' && id !== 'obsVenda' && id !== 'prazoDias') { if (saved.indexOf('.') !== -1 && saved.indexOf(',') === -1) { saved = saved.replace(/\./g, ','); } } el.value = saved; if (id === 'pesoPeca' || id === 'tempoH' || id === 'valorPersonalizado' || id === 'precoFixoCatMain') { aplicarMascara(el); } if (id === 'telefoneCliente') { mascaraTelefone(el); } } } });
@@ -1403,7 +1412,38 @@ function renderHistorico() {
             var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
             if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
             var countdownHtml = "";
-            if (item.prazoDias && parseLocal(item.prazoDias) > 0 && (st === 'Orçamento' || st === 'Na Fila' || st === 'Imprimindo')) { var parts = (item.data || "").split('/'); if (parts.length === 3) { var baseTime = new Date(item.timestampCriacao || item.id); if (isNaN(baseTime.getTime())) baseTime = new Date(); var targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds()); var diasRestantes = parseLocal(item.prazoDias); var diasAdicionados = 0; while (diasAdicionados < diasRestantes) { targetDate.setDate(targetDate.getDate() + 1); if (targetDate.getDay() !== 0) { diasAdicionados++; } } var diff = targetDate.getTime() - Date.now(); if (diff > 0) { var d = Math.floor(diff / (1000 * 60 * 60 * 24)); var h = Math.floor((diff / (1000 * 60 * 60)) % 24); countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 800; background: #ef4444; padding: 4px 6px; border-radius: 6px; display: inline-block; box-shadow: 0 0 10px rgba(239,68,68,0.5);">⏳ Envio em: ${d}d e ${h}h</div>`; } else { countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 900; background: #991b1b; padding: 4px 6px; border-radius: 6px; display: inline-block; border: 1px solid #ef4444;">🚨 ATRASADO!</div>`; } } }
+var countdownHtml = "";
+if (item.prazoDias && (st === 'Orçamento' || st === 'Na Fila' || st === 'Imprimindo')) { 
+    var targetDate = null;
+    if (item.prazoDias.includes('/')) {
+        var pDias = item.prazoDias.split('/');
+        if (pDias.length === 3) targetDate = new Date(pDias[2], pDias[1] - 1, pDias[0], 23, 59, 59);
+    } else if (parseInt(item.prazoDias) > 0) {
+        var parts = (item.data || "").split('/'); 
+        if (parts.length === 3) { 
+            var baseTime = new Date(item.timestampCriacao || item.id); 
+            if (isNaN(baseTime.getTime())) baseTime = new Date(); 
+            targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds()); 
+            var diasRestantes = parseInt(item.prazoDias); 
+            var diasAdicionados = 0; 
+            while (diasAdicionados < diasRestantes) { 
+                targetDate.setDate(targetDate.getDate() + 1); 
+                if (targetDate.getDay() !== 0) diasAdicionados++; 
+            } 
+        }
+    }
+    if (targetDate) {
+        var diff = targetDate.getTime() - Date.now(); 
+        if (diff > 0) { 
+            var d = Math.floor(diff / (1000 * 60 * 60 * 24)); 
+            var h = Math.floor((diff / (1000 * 60 * 60)) % 24); 
+            var textPrazo = item.prazoDias.includes('/') ? item.prazoDias : targetDate.toLocaleDateString('pt-BR');
+            countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 800; background: #ef4444; padding: 4px 6px; border-radius: 6px; display: inline-block; box-shadow: 0 0 10px rgba(239,68,68,0.5);">⏳ Postar até: ${textPrazo} (${d}d e ${h}h)</div>`; 
+        } else { 
+            countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 900; background: #991b1b; padding: 4px 6px; border-radius: 6px; display: inline-block; border: 1px solid #ef4444;">🚨 ATRASADO! (Era ${item.prazoDias})</div>`; 
+        } 
+    }
+}
             if (item.obsVenda) crmHtml += `<div style="font-size: 0.70rem; color: #ef4444; margin-top: 4px; font-weight: 800; background: rgba(239, 68, 68, 0.1); padding: 4px 6px; border-radius: 6px; border: 1px dashed rgba(239, 68, 68, 0.3);">📌 Obs: ${item.obsVenda}</div>`;
             if (countdownHtml !== "") crmHtml += `<div>${countdownHtml}</div>`;
             var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
