@@ -220,7 +220,7 @@ window.getDeadlineMs = function(item) {
     } else if (item.posicaoFila) { 
         ms = item.posicaoFila; 
     } 
-    if (item.urgente) { ms -= 31536000000; } 
+    if (item.urgente) { ms -= 315360000000; } 
     return ms; 
 };
 
@@ -775,19 +775,9 @@ function salvarNoCatalogo() {
 
 function renderCatalogo() { 
     var sel=document.getElementById('sel_catalogo'); var lista=document.getElementById('lista_catalogo'); if(!sel||!lista) return; 
-    var htmlSel='<option value="">-- Escolher produto cadastrado --</option>'; 
-    var htmlLista='<div style="margin-bottom:15px; text-align:center;"><button onclick="sincronizarTudoComCatalogo()" style="background:var(--purple); width:100%; padding:10px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;"><span style="font-size:1.2rem">🔄</span> Sincronizar CUSTOS com o Catálogo Atual</button></div>'; 
-    if(catalogo.length===0) { 
-        htmlLista+='<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>'; 
-    } else { 
-        catalogo.forEach(function(p) { 
-            htmlSel+=`<option value="${p.id}">${p.nome}</option>`; 
-            var pesoTotal=parseLocal(p.peso1); 
-            if(p.multi&&p.extras&&p.extras.length>0) { p.extras.forEach(function(ex) { pesoTotal+=parseLocal(ex.peso); }); } 
-            var pesoStr=formatarMoeda(pesoTotal)+'g', htmlPrecoFixo=p.precoFixo&&parseFloat(p.precoFixo.replace('.','').replace(',','.'))>0?' | Venda Fixo: R$ '+p.precoFixo:'', htmlFoto=p.foto?`<div style="width:40px; height:40px; border-radius:6px; background-image:url('${p.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>`:''; 
-            htmlLista+=`<div class="history-item"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">${htmlFoto}<div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${p.nome}</h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}${htmlPrecoFixo}</div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarDoCatalogo(${p.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerDoCatalogo(${p.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; 
-        }); 
-    } 
+    var catalogoOrdenado = [...catalogo].sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+    var htmlSel='<option value="">-- Escolher produto cadastrado --</option>'; var htmlLista='<div style="margin-bottom:15px; text-align:center;"><button onclick="sincronizarTudoComCatalogo()" style="background:var(--purple); width:100%; padding:10px; border-radius:8px; color:#fff; font-weight:bold; cursor:pointer; border:none; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;"><span style="font-size:1.2rem">🔄</span> Sincronizar CUSTOS com o Catálogo Atual</button></div>'; 
+    if(catalogoOrdenado.length===0) { htmlLista+='<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhum produto cadastrado</p>'; } else { catalogoOrdenado.forEach(function(p) { htmlSel+=`<option value="${p.id}">${p.nome}</option>`; var pesoTotal=parseLocal(p.peso1); if(p.multi&&p.extras&&p.extras.length>0) { p.extras.forEach(function(ex) { pesoTotal+=parseLocal(ex.peso); }); } var pesoStr=formatarMoeda(pesoTotal)+'g', htmlPrecoFixo=p.precoFixo&&parseFloat(p.precoFixo.replace('.','').replace(',','.'))>0?' | Venda Fixo: R$ '+p.precoFixo:'', htmlFoto=p.foto?`<div style="width:40px; height:40px; border-radius:6px; background-image:url('${p.foto}'); background-size:cover; background-position:center; margin-right:10px; border:1px solid var(--border); flex-shrink:0;"></div>`:''; htmlLista+=`<div class="history-item"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">${htmlFoto}<div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; word-wrap: break-word;">${p.nome}</h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Tempo: ${p.tempo}h | Peso Total: ${pesoStr}${htmlPrecoFixo}</div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarDoCatalogo(${p.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerDoCatalogo(${p.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; }); } 
     sel.innerHTML=htmlSel; lista.innerHTML=htmlLista; 
 }
 
@@ -984,18 +974,8 @@ function salvarDespesa() {
 function renderDespesas() { 
     var lista=document.getElementById('lista_despesas'); if(!lista) return; 
     var despesasFiltradas = despesas; 
-    if(despesasFiltradas.length===0) { 
-        lista.innerHTML='<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhuma despesa registrada</p>'; 
-        var td0=document.getElementById('tot_despesas'); if(td0) td0.textContent="0,00"; 
-    } else { 
-        var htmlFinal=""; var soma=0; 
-        despesasFiltradas.forEach(function(d) { 
-            soma+=d.valor; 
-            htmlFinal+=`<div class="history-item" style="border-color: rgba(239, 68, 68, 0.3);"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; color:var(--danger); word-wrap: break-word;">${d.qtd}x ${d.nome}</h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Valor Total: R$ ${formatarMoeda(d.valor)} <span style="opacity:0.5; font-size:0.6rem; margin-left:10px;">${d.data}</span></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarDespesa(${d.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerDespesa(${d.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; 
-        }); 
-        lista.innerHTML=htmlFinal; 
-        var td=document.getElementById('tot_despesas'); if(td) td.textContent=formatarMoeda(soma); 
-    } 
+    if(despesasFiltradas.length===0) { lista.innerHTML='<p style="text-align:center; color:var(--text-muted); font-size:0.7rem;">Nenhuma despesa registrada</p>'; var td0=document.getElementById('tot_despesas'); if(td0) td0.textContent="0,00"; } 
+    else { var htmlFinal=""; var soma=0; despesasFiltradas.forEach(function(d) { soma+=d.valor; htmlFinal+=`<div class="history-item" style="border-color: rgba(239, 68, 68, 0.3);"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;"><div style="flex: 1; min-width: 0;"><h4 style="margin:0; line-height: 1.3; color:var(--danger); word-wrap: break-word;">${d.qtd}x ${d.nome}</h4><div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 4px;">Valor Total: R$ ${formatarMoeda(d.valor)} <span style="opacity:0.5; font-size:0.6rem; margin-left:10px;">${d.data}</span></div></div><div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0; background: rgba(0,0,0,0.2); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);"><button onclick="editarDespesa(${d.id})" style="color:var(--sky);background:none;border:none;font-size:1rem;cursor:pointer;padding:0;" title="Editar">✎</button><button onclick="removerDespesa(${d.id})" style="color:#ef4444;background:none;border:none;font-size:1.4rem;cursor:pointer;line-height:0.8;padding:0;" title="Excluir">×</button></div></div></div>`; }); lista.innerHTML=htmlFinal; var td=document.getElementById('tot_despesas'); if(td) td.textContent=formatarMoeda(soma); } 
     atualizarLucroReal(); 
 }
 function removerDespesa(id) { if(confirm("Deseja apagar esta despesa?")) { apagarNoFirebase('despesas', id); } }
@@ -1393,7 +1373,7 @@ function renderHistorico() {
     if (filtroDiv) { filtroDiv.innerHTML = `<button class="filter-btn ${window.filtroStatusAtual === 'Todos' ? 'active' : ''}" onclick="mudarFiltro('Todos')">📋 Todos (${counts['Todos']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Orçamento' ? 'active' : ''}" onclick="mudarFiltro('Orçamento')">🟡 Orç. (${counts['Orçamento']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Na Fila' ? 'active' : ''}" onclick="mudarFiltro('Na Fila')">🔵 Fila (${counts['Na Fila']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Imprimindo' ? 'active' : ''}" onclick="mudarFiltro('Imprimindo')">🟣 Impr. (${counts['Imprimindo']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Finalizado' ? 'active' : ''}" onclick="mudarFiltro('Finalizado')">🟢 Fin. (${counts['Finalizado']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Enviado / Entregue' ? 'active' : ''}" onclick="mudarFiltro('Enviado / Entregue')">🚚 Env. (${counts['Enviado / Entregue']})</button><button class="filter-btn ${window.filtroStatusAtual === 'Devolução' ? 'active' : ''}" onclick="mudarFiltro('Devolução')">❌ Devol. (${counts['Devolução']})</button> <select onchange="window.mudarFiltroDias(this.value)" style="margin-left:10px; padding:6px; border-radius:6px; background:#1e293b; color:var(--sky); border:1px solid var(--border); font-weight:bold; cursor:pointer; outline:none;"><option value="Total" ${window.filtroDiasAtual === 'Total' ? 'selected' : ''}>📅 Período: Total</option><option value="30" ${window.filtroDiasAtual === '30' ? 'selected' : ''}>📅 Últimos 30 Dias</option><option value="60" ${window.filtroDiasAtual === '60' ? 'selected' : ''}>📅 Últimos 60 Dias</option><option value="90" ${window.filtroDiasAtual === '90' ? 'selected' : ''}>📅 Últimos 90 Dias</option></select>`; }
 
     var isFila = window.filtroStatusAtual === 'Na Fila'; 
-    if (isFila) { itensFiltrados.sort((a, b) => { var valA = a.posicaoFilaManual || window.getDeadlineMs(a); var valB = b.posicaoFilaManual || window.getDeadlineMs(b); return valA - valB; }); }
+    if (isFila) { itensFiltrados.sort((a, b) => { return window.getDeadlineMs(a) - window.getDeadlineMs(b); }); }
     
     if (itensFiltrados.length === 0) { lista.innerHTML = '<p style="text-align:center; color:var(--text-muted); font-size:0.7rem; margin-top:10px;">Nenhum pedido encontrado no período</p>'; } else {
         var htmlFinal = "";
@@ -1411,39 +1391,40 @@ function renderHistorico() {
             var titleHtml = `<h4 style="margin:0; line-height: 1.2; font-size: 0.9rem; word-wrap: break-word;">${prefixoFila}<span style="font-size:0.55rem; color:${corTextoTag}; background:${corTag}; padding:2px 4px; border-radius:4px; margin-right:4px; vertical-align: middle; display: inline-block;">${tagCanal}</span>${item.nome}${tagUrgente}${checkEstoque}${lockIcon}</h4>`;
             var crmHtml = item.cliente ? `<div style="font-size: 0.70rem; color: #00d2ff; margin-top: 4px; font-weight: 600;">👤 Cliente: ${item.cliente}</div>` : '';
             if (item.idPedido) crmHtml += `<div style="font-size: 0.70rem; color: var(--orange); margin-top: 2px; font-weight: 600;">#️⃣ ID Pedido: ${item.idPedido}</div>`;
+            
             var countdownHtml = "";
-var countdownHtml = "";
-if (item.prazoDias && (st === 'Orçamento' || st === 'Na Fila' || st === 'Imprimindo')) { 
-    var targetDate = null;
-    if (item.prazoDias.includes('/')) {
-        var pDias = item.prazoDias.split('/');
-        if (pDias.length === 3) targetDate = new Date(pDias[2], pDias[1] - 1, pDias[0], 23, 59, 59);
-    } else if (parseInt(item.prazoDias) > 0) {
-        var parts = (item.data || "").split('/'); 
-        if (parts.length === 3) { 
-            var baseTime = new Date(item.timestampCriacao || item.id); 
-            if (isNaN(baseTime.getTime())) baseTime = new Date(); 
-            targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds()); 
-            var diasRestantes = parseInt(item.prazoDias); 
-            var diasAdicionados = 0; 
-            while (diasAdicionados < diasRestantes) { 
-                targetDate.setDate(targetDate.getDate() + 1); 
-                if (targetDate.getDay() !== 0) diasAdicionados++; 
-            } 
-        }
-    }
-    if (targetDate) {
-        var diff = targetDate.getTime() - Date.now(); 
-        if (diff > 0) { 
-            var d = Math.floor(diff / (1000 * 60 * 60 * 24)); 
-            var h = Math.floor((diff / (1000 * 60 * 60)) % 24); 
-            var textPrazo = item.prazoDias.includes('/') ? item.prazoDias : targetDate.toLocaleDateString('pt-BR');
-            countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 800; background: #ef4444; padding: 4px 6px; border-radius: 6px; display: inline-block; box-shadow: 0 0 10px rgba(239,68,68,0.5);">⏳ Postar até: ${textPrazo} (${d}d e ${h}h)</div>`; 
-        } else { 
-            countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 900; background: #991b1b; padding: 4px 6px; border-radius: 6px; display: inline-block; border: 1px solid #ef4444;">🚨 ATRASADO! (Era ${item.prazoDias})</div>`; 
-        } 
-    }
-}
+            if (item.prazoDias && (st === 'Orçamento' || st === 'Na Fila' || st === 'Imprimindo')) { 
+                var targetDate = null;
+                if (item.prazoDias.includes('/')) {
+                    var pDias = item.prazoDias.split('/');
+                    if (pDias.length === 3) targetDate = new Date(pDias[2], pDias[1] - 1, pDias[0], 23, 59, 59);
+                } else if (parseInt(item.prazoDias) > 0) {
+                    var parts = (item.data || "").split('/'); 
+                    if (parts.length === 3) { 
+                        var baseTime = new Date(item.timestampCriacao || item.id); 
+                        if (isNaN(baseTime.getTime())) baseTime = new Date(); 
+                        targetDate = new Date(parts[2], parts[1] - 1, parts[0], baseTime.getHours(), baseTime.getMinutes(), baseTime.getSeconds()); 
+                        var diasRestantes = parseInt(item.prazoDias); 
+                        var diasAdicionados = 0; 
+                        while (diasAdicionados < diasRestantes) { 
+                            targetDate.setDate(targetDate.getDate() + 1); 
+                            if (targetDate.getDay() !== 0) diasAdicionados++; 
+                        } 
+                    }
+                }
+                if (targetDate) {
+                    var diff = targetDate.getTime() - Date.now(); 
+                    if (diff > 0) { 
+                        var d = Math.floor(diff / (1000 * 60 * 60 * 24)); 
+                        var h = Math.floor((diff / (1000 * 60 * 60)) % 24); 
+                        var textPrazo = item.prazoDias.includes('/') ? item.prazoDias : targetDate.toLocaleDateString('pt-BR');
+                        countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 800; background: #ef4444; padding: 4px 6px; border-radius: 6px; display: inline-block; box-shadow: 0 0 10px rgba(239,68,68,0.5);">⏳ Postar até: ${textPrazo} (${d}d e ${h}h)</div>`; 
+                    } else { 
+                        countdownHtml = `<div style="font-size: 0.70rem; color: #fff; margin-top: 4px; font-weight: 900; background: #991b1b; padding: 4px 6px; border-radius: 6px; display: inline-block; border: 1px solid #ef4444;">🚨 ATRASADO! (Era ${item.prazoDias})</div>`; 
+                    } 
+                }
+            }
+
             if (item.obsVenda) crmHtml += `<div style="font-size: 0.70rem; color: #ef4444; margin-top: 4px; font-weight: 800; background: rgba(239, 68, 68, 0.1); padding: 4px 6px; border-radius: 6px; border: 1px dashed rgba(239, 68, 68, 0.3);">📌 Obs: ${item.obsVenda}</div>`;
             if (countdownHtml !== "") crmHtml += `<div>${countdownHtml}</div>`;
             var btnSubir = `<button onclick="moverFila(${item.id}, -1)" style="background:var(--card-bg); border:1px solid var(--border); border-radius:4px; font-size:0.9rem; padding:3px 10px; cursor:pointer;" title="Subir na Fila">⬆️</button>`;
